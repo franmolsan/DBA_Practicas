@@ -18,6 +18,10 @@ public class MyWorldExplorer extends IntegratedAgent{
     int numAccionActual = 0;
     String accion_siguiente;
 
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Definición del setup
+    */
     @Override
     public void setup() {
         super.setup();
@@ -28,6 +32,11 @@ public class MyWorldExplorer extends IntegratedAgent{
 
     }
 
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Definción del plainExecute, en el que se realizarán todas la gestión del dron
+    * 
+    */
     @Override
     public void plainExecute() {
         ACLMessage mensajeLogin = realizarLogin();
@@ -62,6 +71,10 @@ public class MyWorldExplorer extends IntegratedAgent{
 
     }
 
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Definición del takeDown
+    */
     @Override
     public void takeDown() {
         this.doCheckoutLARVA();
@@ -69,6 +82,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         super.takeDown();
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
+    * @return: ACLMessage el mensaje recibido del servidor como respuesta al login que intentamos hacer
+    * @description: Se realiza el login al servidor
+    */
     private ACLMessage realizarLogin(){
         // login
         // Crear objeto json
@@ -104,6 +122,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         return msgRespuesta;
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @params: msgRespuseta es el mensaje de respuesta que se recibe del servidor
+    * @description: Se procede a leer los sensores partiendo del mensaje de respuesta del servidor al login que hemos realizado anteriormente
+    */
     private void leerSensores (ACLMessage msgRespuesta){
         // Crear objeto json
         JsonObject objeto = new JsonObject();
@@ -125,7 +148,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         estado = "SENSORES_LEIDOS";
     }
         
-    
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @params: Mensaje es el mensaje que se envía al servidor
+    * @description: Se envía un mensaje al agente en el servidor
+    */
     private void enviarMensajeServidor (String mensaje){
         // enviar mensaje al agente en el servidor
         ACLMessage msg = new ACLMessage();
@@ -135,18 +162,32 @@ public class MyWorldExplorer extends IntegratedAgent{
         this.send(msg);
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @return: ACLMessage el mensaje recibido del servidor como respuesta
+    * @description: se devuelve el mensaje recibido del servidor
+    */
     private ACLMessage recibirRespuestaServidor (){
         ACLMessage msgReceive = this.blockingReceive();
         return msgReceive;
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @params: msgReceive es el mensaje recibido por el servidor
+    * @params: contenido es el mensaje de respuesta que deseamos enviar
+    * @description: Se crea una respuesta al servidor
+    */
     private void responderServidor(ACLMessage msgReceive, String contenido){      
         ACLMessage msg = msgReceive.createReply();
         msg.setContent(contenido);
         this.sendServer(msg); 
     }
     
-    // cargar las acciones necesarias para llegar al objetivo
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Se cargan las acciones que se enviarán al dron
+    */
     private void cargarAcciones(){      
         for (int i=0; i<3; i++){
             arrayAcciones.add("rotateL");
@@ -157,7 +198,10 @@ public class MyWorldExplorer extends IntegratedAgent{
         }
     }
     
-    
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Se ejecuta la acción numAccionActual en el array de acciones arrayAcciones
+    */
     private void ejecutarAccion(){
         Info("Ejecutando accion");
         
@@ -186,6 +230,9 @@ public class MyWorldExplorer extends IntegratedAgent{
             
     }
     
+    /**
+    * @author: José Armando Albarado Mamani
+    */
     private void ejecutarLogout(){
         Info ("Realizando logout");
          // Crear objeto json
@@ -201,11 +248,12 @@ public class MyWorldExplorer extends IntegratedAgent{
         enviarMensajeServidor(comando_logout);
         
     }
-    
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Se finaliza la conexión con el servidor
+    */
     private void ejecutarFin(){
         Info ("Bye");
         _exitRequested = true;
     }
-
-    
 }
