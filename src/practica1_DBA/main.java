@@ -9,7 +9,11 @@ import AppBoot.ConsoleBoot;
 
 public class main {
     static ConsoleBoot _app;
-
+    
+    /**
+    * @author: Pedro Serrano Pérez
+    * @params: args
+     */
     public static void main(String[] args) {
         _app = new ConsoleBoot("PRACTICA1_DBA", args);
         _app.selectConnection();
