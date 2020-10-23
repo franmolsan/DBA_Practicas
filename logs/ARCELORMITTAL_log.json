@@ -560,3 +560,109 @@
 {"date":"16/10/2020_12:48:18","record":{"agent":"ARCELORMITTAL","info":"Trying to checkout from the platform"}}
 {"date":"16/10/2020_12:48:18","record":{"agent":"ARCELORMITTAL","info":"Checked-out from the platform"}}
 {"date":"16/10/2020_12:48:18","record":{"agent":"ARCELORMITTAL","info":"Take down"}}
+{"date":"16/10/2020_13:08:48","record":{"agent":"ARCELORMITTAL","info":"Load configuration"}}
+{"date":"16/10/2020_13:08:48","record":{"agent":"ARCELORMITTAL","info":"Found CardID"}}
+{"date":"16/10/2020_13:08:48","record":{"agent":"ARCELORMITTAL","info":"CardID: gVcVn6Oo6jVnVcUe which belongs to PEDRO SERRANO PEREZ (ArcelorMittal)"}}
+{"date":"16/10/2020_13:08:48","record":{"agent":"ARCELORMITTAL","info":"Single behaviour agent. Adding plainBehaviour."}}
+{"date":"16/10/2020_13:08:48","record":{"agent":"ARCELORMITTAL","info":"Trying to checkin in the platform"}}
+{"date":"16/10/2020_13:08:48","record":{"agent":"ARCELORMITTAL","info":"Requesting checkin to AgentIdentityManager"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"Chekin confirmed in the platform"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"Trying to register in LARVA"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"Found ASSIGNMENTID 1"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"Retrieving the name of the corresponding LARVA agent for service <Analytics ASSIGNMENTID 1>"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"LARVA Agent WorldManager found. Requesting registration"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"\u001b[38;2;0;0;255mSuccesfully registered in LARVA"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"Behaviour REGULAR starts"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"Respuesta del servidor: {\"result\":\"ok\",\"key\":\"Qc1WeKMy\",\"width\":20,\"height\":20,\"maxflight\":255,\"capabilities\":[\"moveF\",\"rotateL\",\"rotateR\",\"moveUP\",\"moveD\",\"touchD\",\"recharge\",\"rescue\",\"alive\",\"distance\",\"altimeter\"]}"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"Respuesta del servidor: {\"result\":\"ok\",\"key\":\"Qc1WeKMy\",\"width\":20,\"height\":20,\"maxflight\":255,\"capabilities\":[\"moveF\",\"rotateL\",\"rotateR\",\"moveUP\",\"moveD\",\"touchD\",\"recharge\",\"rescue\",\"alive\",\"distance\",\"altimeter\"]}"}}
+{"date":"16/10/2020_13:08:49","record":{"agent":"ARCELORMITTAL","info":"acl_send_REGULAR","value":{"performative":"INFORM","sender":"","receiver":"WorldManager","protocol":"REGULAR","encoding":"","conversation":"Qc1WeKMy","in-reply-to":"Qc1WeKMy","reply-with":"WorldManager@ISG21602846529483","content":{"command":"read","key":"Qc1WeKMy"}}}}
+{"date":"16/10/2020_13:08:50","record":{"agent":"ARCELORMITTAL","info":"Respuesta del servidor: {\"result\":\"ok\",\"details\":{\"name\":\"ARCELORMITTAL\",\"perceptions\":[{\"sensor\":\"alive\",\"data\":[1]},{\"sensor\":\"distance\",\"data\":[14.142135623730951]},{\"sensor\":\"altimeter\",\"data\":[0]}]}}"}}
+{"date":"16/10/2020_13:08:50","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:50","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:50","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:50","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:50","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:51","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:51","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:51","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:51","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:52","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:52","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:52","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:52","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:52","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:52","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:53","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:53","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:53","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:53","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:54","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:54","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:54","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:54","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:54","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:54","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Realizando logout"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Bye"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Execute body"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Single shutting down"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Requesting unregistration in LARVA"}}
+{"date":"16/10/2020_13:08:55","record":{"agent":"ARCELORMITTAL","info":"Succesfully unregistered in LARVA"}}
+{"date":"16/10/2020_13:08:59","record":{"agent":"ARCELORMITTAL","info":"Trying to checkout from the platform"}}
+{"date":"16/10/2020_13:08:59","record":{"agent":"ARCELORMITTAL","info":"Checked-out from the platform"}}
+{"date":"16/10/2020_13:08:59","record":{"agent":"ARCELORMITTAL","info":"Take down"}}
+{"date":"16/10/2020_13:13:43","record":{"agent":"ARCELORMITTAL","info":"Load configuration"}}
+{"date":"16/10/2020_13:13:43","record":{"agent":"ARCELORMITTAL","info":"Found CardID"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"CardID: gVcVn6Oo6jVnVcUe which belongs to PEDRO SERRANO PEREZ (ArcelorMittal)"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Single behaviour agent. Adding plainBehaviour."}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Trying to checkin in the platform"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Requesting checkin to AgentIdentityManager"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Chekin confirmed in the platform"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Trying to register in LARVA"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Found ASSIGNMENTID 1"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Retrieving the name of the corresponding LARVA agent for service <Analytics ASSIGNMENTID 1>"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"LARVA Agent WorldManager found. Requesting registration"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"\u001b[38;2;0;0;255mSuccesfully registered in LARVA"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Behaviour REGULAR starts"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Respuesta del servidor: {\"result\":\"ok\",\"key\":\"T0UkDUlc\",\"width\":20,\"height\":20,\"maxflight\":255,\"capabilities\":[\"moveF\",\"rotateL\",\"rotateR\",\"moveUP\",\"moveD\",\"touchD\",\"recharge\",\"rescue\",\"alive\",\"distance\",\"altimeter\"]}"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"Respuesta del servidor: {\"result\":\"ok\",\"key\":\"T0UkDUlc\",\"width\":20,\"height\":20,\"maxflight\":255,\"capabilities\":[\"moveF\",\"rotateL\",\"rotateR\",\"moveUP\",\"moveD\",\"touchD\",\"recharge\",\"rescue\",\"alive\",\"distance\",\"altimeter\"]}"}}
+{"date":"16/10/2020_13:13:44","record":{"agent":"ARCELORMITTAL","info":"acl_send_REGULAR","value":{"performative":"INFORM","sender":"","receiver":"WorldManager","protocol":"REGULAR","encoding":"","conversation":"T0UkDUlc","in-reply-to":"T0UkDUlc","reply-with":"WorldManager@ISG21602846824671","content":{"command":"read","key":"T0UkDUlc"}}}}
+{"date":"16/10/2020_13:13:45","record":{"agent":"ARCELORMITTAL","info":"Respuesta del servidor: {\"result\":\"ok\",\"details\":{\"name\":\"ARCELORMITTAL\",\"perceptions\":[{\"sensor\":\"alive\",\"data\":[1]},{\"sensor\":\"distance\",\"data\":[14.142135623730951]},{\"sensor\":\"altimeter\",\"data\":[0]}]}}"}}
+{"date":"16/10/2020_13:13:45","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:45","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:45","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:45","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:45","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:46","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:46","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:46","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:46","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:47","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:47","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:47","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:47","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:47","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:47","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:48","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:48","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:48","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:48","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:49","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:49","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:49","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:49","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Respuesta a accion {\"result\":\"ok\"}"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Ejecutando accion"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Realizando logout"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Bye"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Execute body"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Single shutting down"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Requesting unregistration in LARVA"}}
+{"date":"16/10/2020_13:13:50","record":{"agent":"ARCELORMITTAL","info":"Succesfully unregistered in LARVA"}}
+{"date":"16/10/2020_13:13:54","record":{"agent":"ARCELORMITTAL","info":"Trying to checkout from the platform"}}
+{"date":"16/10/2020_13:13:54","record":{"agent":"ARCELORMITTAL","info":"Checked-out from the platform"}}
+{"date":"16/10/2020_13:13:54","record":{"agent":"ARCELORMITTAL","info":"Take down"}}
