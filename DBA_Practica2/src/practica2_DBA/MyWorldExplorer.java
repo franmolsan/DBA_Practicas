@@ -1,4 +1,4 @@
-package practica1_DBA;
+package practica2_DBA;
 
 
 import IntegratedAgent.IntegratedAgent;

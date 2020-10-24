@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package practica1_DBA;
+package practica2_DBA;
 
 import AppBoot.ConsoleBoot;
 
