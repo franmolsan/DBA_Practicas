@@ -1,2 +1,2 @@
-# DBA_Practica1
-Práctica 1 de la asignatura DBA.
+# DBA_Practica2
+Práctica 2 de la asignatura DBA.
