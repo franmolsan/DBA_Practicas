@@ -11,11 +11,11 @@ public class main {
     static ConsoleBoot _app;
     
     /**
-    * @author: Pedro Serrano Pérez
+    * @author: Jose Armando Albarado Mamani
     * @params: args
      */
     public static void main(String[] args) {
-        _app = new ConsoleBoot("PRACTICA1_DBA", args);
+        _app = new ConsoleBoot("PRACTICA2_DBA", args);
         _app.selectConnection();
         _app.launchAgent("ARCELORMITTAL", MyWorldExplorer.class);
         _app.shutDown();
