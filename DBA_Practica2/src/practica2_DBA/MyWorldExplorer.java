@@ -251,6 +251,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @author: José Armando Albarado Mamani
     */
     private void ejecutarLogout(){
+        myControlPanel.close();
         Info ("Realizando logout");
          // Crear objeto json
         JsonObject objeto = new JsonObject();
@@ -271,7 +272,6 @@ public class MyWorldExplorer extends IntegratedAgent{
     */
     private void ejecutarFin(){
         Info ("Bye");
-        myControlPanel.close();
-        _exitRequested = true;
+        _exitRequested = true;  
     }
 }
