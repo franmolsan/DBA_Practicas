@@ -1,0 +1,6 @@
+{"date":"26/10/2020_13:08:41","record":{"agent":"bootstrap","info":"jade.MicroBooot ERROR CREATING AGENT ARCELORMITTAL jade.security.JADESecurityException: Name-clash Agent ARCELORMITTAL@DBA already present in the platform "}}
+{"date":"26/10/2020_13:10:25","record":{"agent":"bootstrap","info":"jade.MicroBooot ERROR CREATING AGENT ARCELORMITTAL jade.security.JADESecurityException: Name-clash Agent ARCELORMITTAL@DBA already present in the platform "}}
+{"date":"26/10/2020_13:18:03","record":{"agent":"bootstrap","info":"jade.MicroBooot ERROR CREATING AGENT ARCELORMITTAL jade.security.JADESecurityException: Name-clash Agent ARCELORMITTAL@DBA already present in the platform "}}
+{"date":"26/10/2020_13:21:19","record":{"agent":"bootstrap","info":"jade.MicroBooot ERROR CREATING AGENT ArcelorMittal jade.security.JADESecurityException: Name-clash Agent ArcelorMittal@DBA already present in the platform "}}
+{"date":"26/10/2020_13:24:00","record":{"agent":"bootstrap","info":"jade.MicroBooot ERROR CREATING AGENT ArcelorMittal jade.security.JADESecurityException: Name-clash Agent ArcelorMittal@DBA already present in the platform "}}
+{"date":"26/10/2020_13:33:58","record":{"agent":"bootstrap","info":"jade.MicroBooot ERROR CREATING AGENT ArcelorMittal jade.security.JADESecurityException: Name-clash Agent ArcelorMittal@DBA already present in the platform "}}

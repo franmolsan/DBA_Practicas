@@ -1,0 +1,36 @@
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Load configuration"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Found CardID"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"CardID: gRbWWO1EOYWPRFN1 which belongs to FRANCISCO JOSE MOLINA SANCHEZ (ArcelorMittal)"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Single behaviour agent. Adding plainBehaviour."}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Trying to checkin in the platform"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Requesting checkin to AgentIdentityManager"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Chekin confirmed in the platform"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Trying to register in LARVA"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Found ASSIGNMENTID 2"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Retrieving the name of the corresponding LARVA agent for service <Analytics ASSIGNMENTID 2>"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"LARVA Agent ArcelorMittal found. Requesting registration"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"\u001b[38;2;0;0;255mSuccesfully registered in LARVA"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Behaviour REGULAR starts"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Requesting unregistration in LARVA"}}
+{"date":"26/10/2020_13:18:48","record":{"agent":"ARCELORMITTAL_1","info":"Succesfully unregistered in LARVA"}}
+{"date":"26/10/2020_13:18:52","record":{"agent":"ARCELORMITTAL_1","info":"Trying to checkout from the platform"}}
+{"date":"26/10/2020_13:18:52","record":{"agent":"ARCELORMITTAL_1","info":"Checked-out from the platform"}}
+{"date":"26/10/2020_13:18:52","record":{"agent":"ARCELORMITTAL_1","info":"Take down"}}
+{"date":"26/10/2020_13:19:05","record":{"agent":"ARCELORMITTAL_1","info":"Load configuration"}}
+{"date":"26/10/2020_13:19:05","record":{"agent":"ARCELORMITTAL_1","info":"Found CardID"}}
+{"date":"26/10/2020_13:19:05","record":{"agent":"ARCELORMITTAL_1","info":"CardID: gRbWWO1EOYWPRFN1 which belongs to FRANCISCO JOSE MOLINA SANCHEZ (ArcelorMittal)"}}
+{"date":"26/10/2020_13:19:05","record":{"agent":"ARCELORMITTAL_1","info":"Single behaviour agent. Adding plainBehaviour."}}
+{"date":"26/10/2020_13:19:05","record":{"agent":"ARCELORMITTAL_1","info":"Trying to checkin in the platform"}}
+{"date":"26/10/2020_13:19:05","record":{"agent":"ARCELORMITTAL_1","info":"Requesting checkin to AgentIdentityManager"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"Chekin confirmed in the platform"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"Trying to register in LARVA"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"Found ASSIGNMENTID 1"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"Retrieving the name of the corresponding LARVA agent for service <Analytics ASSIGNMENTID 1>"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"LARVA Agent ArcelorMittal found. Requesting registration"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"\u001b[38;2;0;0;255mSuccesfully registered in LARVA"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"Behaviour REGULAR starts"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"Requesting unregistration in LARVA"}}
+{"date":"26/10/2020_13:19:06","record":{"agent":"ARCELORMITTAL_1","info":"Succesfully unregistered in LARVA"}}
+{"date":"26/10/2020_13:19:10","record":{"agent":"ARCELORMITTAL_1","info":"Trying to checkout from the platform"}}
+{"date":"26/10/2020_13:19:10","record":{"agent":"ARCELORMITTAL_1","info":"Checked-out from the platform"}}
+{"date":"26/10/2020_13:19:10","record":{"agent":"ARCELORMITTAL_1","info":"Take down"}}

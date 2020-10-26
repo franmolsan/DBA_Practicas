@@ -1,6 +1,7 @@
 package practica2_DBA;
 
 
+import ControlPanel.TTYControlPanel;
 import IntegratedAgent.IntegratedAgent;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -8,10 +9,14 @@ import com.eclipsesource.json.*;
 import java.util.ArrayList;
 
 public class MyWorldExplorer extends IntegratedAgent{
+    
+    TTYControlPanel myControlPanel;
 
     String receiver;
     String estado;
     String key = "";
+    int width = 100;
+    int heigth = 100;
     JsonArray capabilities;
     JsonArray perceptions;
     ArrayList<String> arrayAcciones = new ArrayList<>();
@@ -29,7 +34,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         doCheckinLARVA();
         receiver = this.whoLarvaAgent();
         _exitRequested = false;
-
+        
+        myControlPanel = new TTYControlPanel(getAID());
     }
 
     /**
@@ -42,7 +48,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         ACLMessage mensajeLogin = realizarLogin();
         estado = "LOGIN";
         
-            
         while (!_exitRequested){
             switch (estado){
                 
@@ -83,9 +88,10 @@ public class MyWorldExplorer extends IntegratedAgent{
     }
     
     /**
-    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
-    * @return: ACLMessage el mensaje recibido del servidor como respuesta al login que intentamos hacer
+    * @author: Pedro Serrano mensaje recibido del servidor como respuesta al login que intentamos hacer
     * @description: Se realiza el login al servidor
+    * Pérez, Francisco José Molina Sánchez
+    * @return: el ACLMessage 
     */
     private ACLMessage realizarLogin(){
         // login
@@ -93,13 +99,17 @@ public class MyWorldExplorer extends IntegratedAgent{
         JsonObject objeto = new JsonObject();
         JsonArray vector_sensores = new JsonArray();
         vector_sensores.add("alive");
+        vector_sensores.add("gps");
         vector_sensores.add("distance");
-        vector_sensores.add("altimeter");
+        vector_sensores.add("angular");
+        vector_sensores.add("lidar");
+        vector_sensores.add("energy");
+        vector_sensores.add("compass");
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","BasePlayground");
-        objeto.add("attach",vector_sensores);
+        objeto.add("world","Playground1");
+        objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
         String comando_login = objeto.toString();
@@ -113,7 +123,12 @@ public class MyWorldExplorer extends IntegratedAgent{
         
         key = objetoRespuesta.get("key").asString();
         capabilities = objetoRespuesta.get("capabilities").asArray();
+       /* width = objetoRespuesta.get("width").asInt();
+        Info(""+width);
         
+        heigth = objetoRespuesta.get("heigth").asInt();
+        Info(""+heigth);
+        */
         // mostrar respuesta
         Info("Respuesta del servidor: " + respuesta);
         
@@ -142,6 +157,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
+        myControlPanel.feedData(msgRespuesta,100,100,256);
+        myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         
@@ -254,6 +271,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     */
     private void ejecutarFin(){
         Info ("Bye");
+        myControlPanel.close();
         _exitRequested = true;
     }
 }
