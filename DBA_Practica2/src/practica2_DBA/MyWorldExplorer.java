@@ -20,8 +20,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     JsonArray capabilities;
     JsonArray perceptions;
     ArrayList<String> arrayAcciones = new ArrayList<>();
-    int numAccionActual = 0;
-    String accion_siguiente;
+    ACLMessage ultimoMensaje;
 
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
@@ -45,18 +44,26 @@ public class MyWorldExplorer extends IntegratedAgent{
     */
     @Override
     public void plainExecute() {
-        ACLMessage mensajeLogin = realizarLogin();
+        ultimoMensaje = realizarLogin();
         estado = "LOGIN";
         
         while (!_exitRequested){
             switch (estado){
                 
-                case "LOGIN":
-                    leerSensores(mensajeLogin);
+                case "TOMAR_DECISION":
+                    tomarDecision(ultimoMensaje);
                     break;
                     
-                case "SENSORES_LEIDOS":
-                    ejecutarAccion();
+                case "EJECUTAR_ACCIONES":
+                    ejecutarAcciones();
+                    break;
+                    
+                        
+                case "RECARGA":
+                    ejecutarRecarga();
+                    break;
+                    
+                case "OBJETIVO_ALCANZADO":
                     break;
                     
                 case "LOGOUT":
@@ -142,7 +149,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @params: msgRespuseta es el mensaje de respuesta que se recibe del servidor
     * @description: Se procede a leer los sensores partiendo del mensaje de respuesta del servidor al login que hemos realizado anteriormente
     */
-    private void leerSensores (ACLMessage msgRespuesta){
+    private JsonObject leerSensores (ACLMessage msgRespuesta){
         // Crear objeto json
         JsonObject objeto = new JsonObject();
 
@@ -161,8 +168,14 @@ public class MyWorldExplorer extends IntegratedAgent{
         myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
+        JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
         
-        estado = "SENSORES_LEIDOS";
+        estado = "BUSCANDO_OBJETIVO";
+        return objetoRespuesta;
+    }
+    
+    private void tomarDecision(ACLMessage msgRespuesta){
+        JsonObject objeto = leerSensores(msgRespuesta);
     }
         
     /**
@@ -219,10 +232,10 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Se ejecuta la acción numAccionActual en el array de acciones arrayAcciones
     */
-    private void ejecutarAccion(){
+    private void ejecutarAcciones(){
         Info("Ejecutando accion");
         
-        if (numAccionActual < arrayAcciones.size()){
+        while (arrayAcciones.size() > 0){
             // Crear objeto json
             JsonObject objeto = new JsonObject();
 
@@ -230,7 +243,6 @@ public class MyWorldExplorer extends IntegratedAgent{
             objeto.add("command","execute");
             objeto.add("action", arrayAcciones.get(numAccionActual));
             objeto.add("key", key);
-            numAccionActual++;
 
             // Serializar objeto en string
             String comando_ejecutar = objeto.toString();
@@ -247,11 +259,15 @@ public class MyWorldExplorer extends IntegratedAgent{
             
     }
     
+    private void ejecutarRecarga(){
+        
+    }
+    
     /**
     * @author: José Armando Albarado Mamani
     */
     private void ejecutarLogout(){
-        myControlPanel.close();
+        
         Info ("Realizando logout");
          // Crear objeto json
         JsonObject objeto = new JsonObject();
@@ -271,6 +287,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Se finaliza la conexión con el servidor
     */
     private void ejecutarFin(){
+        myControlPanel.close();
         Info ("Bye");
         _exitRequested = true;  
     }
