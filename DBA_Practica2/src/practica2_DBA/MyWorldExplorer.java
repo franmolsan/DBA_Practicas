@@ -7,6 +7,7 @@ import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import com.eclipsesource.json.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MyWorldExplorer extends IntegratedAgent{
     
@@ -15,12 +16,14 @@ public class MyWorldExplorer extends IntegratedAgent{
     String receiver;
     String estado;
     String key = "";
-    int width = 100;
-    int heigth = 100;
+    int width;
+    int heigth;
+    int alturaMax;
     JsonArray capabilities;
     JsonArray perceptions;
     ArrayList<String> arrayAcciones = new ArrayList<>();
     ACLMessage ultimoMensaje;
+    boolean objetivoAlcanzando = false;
 
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
@@ -45,7 +48,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     @Override
     public void plainExecute() {
         ultimoMensaje = realizarLogin();
-        estado = "LOGIN";
+        estado = "TOMAR_DECISION";
         
         while (!_exitRequested){
             switch (estado){
@@ -56,11 +59,6 @@ public class MyWorldExplorer extends IntegratedAgent{
                     
                 case "EJECUTAR_ACCIONES":
                     ejecutarAcciones();
-                    break;
-                    
-                        
-                case "RECARGA":
-                    ejecutarRecarga();
                     break;
                     
                 case "OBJETIVO_ALCANZADO":
@@ -130,12 +128,10 @@ public class MyWorldExplorer extends IntegratedAgent{
         
         key = objetoRespuesta.get("key").asString();
         capabilities = objetoRespuesta.get("capabilities").asArray();
-       /* width = objetoRespuesta.get("width").asInt();
-        Info(""+width);
-        
+        width = objetoRespuesta.get("width").asInt();
         heigth = objetoRespuesta.get("heigth").asInt();
-        Info(""+heigth);
-        */
+        alturaMax = objetoRespuesta.get("maxflight").asInt();
+        
         // mostrar respuesta
         Info("Respuesta del servidor: " + respuesta);
         
@@ -149,7 +145,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @params: msgRespuseta es el mensaje de respuesta que se recibe del servidor
     * @description: Se procede a leer los sensores partiendo del mensaje de respuesta del servidor al login que hemos realizado anteriormente
     */
-    private JsonObject leerSensores (ACLMessage msgRespuesta){
+    private HashMap<String,JsonArray> leerSensores (ACLMessage msgRespuesta){
         // Crear objeto json
         JsonObject objeto = new JsonObject();
 
@@ -164,20 +160,113 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        myControlPanel.feedData(msgRespuesta,100,100,256);
+        myControlPanel.feedData(msgRespuesta,width,heigth,256);
         myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
-        
+        JsonArray arrayRespuesta = objetoRespuesta.get("details").asObject().get("perceptions").asArray();
+        Info(arrayRespuesta+"");
         estado = "BUSCANDO_OBJETIVO";
-        return objetoRespuesta;
+        
+        HashMap<String,JsonArray> mapaSensores = new HashMap<> ();
+        for (int i=0; i<arrayRespuesta.size(); i++){
+            mapaSensores.put(arrayRespuesta.get(i).asObject().get("sensor").asString(), 
+                    arrayRespuesta.get(i).asObject().get("data").asArray());
+        }
+        return mapaSensores;
     }
     
     private void tomarDecision(ACLMessage msgRespuesta){
-        JsonObject objeto = leerSensores(msgRespuesta);
+        HashMap<String,JsonArray> mapaSensores = leerSensores(msgRespuesta);
+        
+        double distancia = mapaSensores.get("distance").asArray().get(0).asDouble();
+        int alturaDrone = mapaSensores.get("lidar").asArray().get(3).asArray().get(3).asInt();
+        int energia = mapaSensores.get("energy").asArray().get(0).asInt();
+        int vivo = mapaSensores.get("alive").asArray().get(0).asInt();
+        double angular = mapaSensores.get("angular").asArray().get(0).asDouble();
+        int xActual = mapaSensores.get("gps").asArray().get(0).asInt();
+        int yActual = mapaSensores.get("gps").asArray().get(1).asInt();
+        int zActual = mapaSensores.get("gps").asArray().get(2).asInt();
+        ArrayList <ArrayList<Integer>> lidar = new ArrayList<>();
+        
+        // crear matriz para lidar
+        for (int i=0; i<7; i++){
+            lidar.add (new ArrayList <Integer> ());
+            for (int j=0;j<7;j++){
+                lidar.get(i).add(mapaSensores.get("lidar").asArray().get(i).asArray().get(j).asInt());
+            }
+        }
+        
+        Info("distancia "+distancia+"");
+        Info("altura "+alturaDrone+"");
+       
+        if (vivo == 0){
+            estado = "LOGOUT";
+        }
+        
+        /*
+        // estamos en la casilla del objetivo
+        if (distancia == 0.0){
+            
+            // si estamos en el suelo, ya hemos rescatado a Ludwig
+            if (alturaDrone == 0){
+                objetivoAlcanzando = true;
+            }
+            
+            // si no estamos en el suelo, debemos bajar el número de veces necesario
+            else {
+                bajarAlSuelo(alturaDrone);
+            }
+        }
+        */
+        
+        else {
+            if (energia <= 350){
+                bajarAlSuelo(alturaDrone);
+                arrayAcciones.add("recharge");
+            }
+            
+            else {
+                if (distancia <= 3.0){
+                    if (angular == 0.0){
+                        if (-lidar.get(2).get(3) + zActual < alturaMax){
+                            subirAAltura (-lidar.get(2).get(3) - alturaDrone);
+                            arrayAcciones.add("moveF");
+                            if (-lidar.get(1).get(3) + zActual < alturaMax){
+                                if (-lidar.get(0).get(3) + zActual < alturaMax){
+                                    
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            estado = "EJECUTAR_ACCIONES";
+        }
+        
+        
     }
         
+    private void bajarAlSuelo(int alturaDrone){
+        int veces = alturaDrone/5;
+                
+        for (int i=0; i<veces; i++){
+            arrayAcciones.add("moveD");
+        }
+        arrayAcciones.add("touchD");
+    }
+    
+    private void subirAAltura(int alturaObjetivo){
+        int veces = alturaObjetivo/5;
+                
+        for (int i=0; i<veces; i++){
+            arrayAcciones.add("moveUp");
+        }
+    }
+    
+    
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @params: Mensaje es el mensaje que se envía al servidor
@@ -241,7 +330,8 @@ public class MyWorldExplorer extends IntegratedAgent{
 
             // añadir al objeto
             objeto.add("command","execute");
-            objeto.add("action", arrayAcciones.get(numAccionActual));
+            objeto.add("action", arrayAcciones.get(0));
+            arrayAcciones.remove(0);
             objeto.add("key", key);
 
             // Serializar objeto en string
@@ -252,9 +342,6 @@ public class MyWorldExplorer extends IntegratedAgent{
             ACLMessage msgRespuesta = recibirRespuestaServidor();
             String respuesta = msgRespuesta.getContent();
             Info("Respuesta a accion " + respuesta);
-        }
-        else {
-            estado = "LOGOUT";
         }
             
     }
