@@ -113,7 +113,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World2");
+        objeto.add("world","World1");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -159,8 +159,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
-        myControlPanel.fancyShow();
+        //myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
+        //myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
@@ -199,9 +199,9 @@ public class MyWorldExplorer extends IntegratedAgent{
         ArrayList <ArrayList<Integer>> visual = new ArrayList<>();
         // crear matriz para visual
         for (int i=0; i<7; i++){
-            lidar.add (new ArrayList <Integer> ());
+            visual.add (new ArrayList <Integer> ());
             for (int j=0;j<7;j++){
-                visual.get(i).add(mapaSensores.get("lidar").asArray().get(i).asArray().get(j).asInt());
+                visual.get(i).add(mapaSensores.get("visual").asArray().get(i).asArray().get(j).asInt());
             }
         }
         Info("vivo "+vivo+"");
@@ -217,7 +217,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         else {
             if (distancia == 0.0){
                 bajarAlSuelo(alturaDrone);
-                arrayAcciones.add("rescue");
                 estado = "EJECUTAR_ACCIONES";
                 objetivoAlcanzado = true;
             }
@@ -494,7 +493,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Se finaliza la conexión con el servidor
     */
     private void ejecutarFin(){
-        myControlPanel.close();
+        //myControlPanel.close();
         Info ("Bye");
         _exitRequested = true;  
     }
