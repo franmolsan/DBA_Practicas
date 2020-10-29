@@ -77,7 +77,6 @@ public class MyWorldExplorer extends IntegratedAgent{
                     break;
             }
         }
-
     }
 
     /**
@@ -154,7 +153,6 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // Serializar objeto en string
         String comando_leer = objeto.toString();
-
         
         responderServidor(msgRespuesta, comando_leer);
         
@@ -175,6 +173,10 @@ public class MyWorldExplorer extends IntegratedAgent{
         return mapaSensores;
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Método que permite decir que acción realizar tras leer la información del mundo
+    */
     private void tomarDecision(ACLMessage msgRespuesta){
         
         HashMap<String,JsonArray> mapaSensores = leerSensores(msgRespuesta);
@@ -207,8 +209,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         Info("vivo "+vivo+"");
         Info("distancia "+distancia+"");
         Info("altura "+alturaDrone+"");
-        Info("alturaPico "+lidar.get(4).get(3)+"");
-        Info("angulo "+angular+"");
+        Info("angulo objetivo "+angular+"");
         Info("anguloDrone "+anguloDrone+"");
        
         if (vivo == 0 || energia == 0){
@@ -222,7 +223,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
             else {  
                 if (!comprobarEnergia(energia, alturaDrone)){
-                    ArrayList<Double> coste = calcularCoste(visual,angular, zActual, anguloDrone);
+                    ArrayList<Double> coste = calcularCoste(visual,angular, zActual);
 
                     int decision = calcularMejorCoste(coste);
 
@@ -232,13 +233,15 @@ public class MyWorldExplorer extends IntegratedAgent{
                 estado = "EJECUTAR_ACCIONES";
             }
         }
-        
-   
     }
         
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Método que permite decir que acción realizar tras leer la información del mundo
+    */
     private boolean comprobarEnergia(int energia, int alturaDrone){
         boolean necesitaRecargar = false;  
-        if (energia <= 60){
+        if (energia <= 270){
             bajarAlSuelo(alturaDrone);
             arrayAcciones.add("recharge");
             necesitaRecargar = true;
@@ -246,12 +249,15 @@ public class MyWorldExplorer extends IntegratedAgent{
         return necesitaRecargar;
     }
     
+    /**
+    * @author: Pedro Serrano Pérez
+    * @description: Devuelve un entero que representa la mejor casilla a la que se puede desplazar el drone
+    */
     private int calcularMejorCoste(ArrayList<Double> coste){
         int mejor = -1;
         double mejorCoste = Integer.MAX_VALUE;
         
         for (int i=0; i<coste.size(); i++){
-            Info("coste: "+coste.get(i));
             if (coste.get(i) < mejorCoste){
                 mejorCoste = coste.get(i);
                 mejor = i;
@@ -260,8 +266,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         return mejor;
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
+    * @description: Calcula las acciones que debe realizar el drone en funcion de la decisión tomada, la casilla a la que se desplazará el drone, y la altura y ángulo de este
+    */
     private void calcularAcciones(ArrayList <ArrayList<Integer>> visual, int zActual, int decision, int anguloDrone){
-        Info("Decision: " + decision);
         if (decision == 0){
             moverse(visual.get(2).get(3), zActual, -anguloDrone);
         }
@@ -288,7 +297,12 @@ public class MyWorldExplorer extends IntegratedAgent{
         }
 
     }
-    private  ArrayList <Double> calcularCoste(ArrayList<ArrayList<Integer>> visual, double angular, int zActual, int anguloDrone){
+    
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
+    * @description: Calcula un coste que busca el mejor ángulo para encontrar al objetivo y evita casillas inalcanzables
+    */
+    private  ArrayList <Double> calcularCoste(ArrayList<ArrayList<Integer>> visual, double angular, int zActual){
         ArrayList <Double> coste = new ArrayList<>();
         
         if (obstaculoAlcanzable(visual.get(2).get(3), zActual)){
@@ -341,9 +355,13 @@ public class MyWorldExplorer extends IntegratedAgent{
         } 
         return coste;
     }
+    
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
+    * @description: Una vez decidida la casilla, mueve el drone hasta dicha casilla
+    */
     private void moverse(int casilla, int zActual,int giro){
         girar(giro);
-        Info ("Tengo que subir " + (casilla-zActual)+"");
         if (casilla - zActual > 0){
             subirAAltura (casilla - zActual);
         }
@@ -351,6 +369,10 @@ public class MyWorldExplorer extends IntegratedAgent{
         arrayAcciones.add("moveF");
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
+    * @description: Gira el dron un número determinado de grados
+    */
     private void girar(int grados){
         for (int i=0; i<Math.abs(grados); i+=45){
             if (grados<0){
@@ -362,11 +384,12 @@ public class MyWorldExplorer extends IntegratedAgent{
         }
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Comprueba si el dron puede alcanzar una determinada casilla
+    */
     private boolean obstaculoAlcanzable(int alturaObstaculo, int zActual){
         boolean alcanzable = alturaObstaculo < alturaMax;
-        
-        Info ("Altura obstaculo: " + alturaObstaculo+"");
-        Info ("zActual: " + zActual+"");
         
         // si el obstáculo está por debajo de la altura máxima, es alcanzable
         if (alcanzable && alturaObstaculo > zActual){
@@ -377,18 +400,14 @@ public class MyWorldExplorer extends IntegratedAgent{
             // para casos en los que el objetivo está cerca del límite
             // y subiendo podemos superar la altura máxima
             alcanzable = alturaMax - (zActual + alturaASubir) > 0;
-            Info ("Altura Max: " + alturaMax+"");
-            Info ("zActual: " + zActual+"");
-            Info ("alturaASubir: " + alturaASubir+"");
-        }
-        
-        if (!alcanzable){
-            Info("no es alcanzable " +alturaObstaculo);
-            Info("alturaMax es "+ alturaMax);
         }
         return alcanzable;
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Añade las acciones necesarias para que el dron se pose en la superficie
+    */
     private void bajarAlSuelo(int alturaDrone){
         int veces = alturaDrone/5;
                 
@@ -398,6 +417,10 @@ public class MyWorldExplorer extends IntegratedAgent{
         arrayAcciones.add("touchD");
     }
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Añade las acciones necesarias para para que el drone suba a una altura determinada
+    */
     private void subirAAltura(int alturaObjetivo){
         int veces = alturaObjetivo/5;
                 
@@ -408,7 +431,6 @@ public class MyWorldExplorer extends IntegratedAgent{
             arrayAcciones.add("moveUP");
         }
     }
-    
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
@@ -448,11 +470,6 @@ public class MyWorldExplorer extends IntegratedAgent{
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
-    * @description: Se cargan las acciones que se enviarán al dron
-    */
-    
-    /**
-    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Se ejecuta la acción numAccionActual en el array de acciones arrayAcciones
     */
     private void ejecutarAcciones(){
@@ -487,10 +504,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         
     }
     
-    private void ejecutarRecarga(){
-        
-    }
-    
     /**
     * @author: José Armando Albarado Mamani
     */
@@ -510,6 +523,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         enviarMensajeServidor(comando_logout);
         
     }
+    
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Se finaliza la conexión con el servidor
