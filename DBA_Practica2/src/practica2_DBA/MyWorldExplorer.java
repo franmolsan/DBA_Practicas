@@ -13,7 +13,7 @@ import java.util.AbstractMap;
 
 public class MyWorldExplorer extends IntegratedAgent{
     
-    TTYControlPanel myControlPanel;
+    //TTYControlPanel myControlPanel;
 
     String receiver;
     String estado;
@@ -39,7 +39,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         receiver = this.whoLarvaAgent();
         _exitRequested = false;
         
-        myControlPanel = new TTYControlPanel(getAID());
+        //myControlPanel = new TTYControlPanel(getAID());
     }
 
     /**
@@ -159,8 +159,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
-        myControlPanel.fancyShow();
+        //myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
+        //myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
@@ -211,7 +211,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         Info("angulo "+angular+"");
         Info("anguloDrone "+anguloDrone+"");
        
-        if (vivo == 0){
+        if (vivo == 0 || energia == 0){
             estado = "LOGOUT";
         }
         else {
@@ -515,7 +515,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Se finaliza la conexión con el servidor
     */
     private void ejecutarFin(){
-        myControlPanel.close();
+        //myControlPanel.close();
         Info ("Bye");
         _exitRequested = true;  
     }
