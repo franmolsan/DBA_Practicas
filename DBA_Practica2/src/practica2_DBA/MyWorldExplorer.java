@@ -108,6 +108,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         vector_sensores.add("angular");
         vector_sensores.add("lidar");
         vector_sensores.add("energy");
+        vector_sensores.add("visual");
         vector_sensores.add("compass");
 
         // añadir al objeto
@@ -158,8 +159,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        //myControlPanel.feedData(msgRespuesta,width,height,256);
-        //myControlPanel.fancyShow();
+        myControlPanel.feedData(msgRespuesta,width,height,256);
+        myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
@@ -214,7 +215,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
             else {  
                 if (!comprobarEnergia(energia, alturaDrone)){
-                    ArrayList<Double> coste = calcularCoste(lidar,angular,zActual, anguloDrone);
+                    ArrayList<Double> coste = calcularCoste(lidar,angular,alturaDrone, anguloDrone);
 
                     int decision = calcularMejorCoste(coste);
 
@@ -280,52 +281,52 @@ public class MyWorldExplorer extends IntegratedAgent{
         }
 
     }
-    private  ArrayList <Double> calcularCoste(ArrayList<ArrayList<Integer>> lidar, double angular, int zActual, int anguloDrone){
+    private  ArrayList <Double> calcularCoste(ArrayList<ArrayList<Integer>> lidar, double angular, int alturaActual, int anguloDrone){
         ArrayList <Double> coste = new ArrayList<>();
         
-        if (obstaculoAlcanzable(lidar.get(2).get(3), zActual)){
+        if (obstaculoAlcanzable(lidar.get(2).get(3), alturaActual)){
             coste.add((double)Math.abs(angular));
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(lidar.get(2).get(4), zActual)){
+        if (obstaculoAlcanzable(lidar.get(2).get(4), alturaActual)){
             coste.add((double)Math.abs(angular - 45));
         }
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(lidar.get(3).get(4), zActual)){
+        if (obstaculoAlcanzable(lidar.get(3).get(4), alturaActual)){
             coste.add(Math.abs(angular - 90)); 
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(lidar.get(4).get(4), zActual)){
+        if (obstaculoAlcanzable(lidar.get(4).get(4), alturaActual)){
             coste.add(Math.abs(angular - 135)); 
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(lidar.get(4).get(3), zActual)){
+        if (obstaculoAlcanzable(lidar.get(4).get(3), alturaActual)){
             coste.add(Math.abs(angular + 180)); 
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(lidar.get(4).get(2), zActual)){
+        if (obstaculoAlcanzable(lidar.get(4).get(2), alturaActual)){
             coste.add(Math.abs(angular + 135)); 
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(lidar.get(3).get(2), zActual)){
+        if (obstaculoAlcanzable(lidar.get(3).get(2), alturaActual)){
             coste.add(Math.abs(angular + 90)); 
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(lidar.get(2).get(2), zActual)){
+        if (obstaculoAlcanzable(lidar.get(2).get(2), alturaActual)){
             coste.add(Math.abs(angular + 45)); 
         } 
         else{
@@ -350,10 +351,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         }
     }
     
-    private boolean obstaculoAlcanzable(int alturaObstaculo, int zActual){
-        boolean alcanzable = (Math.abs(alturaObstaculo) + zActual) < alturaMax && ((Math.abs(alturaObstaculo) + zActual) > 0);
+    private boolean obstaculoAlcanzable(int alturaObstaculo, int alturaActual){
+        boolean alcanzable = (Math.abs(alturaObstaculo) + alturaActual) < alturaMax && ((Math.abs(alturaObstaculo) + alturaActual) > 0);
         if (!alcanzable){
-            Info("+ " +alturaObstaculo);
+            Info("no es alcanzable + " +alturaObstaculo);
+            Info("alturaMax es "+ alturaMax);
         }
         return alcanzable;
     }
