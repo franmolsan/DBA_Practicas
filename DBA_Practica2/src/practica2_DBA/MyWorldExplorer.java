@@ -6,8 +6,10 @@ import IntegratedAgent.IntegratedAgent;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import com.eclipsesource.json.*;
+import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.AbstractMap;
 
 public class MyWorldExplorer extends IntegratedAgent{
     
@@ -17,13 +19,13 @@ public class MyWorldExplorer extends IntegratedAgent{
     String estado;
     String key = "";
     int width;
-    int heigth;
+    int height;
     int alturaMax;
     JsonArray capabilities;
     JsonArray perceptions;
     ArrayList<String> arrayAcciones = new ArrayList<>();
     ACLMessage ultimoMensaje;
-    boolean objetivoAlcanzando = false;
+    boolean objetivoAlcanzado = false;
 
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
@@ -60,10 +62,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                 case "EJECUTAR_ACCIONES":
                     ejecutarAcciones();
                     break;
-                    
-                case "OBJETIVO_ALCANZADO":
-                    break;
-                    
+
                 case "LOGOUT":
                     ejecutarLogout();
                     estado = "FIN";
@@ -113,7 +112,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","Playground1");
+        objeto.add("world","World2");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -129,13 +128,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         key = objetoRespuesta.get("key").asString();
         capabilities = objetoRespuesta.get("capabilities").asArray();
         width = objetoRespuesta.get("width").asInt();
-        heigth = objetoRespuesta.get("heigth").asInt();
+        height = objetoRespuesta.get("height").asInt();
         alturaMax = objetoRespuesta.get("maxflight").asInt();
         
         // mostrar respuesta
         Info("Respuesta del servidor: " + respuesta);
-        
-        cargarAcciones();
         
         return msgRespuesta;
     }
@@ -146,6 +143,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Se procede a leer los sensores partiendo del mensaje de respuesta del servidor al login que hemos realizado anteriormente
     */
     private HashMap<String,JsonArray> leerSensores (ACLMessage msgRespuesta){
+        
         // Crear objeto json
         JsonObject objeto = new JsonObject();
 
@@ -160,14 +158,13 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        myControlPanel.feedData(msgRespuesta,width,heigth,256);
-        myControlPanel.fancyShow();
+        //myControlPanel.feedData(msgRespuesta,width,height,256);
+        //myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
         JsonArray arrayRespuesta = objetoRespuesta.get("details").asObject().get("perceptions").asArray();
         Info(arrayRespuesta+"");
-        estado = "BUSCANDO_OBJETIVO";
         
         HashMap<String,JsonArray> mapaSensores = new HashMap<> ();
         for (int i=0; i<arrayRespuesta.size(); i++){
@@ -178,6 +175,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     }
     
     private void tomarDecision(ACLMessage msgRespuesta){
+        
         HashMap<String,JsonArray> mapaSensores = leerSensores(msgRespuesta);
         
         double distancia = mapaSensores.get("distance").asArray().get(0).asDouble();
@@ -185,11 +183,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         int energia = mapaSensores.get("energy").asArray().get(0).asInt();
         int vivo = mapaSensores.get("alive").asArray().get(0).asInt();
         double angular = mapaSensores.get("angular").asArray().get(0).asDouble();
-        int xActual = mapaSensores.get("gps").asArray().get(0).asInt();
-        int yActual = mapaSensores.get("gps").asArray().get(1).asInt();
-        int zActual = mapaSensores.get("gps").asArray().get(2).asInt();
+        int anguloDrone = (int) Math.round(mapaSensores.get("compass").asArray().get(0).asDouble());
+        int xActual = mapaSensores.get("gps").asArray().get(0).asArray().get(0).asInt();
+        int yActual = mapaSensores.get("gps").asArray().get(0).asArray().get(1).asInt();
+        int zActual = mapaSensores.get("gps").asArray().get(0).asArray().get(2).asInt();
         ArrayList <ArrayList<Integer>> lidar = new ArrayList<>();
-        
         // crear matriz para lidar
         for (int i=0; i<7; i++){
             lidar.add (new ArrayList <Integer> ());
@@ -197,58 +195,169 @@ public class MyWorldExplorer extends IntegratedAgent{
                 lidar.get(i).add(mapaSensores.get("lidar").asArray().get(i).asArray().get(j).asInt());
             }
         }
-        
+        Info("vivo "+vivo+"");
         Info("distancia "+distancia+"");
         Info("altura "+alturaDrone+"");
+        Info("alturaPico "+lidar.get(2).get(4)+"");
+        Info("angulo "+angular+"");
+        Info("anguloDrone "+anguloDrone+"");
        
         if (vivo == 0){
             estado = "LOGOUT";
         }
-        
-        /*
-        // estamos en la casilla del objetivo
-        if (distancia == 0.0){
-            
-            // si estamos en el suelo, ya hemos rescatado a Ludwig
-            if (alturaDrone == 0){
-                objetivoAlcanzando = true;
-            }
-            
-            // si no estamos en el suelo, debemos bajar el número de veces necesario
-            else {
-                bajarAlSuelo(alturaDrone);
-            }
-        }
-        */
-        
         else {
-            if (energia <= 350){
+            if (distancia == 0.0){
                 bajarAlSuelo(alturaDrone);
-                arrayAcciones.add("recharge");
+                arrayAcciones.add("rescue");
+                estado = "EJECUTAR_ACCIONES";
+                objetivoAlcanzado = true;
             }
-            
-            else {
-                if (distancia <= 3.0){
-                    if (angular == 0.0){
-                        if (-lidar.get(2).get(3) + zActual < alturaMax){
-                            subirAAltura (-lidar.get(2).get(3) - alturaDrone);
-                            arrayAcciones.add("moveF");
-                            if (-lidar.get(1).get(3) + zActual < alturaMax){
-                                if (-lidar.get(0).get(3) + zActual < alturaMax){
-                                    
-                                }
-                            }
-                        }
-                    }
+            else {  
+                if (!comprobarEnergia(energia, alturaDrone)){
+                    ArrayList<Double> coste = calcularCoste(lidar,angular,zActual, anguloDrone);
+
+                    int decision = calcularMejorCoste(coste);
+
+                    calcularAcciones(lidar, alturaDrone, decision, anguloDrone);
                 }
+
+                estado = "EJECUTAR_ACCIONES";
             }
-            
-            estado = "EJECUTAR_ACCIONES";
         }
         
-        
+   
     }
         
+    private boolean comprobarEnergia(int energia, int alturaDrone){
+        boolean necesitaRecargar = false;  
+        if (energia <= 350){
+            bajarAlSuelo(alturaDrone);
+            arrayAcciones.add("recharge");
+            necesitaRecargar = true;
+        }
+        return necesitaRecargar;
+    }
+    
+    private int calcularMejorCoste(ArrayList<Double> coste){
+        int mejor = -1;
+        double mejorCoste = Integer.MAX_VALUE;
+        
+        for (int i=0; i<coste.size(); i++){
+            Info("coste: "+coste.get(i));
+            if (coste.get(i) < mejorCoste){
+                mejorCoste = coste.get(i);
+                mejor = i;
+            }
+        }
+        return mejor;
+    }
+    
+    private void calcularAcciones(ArrayList <ArrayList<Integer>> lidar, int alturaDrone, int decision, int anguloDrone){
+        Info("Decision: " + decision);
+        if (decision == 0){
+            moverse(lidar.get(2).get(3), alturaDrone, -anguloDrone);
+        }
+        else if (decision == 1){
+            moverse(lidar.get(2).get(4), alturaDrone, -anguloDrone + 45);
+        }
+        else if (decision == 2){
+            moverse(lidar.get(3).get(4), alturaDrone, -anguloDrone + 90);
+        }
+        else if (decision == 3){
+            moverse(lidar.get(4).get(4), alturaDrone, -anguloDrone + 135);
+        }
+        else if (decision == 4){
+            moverse(lidar.get(4).get(3), alturaDrone, (-anguloDrone - 180)%360);
+        }
+        else if (decision == 5){
+            moverse(lidar.get(4).get(2), alturaDrone, -anguloDrone - 135);
+        }
+        else if (decision == 6){
+            moverse(lidar.get(3).get(2), alturaDrone, -anguloDrone - 90);
+        }
+        else if (decision == 7){
+            moverse(lidar.get(2).get(2), alturaDrone, -anguloDrone - 45);
+        }
+
+    }
+    private  ArrayList <Double> calcularCoste(ArrayList<ArrayList<Integer>> lidar, double angular, int zActual, int anguloDrone){
+        ArrayList <Double> coste = new ArrayList<>();
+        
+        if (obstaculoAlcanzable(lidar.get(2).get(3), zActual)){
+            coste.add((double)Math.abs(angular));
+        } 
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        if (obstaculoAlcanzable(lidar.get(2).get(4), zActual)){
+            coste.add((double)Math.abs(angular - 45));
+        }
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        if (obstaculoAlcanzable(lidar.get(3).get(4), zActual)){
+            coste.add(Math.abs(angular - 90)); 
+        } 
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        if (obstaculoAlcanzable(lidar.get(4).get(4), zActual)){
+            coste.add(Math.abs(angular - 135)); 
+        } 
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        if (obstaculoAlcanzable(lidar.get(4).get(3), zActual)){
+            coste.add(Math.abs(angular + 180)); 
+        } 
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        if (obstaculoAlcanzable(lidar.get(4).get(2), zActual)){
+            coste.add(Math.abs(angular + 135)); 
+        } 
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        if (obstaculoAlcanzable(lidar.get(3).get(2), zActual)){
+            coste.add(Math.abs(angular + 90)); 
+        } 
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        if (obstaculoAlcanzable(lidar.get(2).get(2), zActual)){
+            coste.add(Math.abs(angular + 45)); 
+        } 
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        } 
+        return coste;
+    }
+    private void moverse(int casilla, int alturaDrone,int giro){
+        girar(giro);
+        subirAAltura (-casilla - alturaDrone);
+        arrayAcciones.add("moveF");
+    }
+    
+    private void girar(int grados){
+        for (int i=0; i<Math.abs(grados); i+=45){
+            if (grados<0){
+                arrayAcciones.add("rotateL");
+            }
+            else{
+                arrayAcciones.add("rotateR");
+            }
+        }
+    }
+    
+    private boolean obstaculoAlcanzable(int alturaObstaculo, int zActual){
+        boolean alcanzable = (Math.abs(alturaObstaculo) + zActual) < alturaMax && ((Math.abs(alturaObstaculo) + zActual) > 0);
+        if (!alcanzable){
+            Info("+ " +alturaObstaculo);
+        }
+        return alcanzable;
+    }
+    
     private void bajarAlSuelo(int alturaDrone){
         int veces = alturaDrone/5;
                 
@@ -262,7 +371,10 @@ public class MyWorldExplorer extends IntegratedAgent{
         int veces = alturaObjetivo/5;
                 
         for (int i=0; i<veces; i++){
-            arrayAcciones.add("moveUp");
+            arrayAcciones.add("moveUP");
+        }
+        if (alturaObjetivo >= 0 && alturaObjetivo <= 5){
+            arrayAcciones.add("moveUP");
         }
     }
     
@@ -307,27 +419,19 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Se cargan las acciones que se enviarán al dron
     */
-    private void cargarAcciones(){      
-        for (int i=0; i<3; i++){
-            arrayAcciones.add("rotateL");
-        }
-        
-        for (int i=0; i<10; i++){
-            arrayAcciones.add("moveF");
-        }
-    }
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Se ejecuta la acción numAccionActual en el array de acciones arrayAcciones
     */
     private void ejecutarAcciones(){
-        Info("Ejecutando accion");
+        Info("Ejecutando acciones");
         
         while (arrayAcciones.size() > 0){
             // Crear objeto json
             JsonObject objeto = new JsonObject();
 
+            String accion = arrayAcciones.get(0);
             // añadir al objeto
             objeto.add("command","execute");
             objeto.add("action", arrayAcciones.get(0));
@@ -341,9 +445,15 @@ public class MyWorldExplorer extends IntegratedAgent{
 
             ACLMessage msgRespuesta = recibirRespuestaServidor();
             String respuesta = msgRespuesta.getContent();
-            Info("Respuesta a accion " + respuesta);
+            Info("Respuesta a accion " + accion + ": " + respuesta);
         }
-            
+        if (!objetivoAlcanzado){
+            estado = "TOMAR_DECISION";
+        }
+        else{
+            estado = "LOGOUT";
+        }
+        
     }
     
     private void ejecutarRecarga(){
