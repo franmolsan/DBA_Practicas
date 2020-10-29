@@ -112,7 +112,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World3");
+        objeto.add("world","World5");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
