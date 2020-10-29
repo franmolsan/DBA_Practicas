@@ -113,7 +113,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World2");
+        objeto.add("world","World3");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -238,7 +238,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         
     private boolean comprobarEnergia(int energia, int alturaDrone){
         boolean necesitaRecargar = false;  
-        if (energia <= 50){
+        if (energia <= 60){
             bajarAlSuelo(alturaDrone);
             arrayAcciones.add("recharge");
             necesitaRecargar = true;
