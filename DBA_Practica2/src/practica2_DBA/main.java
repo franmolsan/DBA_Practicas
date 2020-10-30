@@ -17,7 +17,7 @@ public class main {
     public static void main(String[] args) {
         _app = new ConsoleBoot("PRACTICA2_DBA", args);
         _app.selectConnection();
-        _app.launchAgent("ArcelorMittal_1", MyWorldExplorer.class);
+        _app.launchAgent("ArcelorMittal_drone", MyWorldExplorer.class);
         _app.shutDown();
     }
     

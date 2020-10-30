@@ -13,7 +13,7 @@ import java.util.AbstractMap;
 
 public class MyWorldExplorer extends IntegratedAgent{
     
-    //TTYControlPanel myControlPanel;
+    TTYControlPanel myControlPanel;
 
     String receiver;
     String estado;
@@ -39,7 +39,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         receiver = this.whoLarvaAgent();
         _exitRequested = false;
         
-        //myControlPanel = new TTYControlPanel(getAID());
+        myControlPanel = new TTYControlPanel(getAID());
     }
 
     /**
@@ -91,9 +91,9 @@ public class MyWorldExplorer extends IntegratedAgent{
     }
     
     /**
-    * @author: Pedro Serrano mensaje recibido del servidor como respuesta al login que intentamos hacer
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez 
     * @description: Se realiza el login al servidor
-    * Pérez, Francisco José Molina Sánchez
+    * mensaje recibido del servidor como respuesta al login que intentamos hacer
     * @return: el ACLMessage 
     */
     private ACLMessage realizarLogin(){
@@ -112,7 +112,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World5");
+        objeto.add("world","World6");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -157,8 +157,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        //myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
-        //myControlPanel.fancyShow();
+        myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
+        myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
@@ -258,6 +258,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         double mejorCoste = Integer.MAX_VALUE;
         
         for (int i=0; i<coste.size(); i++){
+            Info ("Coste de acción " + i + " : " + coste.get(i));
             if (coste.get(i) < mejorCoste){
                 mejorCoste = coste.get(i);
                 mejor = i;
@@ -306,13 +307,13 @@ public class MyWorldExplorer extends IntegratedAgent{
         ArrayList <Double> coste = new ArrayList<>();
         
         if (obstaculoAlcanzable(visual.get(2).get(3), zActual)){
-            coste.add((double)Math.abs(angular));
+            coste.add(Math.abs(angular));
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         if (obstaculoAlcanzable(visual.get(2).get(4), zActual)){
-            coste.add((double)Math.abs(angular - 45));
+            coste.add(Math.abs(angular - 45));
         }
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
@@ -330,7 +331,13 @@ public class MyWorldExplorer extends IntegratedAgent{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         if (obstaculoAlcanzable(visual.get(4).get(3), zActual)){
-            coste.add(Math.abs(angular + 180)); 
+            if (angular > 0){
+                coste.add(Math.abs(angular - 180));
+            }
+            else {
+                coste.add(Math.abs(angular + 180));
+            }
+             
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
@@ -529,7 +536,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Se finaliza la conexión con el servidor
     */
     private void ejecutarFin(){
-        //myControlPanel.close();
+        myControlPanel.close();
         Info ("Bye");
         _exitRequested = true;  
     }
