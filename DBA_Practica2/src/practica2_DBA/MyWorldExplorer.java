@@ -26,7 +26,12 @@ public class MyWorldExplorer extends IntegratedAgent{
     ArrayList<String> arrayAcciones = new ArrayList<>();
     ACLMessage ultimoMensaje;
     boolean objetivoAlcanzado = false;
-
+    
+    ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
+    int anguloActualDrone;
+    int xActualDrone;
+    int yActualDrone;
+    
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Definición del setup
@@ -112,7 +117,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World6");
+        objeto.add("world","World7");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -130,6 +135,14 @@ public class MyWorldExplorer extends IntegratedAgent{
         width = objetoRespuesta.get("width").asInt();
         height = objetoRespuesta.get("height").asInt();
         alturaMax = objetoRespuesta.get("maxflight").asInt();
+
+        //Inicializar la matriz de posiciones a 0, ya que no has pasado por ninguna
+        for (int i=0; i<width; i++){
+            posicionesPasadas.add (new ArrayList <Integer> ());
+            for (int j=0;j<height;j++){
+                posicionesPasadas.get(i).add(0);
+            }
+        }
         
         // mostrar respuesta
         Info("Respuesta del servidor: " + respuesta);
@@ -188,7 +201,9 @@ public class MyWorldExplorer extends IntegratedAgent{
         double angular = mapaSensores.get("angular").asArray().get(0).asDouble();
         int anguloDrone = (int) Math.round(mapaSensores.get("compass").asArray().get(0).asDouble());
         int xActual = mapaSensores.get("gps").asArray().get(0).asArray().get(0).asInt();
+        xActualDrone = xActual;
         int yActual = mapaSensores.get("gps").asArray().get(0).asArray().get(1).asInt();
+        yActualDrone = yActual;
         int zActual = mapaSensores.get("gps").asArray().get(0).asArray().get(2).asInt();
         ArrayList <ArrayList<Integer>> lidar = new ArrayList<>();
         // crear matriz para lidar
@@ -206,6 +221,10 @@ public class MyWorldExplorer extends IntegratedAgent{
                 visual.get(i).add(mapaSensores.get("visual").asArray().get(i).asArray().get(j).asInt());
             }
         }
+
+        //Marcar que has pasado por la posicion actual.
+        posicionesPasadas.get(xActual).set(yActual, 1);
+
         Info("vivo "+vivo+"");
         Info("distancia "+distancia+"");
         Info("altura "+alturaDrone+"");
@@ -306,60 +325,107 @@ public class MyWorldExplorer extends IntegratedAgent{
     private  ArrayList <Double> calcularCoste(ArrayList<ArrayList<Integer>> visual, double angular, int zActual){
         ArrayList <Double> coste = new ArrayList<>();
         
-        if (obstaculoAlcanzable(visual.get(2).get(3), zActual)){
-            coste.add(Math.abs(angular));
-        } 
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
-        }
-        if (obstaculoAlcanzable(visual.get(2).get(4), zActual)){
-            coste.add(Math.abs(angular - 45));
-        }
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
-        }
-        if (obstaculoAlcanzable(visual.get(3).get(4), zActual)){
-            coste.add(Math.abs(angular - 90)); 
-        } 
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
-        }
-        if (obstaculoAlcanzable(visual.get(4).get(4), zActual)){
-            coste.add(Math.abs(angular - 135)); 
-        } 
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
-        }
-        if (obstaculoAlcanzable(visual.get(4).get(3), zActual)){
-            if (angular > 0){
-                coste.add(Math.abs(angular - 180));
+        if(xActualDrone > 0){
+            if (obstaculoAlcanzable(visual.get(2).get(3), zActual) && posicionesPasadas.get(xActualDrone-1).get(yActualDrone) == 0 ){
+                coste.add(Math.abs(angular));
             }
-            else {
-                coste.add(Math.abs(angular + 180));
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
             }
-             
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(visual.get(4).get(2), zActual)){
-            coste.add(Math.abs(angular + 135)); 
+        
+        if(xActualDrone > 0 && yActualDrone < height-1){
+            if (obstaculoAlcanzable(visual.get(2).get(4), zActual) && posicionesPasadas.get(xActualDrone-1).get(yActualDrone+1) == 0 ){
+                coste.add(Math.abs(angular - 45));
+            }
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
+            }
+        }
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        
+        if(yActualDrone < height-1){
+            if (obstaculoAlcanzable(visual.get(3).get(4), zActual) && posicionesPasadas.get(xActualDrone).get(yActualDrone+1) == 0 ){
+                coste.add(Math.abs(angular - 90)); 
+            }
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
+            }
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(visual.get(3).get(2), zActual)){
-            coste.add(Math.abs(angular + 90)); 
+        
+        if(xActualDrone < width-1 && yActualDrone < height-1){
+            if (obstaculoAlcanzable(visual.get(4).get(4), zActual) && posicionesPasadas.get(xActualDrone+1).get(yActualDrone+1) == 0 ){
+                coste.add(Math.abs(angular - 135)); 
+            }
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
+            }
+        }
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        
+        if(xActualDrone < width-1){
+            if (obstaculoAlcanzable(visual.get(4).get(3), zActual) && posicionesPasadas.get(xActualDrone+1).get(yActualDrone) == 0 ){
+                if (angular > 0){
+                    coste.add(Math.abs(angular - 180));
+                }
+                else {
+                    coste.add(Math.abs(angular + 180));
+                }
+            }
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
+            }
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
-        if (obstaculoAlcanzable(visual.get(2).get(2), zActual)){
-            coste.add(Math.abs(angular + 45)); 
+        
+        if(xActualDrone < width-1 && yActualDrone > 0){
+            if (obstaculoAlcanzable(visual.get(4).get(2), zActual) && posicionesPasadas.get(xActualDrone+1).get(yActualDrone-1) == 0){
+                coste.add(Math.abs(angular + 135)); 
+            }
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
+            }
+        }
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        
+        if(yActualDrone > 0){
+            if (obstaculoAlcanzable(visual.get(3).get(2), zActual) && posicionesPasadas.get(xActualDrone).get(yActualDrone-1) == 0){
+                coste.add(Math.abs(angular + 90)); 
+            }
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
+            }
+        }
+        else{
+            coste.add(Double.MAX_VALUE); //No se puede alcanzar
+        }
+        
+        if(xActualDrone > 0 && yActualDrone > 0){
+            if (obstaculoAlcanzable(visual.get(2).get(2), zActual) && posicionesPasadas.get(xActualDrone-1).get(yActualDrone-1) == 0){
+                coste.add(Math.abs(angular + 45)); 
+            }
+            else{
+                coste.add(Double.MAX_VALUE); //No se puede alcanzar
+            }
         } 
         else{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         } 
+   
         return coste;
     }
     
@@ -489,7 +555,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             String accion = arrayAcciones.get(0);
             // añadir al objeto
             objeto.add("command","execute");
-            objeto.add("action", arrayAcciones.get(0));
+            objeto.add("action", accion);
             arrayAcciones.remove(0);
             objeto.add("key", key);
 
@@ -508,7 +574,9 @@ public class MyWorldExplorer extends IntegratedAgent{
         else{
             estado = "LOGOUT";
         }
-        
+        /*for(int i = 0; i < width;i++){
+            Info(posicionesPasadas.get(i)+"");
+        }*/
     }
     
     /**
