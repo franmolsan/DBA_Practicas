@@ -238,15 +238,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             else {  
                 if (!comprobarEnergia(energia, alturaDrone)){
                     int siguientePosicion = calcularSiguientePosicion(visual,angular, zActual);
-
-                    if(siguientePosicion == -1){
-                        Info("COSTES MÁXIMOS");
-                        inicializarMemoria();
-                        siguientePosicion = calcularSiguientePosicion(visual,angular, zActual);
-                    }
-                    
-                    // decision = calcularMejorCoste(coste);
-
+             
                     calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                 }
 
@@ -255,6 +247,10 @@ public class MyWorldExplorer extends IntegratedAgent{
         }
     }
     
+    /**
+    * @author: Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Método que permite inicializar la memoria del mapa
+    */
     private void inicializarMemoria(){
         posicionesPasadas.clear();
         for (int i=0; i<height; i++){
@@ -278,24 +274,6 @@ public class MyWorldExplorer extends IntegratedAgent{
             necesitaRecargar = true;
         }
         return necesitaRecargar;
-    }
-    
-    /**
-    * @author: Pedro Serrano Pérez
-    * @description: Devuelve un entero que representa la mejor casilla a la que se puede desplazar el drone
-    */
-    private int calcularMejorCoste(ArrayList<Double> coste){
-        int mejor = -1;
-        double mejorCoste = Double.MAX_VALUE;
-        
-        for (int i=0; i<coste.size(); i++){
-            Info ("Coste de acción " + i + " : " + coste.get(i));
-            if (coste.get(i) < mejorCoste){
-                mejorCoste = coste.get(i);
-                mejor = i;
-            }
-        }
-        return mejor;
     }
     
     /**
@@ -330,21 +308,11 @@ public class MyWorldExplorer extends IntegratedAgent{
 
     }
     
-    private boolean costesMaximos(ArrayList<Double> l){
-        for (int i = 0; i < l.size(); i++) {
-            if(l.get(i) < Double.MAX_VALUE)
-                return false;
-        }
-        
-        return true;
-    }
-    
     /**
-    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Calcula un coste que busca el mejor ángulo para encontrar al objetivo y evita casillas inalcanzables
     */
     private Integer calcularSiguientePosicion(ArrayList<ArrayList<Integer>> visual, double angular, int zActual){
-        ArrayList <Double> coste = new ArrayList<>();
         int siguientePosicion = -1;
         double minimo = Double.MAX_VALUE;
         double costeAccion = 0;
@@ -355,71 +323,42 @@ public class MyWorldExplorer extends IntegratedAgent{
                     minimo = costeAccion;
                     siguientePosicion = 0;
                 }
-                coste.add(Math.abs(angular));
-            }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
             }
         } 
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
-        }
         
         if(yActualDrone > 0 && xActualDrone < height-1){
             if (obstaculoAlcanzable(visual.get(2).get(4), zActual) && posicionesPasadas.get(yActualDrone-1).get(xActualDrone+1) == 0 ){
-                coste.add(Math.abs(angular - 45));
                 costeAccion = Math.abs(Math.abs(angular - 45));
                 if (costeAccion < minimo){
                     minimo = costeAccion;
                     siguientePosicion = 1;
                 }
             }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
-            }
-        }
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
         if(xActualDrone < width-1){
             if (obstaculoAlcanzable(visual.get(3).get(4), zActual) && posicionesPasadas.get(yActualDrone).get(xActualDrone+1) == 0 ){
-                coste.add(Math.abs(angular - 90)); 
                 costeAccion = Math.abs(Math.abs(angular - 90));
                 if (costeAccion < minimo){
                     minimo = costeAccion;
                     siguientePosicion = 2;
                 }
             }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
-            }
         } 
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
-        }
         
         if(yActualDrone < height-1 && xActualDrone < width-1){
             if (obstaculoAlcanzable(visual.get(4).get(4), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone+1) == 0 ){
-                coste.add(Math.abs(angular - 135));
                 costeAccion = Math.abs(Math.abs(angular - 135));
                 if (costeAccion < minimo){
                     minimo = costeAccion;
                     siguientePosicion = 3;
                 }
             }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
-            }
-        }
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
         if(yActualDrone < height-1){
             if (obstaculoAlcanzable(visual.get(4).get(3), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone) == 0 ){
                 if (angular > 0){
-                    coste.add(Math.abs(angular - 180));
                     costeAccion = Math.abs(Math.abs(angular - 180));
                     if (costeAccion < minimo){
                         minimo = costeAccion;
@@ -427,7 +366,6 @@ public class MyWorldExplorer extends IntegratedAgent{
                     }
                 }
                 else {
-                    coste.add(Math.abs(angular + 180));
                     costeAccion = Math.abs(Math.abs(angular + 180));
                     if (costeAccion < minimo){
                         minimo = costeAccion;
@@ -435,34 +373,20 @@ public class MyWorldExplorer extends IntegratedAgent{
                     }
                 }
             }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
-            }
         } 
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
-        }
         
         if(yActualDrone < height-1 && xActualDrone > 0){
             if (obstaculoAlcanzable(visual.get(4).get(2), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone-1) == 0){
-                coste.add(Math.abs(angular + 135)); 
                 costeAccion = Math.abs(Math.abs(angular + 135));
                     if (costeAccion < minimo){
                         minimo = costeAccion;
                         siguientePosicion = 5;
                     }
             }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
-            }
-        }
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
         if(xActualDrone > 0){
             if (obstaculoAlcanzable(visual.get(3).get(2), zActual) && posicionesPasadas.get(yActualDrone).get(xActualDrone-1) == 0){
-                coste.add(Math.abs(angular + 90));
                 costeAccion = Math.abs(Math.abs(angular + 90));
                     if (costeAccion < minimo){
                         minimo = costeAccion;
@@ -470,29 +394,16 @@ public class MyWorldExplorer extends IntegratedAgent{
                     }
                 
             }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
-            }
-        }
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
         if(yActualDrone > 0 && xActualDrone > 0){
             if (obstaculoAlcanzable(visual.get(2).get(2), zActual) && posicionesPasadas.get(yActualDrone-1).get(xActualDrone-1) == 0){
-                coste.add(Math.abs(angular + 45));
                 costeAccion = Math.abs(Math.abs(angular + 45));
                     if (costeAccion < minimo){
                         minimo = costeAccion;
                         siguientePosicion = 7;
                     }
             }
-            else{
-                coste.add(Double.MAX_VALUE); //No se puede alcanzar
-            }
-        } 
-        else{
-            coste.add(Double.MAX_VALUE); //No se puede alcanzar
         } 
    
         return siguientePosicion;
@@ -648,15 +559,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         else{
             estado = "LOGOUT";
         }
-//        for(int i = 0; i < width;i++){
-//            Info(posicionesPasadas.get(i)+"");
-//        }
-//        for (int i = 0; i < width; i++) {
-//            for (int j = 0; j < height; j++) {
-//                System.out.print(posicionesPasadas.get(i).get(j)+"");
-//            }
-//            System.out.print("\n");
-//        }
     }
     
     /**
