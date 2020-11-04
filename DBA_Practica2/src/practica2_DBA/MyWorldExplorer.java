@@ -117,7 +117,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World6");
+        objeto.add("world","World3");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -535,7 +535,11 @@ public class MyWorldExplorer extends IntegratedAgent{
         
         // si el obstáculo está por debajo de la altura máxima, es alcanzable
         if (alcanzable && alturaObstaculo > zActual){
-            int vecesASubir = (alturaObstaculo - zActual)/5 + 1; // siempre hay que subir una vez
+            int vecesASubir = (alturaObstaculo - zActual)/5; // siempre hay que subir una vez
+            
+            if ((alturaObstaculo-zActual)%5 != 0){
+                vecesASubir += 1;
+            }
             int alturaASubir = vecesASubir * 5;
             
             // comprobar que es posible ascender sin superar la altura máxima.
@@ -569,7 +573,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         for (int i=0; i<veces; i++){
             arrayAcciones.add("moveUP");
         }
-        if (alturaObjetivo >= 0 && alturaObjetivo <= 5){
+        
+        if (alturaObjetivo%5 != 0){
             arrayAcciones.add("moveUP");
         }
     }
