@@ -117,7 +117,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World3");
+        objeto.add("world","World2");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -382,7 +382,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
-        if(xActualDrone < height-1){
+        if(xActualDrone < width-1){
             if (obstaculoAlcanzable(visual.get(3).get(4), zActual) && posicionesPasadas.get(yActualDrone).get(xActualDrone+1) == 0 ){
                 coste.add(Math.abs(angular - 90)); 
                 costeAccion = Math.abs(Math.abs(angular - 90));
@@ -399,7 +399,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
-        if(yActualDrone < width-1 && xActualDrone < height-1){
+        if(yActualDrone < height-1 && xActualDrone < width-1){
             if (obstaculoAlcanzable(visual.get(4).get(4), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone+1) == 0 ){
                 coste.add(Math.abs(angular - 135));
                 costeAccion = Math.abs(Math.abs(angular - 135));
@@ -416,7 +416,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
-        if(yActualDrone < width-1){
+        if(yActualDrone < height-1){
             if (obstaculoAlcanzable(visual.get(4).get(3), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone) == 0 ){
                 if (angular > 0){
                     coste.add(Math.abs(angular - 180));
@@ -443,7 +443,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             coste.add(Double.MAX_VALUE); //No se puede alcanzar
         }
         
-        if(yActualDrone < width-1 && xActualDrone > 0){
+        if(yActualDrone < height-1 && xActualDrone > 0){
             if (obstaculoAlcanzable(visual.get(4).get(2), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone-1) == 0){
                 coste.add(Math.abs(angular + 135)); 
                 costeAccion = Math.abs(Math.abs(angular + 135));
