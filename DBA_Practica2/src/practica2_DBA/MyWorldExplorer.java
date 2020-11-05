@@ -29,7 +29,8 @@ public class MyWorldExplorer extends IntegratedAgent{
     boolean rodeoIniciado = false;
     int thermalInicioRodeo = Integer.MAX_VALUE;
     boolean rodeoDecidido = false;
-   
+    boolean rodeoDcha = true;
+    
     ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
     int anguloActualDrone;
     int xActualDrone;
@@ -250,7 +251,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
             else {  
                 if (!comprobarEnergia(energia, alturaDrone)){
-                    int siguientePosicion = calcularSiguientePosicion(visual,angular, zActual);
+                    int siguientePosicion = calcularSiguientePosicion(visual, angular, zActual);
                     if (obstaculoAlcanzable(visual.get(3).get(4), zActual)){
                         rodeoDecidido = false;
                         rodeoIniciado = false;
@@ -258,7 +259,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                     else{
-                        siguientePosicion = decidirDireccionRodeo(visual,angular, zActual);
+                        siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, siguientePosicion);
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                 }
@@ -440,6 +441,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         int casillaIzq = -1;
         boolean casillaDchaLibre = false;
         boolean casillaIzqLibre = false;
+        int thermalDcha = 0;
+        int thermalIzq = 0;
         
         ArrayList<Integer> casillasProximas = new ArrayList<Integer>();
         casillasProximas.add(visual.get(2).get(3));
@@ -450,6 +453,18 @@ public class MyWorldExplorer extends IntegratedAgent{
         casillasProximas.add(visual.get(4).get(2));
         casillasProximas.add(visual.get(3).get(2));
         casillasProximas.add(visual.get(2).get(2));
+        
+        ArrayList<Integer> thermalCasillasProximas = new ArrayList<Integer>();
+        thermalCasillasProximas.add(thermal.get(2).get(3));
+        thermalCasillasProximas.add(thermal.get(2).get(4));
+        thermalCasillasProximas.add(thermal.get(3).get(4));
+        thermalCasillasProximas.add(thermal.get(4).get(4));
+        thermalCasillasProximas.add(thermal.get(4).get(3));
+        thermalCasillasProximas.add(thermal.get(4).get(2));
+        thermalCasillasProximas.add(thermal.get(3).get(2));
+        thermalCasillasProximas.add(thermal.get(2).get(2));
+        
+        
         if (!rodeoIniciado){
             rodeoIniciado = true;
             thermalInicioRodeo = thermal.get(3).get(3);
@@ -458,15 +473,44 @@ public class MyWorldExplorer extends IntegratedAgent{
             for (int i=1; i<=4 && !casillaDchaLibre; i++){
                 casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
                 if (casillaDchaLibre){
-                    casillaDcha = i;
+                    casillaDcha = (casillaDeseada + i) % casillasProximas.size();
                 }
             }
             
             //Izq
-            for (int i=1; i<=3 && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual);
-                if (casillaDchaLibre){
-                    casillaDcha = i;
+            for (int i=1; i<=3 && !casillaIzqLibre; i++){
+                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual);
+                if (casillaIzqLibre){
+                    casillaIzq = ((casillaDeseada - i)+ casillasProximas.size());
+                }
+            }
+            
+            if (thermalCasillasProximas.get(casillasProximas.get(casillaDcha)) <= thermalCasillasProximas.get(casillasProximas.get(casillaIzq))){
+                siguientePosicion = casillaDcha;
+                rodeoDcha = true;
+            }
+            else{
+                siguientePosicion = casillaIzq;
+                 rodeoDcha = false;
+            }
+            boolean rodeoDecidido = false;
+            
+        }
+        else{
+            if (rodeoDcha){
+                for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
+                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
+                    if (casillaDchaLibre){
+                        siguientePosicion = (casillaDeseada + i) % casillasProximas.size();
+                    }
+                }
+            }
+            else{
+                for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
+                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
+                    if (casillaDchaLibre){
+                        siguientePosicion = (casillaDeseada + i) % casillasProximas.size();
+                    }
                 }
             }
         }
