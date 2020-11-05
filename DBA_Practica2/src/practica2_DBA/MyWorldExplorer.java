@@ -472,7 +472,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         thermalCasillasProximas.add(thermal.get(3).get(2));
         thermalCasillasProximas.add(thermal.get(2).get(2));
         
-        
         if (!rodeoIniciado){
             rodeoIniciado = true;
             thermalInicioRodeo = thermal.get(3).get(3);
@@ -509,6 +508,10 @@ public class MyWorldExplorer extends IntegratedAgent{
             
         }
         else{
+            if (thermalInicioRodeo < thermal.get(3).get(3) && !rodeoDecidido){
+                rodeoDcha = !rodeoDcha;
+                rodeoDecidido = true;
+            }
             if (rodeoDcha){
                 Info("Rodeo por la derecha");
                 for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
@@ -846,34 +849,6 @@ public class MyWorldExplorer extends IntegratedAgent{
                 }
             }
         }
-        
-        
-        /*
-        if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
-            obs = 0;
-        }
-        else if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
-            obs = 1;
-        }
-        else if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
-            obs = 2;
-        }
-        else if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
-            obs = 3;
-        }
-        else if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
-            obs = 4;
-        }
-        else if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
-            obs = 5;
-        }
-        else if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
-            obs = 6;
-        }
-        else if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
-            obs = 7;
-        }
-        */
 
         return obs;
     }
