@@ -122,7 +122,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World8");
+        objeto.add("world","World9");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -256,7 +256,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                     ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
                     
                     if (obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual)
-                        && !casillaRecorrida(siguientePosicion)){
+                        && !casillaRecorrida(siguientePosicion) && !vuelveAtras(siguientePosicion)){
                         Info("GUIADO ANGULAR");
                         Info("Posicion pasada memoria: "+posicionesPasadas.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)));
                         rodeoDecidido = false;
@@ -265,7 +265,10 @@ public class MyWorldExplorer extends IntegratedAgent{
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                     else{
-                        Info("GUIADO DOBLE MANO");
+                        Info("GUIADO RODEO");
+                        if (vuelveAtras(siguientePosicion)){
+                            siguientePosicion = obstaculoARodear(visual, zActual, anguloDrone);
+                        }
                         siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, siguientePosicion);
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
@@ -476,7 +479,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             
             //Dcha
             for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);
+                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual)
+                        && !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
                 if (casillaDchaLibre){
                     casillaDcha = ((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size();
                     Info("Casilla dcha "+ casillaDcha);
@@ -497,10 +501,10 @@ public class MyWorldExplorer extends IntegratedAgent{
                 rodeoDcha = true;
             }
             else{
-                siguientePosicion = casillaIzq;
-                 rodeoDcha = false;
+                siguientePosicion = casillaDcha;
+                 rodeoDcha = true;
             }
-            //boolean rodeoDecidido = false;
+            boolean rodeoDecidido = false;
             
         }
         else{
@@ -508,7 +512,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                 Info("Rodeo por la derecha");
                 for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
                     casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual)
-                            && !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
+                            && !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
                     if (casillaDchaLibre){
                         siguientePosicion = ((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size();
                     }
@@ -686,7 +690,82 @@ public class MyWorldExplorer extends IntegratedAgent{
         return casilla;
     } 
     
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: calcula si el drone puede volver atrás por celdas adyacentes
+    */
+    private boolean vuelveAtras(int casillaDeseada){
+        boolean vuelveAtras = false;
+        
+        if (casillaDeseada == 0){
+            vuelveAtras = casillaRecorrida(7) || casillaRecorrida(1) || casillaRecorrida(2) || casillaRecorrida(6);
+        }
+        else if (casillaDeseada == 1){
+            vuelveAtras = casillaRecorrida(0) || casillaRecorrida(2) || casillaRecorrida(7) || casillaRecorrida(3);
+        }
+        else if (casillaDeseada == 2){
+            vuelveAtras = casillaRecorrida(1) || casillaRecorrida(3) || casillaRecorrida(0) || casillaRecorrida(4);
+        }
+        else if (casillaDeseada == 3){
+            vuelveAtras = casillaRecorrida(2) || casillaRecorrida(4) || casillaRecorrida(1) || casillaRecorrida(5);
+        }
+        else if (casillaDeseada == 4){
+            vuelveAtras = casillaRecorrida(3) || casillaRecorrida(5) || casillaRecorrida(6) || casillaRecorrida(2);
+        }
+        else if (casillaDeseada == 5){
+            vuelveAtras = casillaRecorrida(4) || casillaRecorrida(6) || casillaRecorrida(7) || casillaRecorrida(3);
+        }
+        else if (casillaDeseada == 6){
+            vuelveAtras = casillaRecorrida(5) || casillaRecorrida(7) || casillaRecorrida(0) || casillaRecorrida(4);
+        }
+        else if (casillaDeseada == 7){
+            vuelveAtras = casillaRecorrida(6) || casillaRecorrida(0) || casillaRecorrida(1) || casillaRecorrida(5);
+        }
+   
+        return vuelveAtras;
+    }
     
+     /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: calcula la posición del obstáculo a rodear
+    */
+    private int obstaculoARodear(ArrayList<ArrayList<Integer>> visual, int zActual, int anguloDrone){
+        int obs = -1;
+        
+        for (int i=1; i<=8; i++){
+            if (anguloDrone*i == 45){
+                
+            }
+        }
+        
+        if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
+            obs = 0;
+        }
+        else if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
+            obs = 1;
+        }
+        else if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
+            obs = 2;
+        }
+        else if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
+            obs = 3;
+        }
+        else if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
+            obs = 4;
+        }
+        else if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
+            obs = 5;
+        }
+        else if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
+            obs = 6;
+        }
+        else if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
+            obs = 7;
+        }
+        
+        return obs;
+    }
+            
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @params: Mensaje es el mensaje que se envía al servidor
