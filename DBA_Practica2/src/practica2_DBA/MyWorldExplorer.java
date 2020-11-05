@@ -30,6 +30,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     double thermalInicioRodeo = Double.MAX_VALUE;
     boolean rodeoDecidido = false;
     boolean rodeoDcha = true;
+    int numPasos = 0;
     
     ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
     int anguloActualDrone;
@@ -114,7 +115,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         vector_sensores.add("gps");
         vector_sensores.add("distance");
         vector_sensores.add("angular");
-        vector_sensores.add("lidar");
+        //vector_sensores.add("lidar");
         vector_sensores.add("energy");
         vector_sensores.add("visual");
         vector_sensores.add("compass");
@@ -122,7 +123,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World8");
+        objeto.add("world","World9");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -195,7 +196,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         HashMap<String,JsonArray> mapaSensores = leerSensores(msgRespuesta);
         
         double distancia = mapaSensores.get("distance").asArray().get(0).asDouble();
-        int alturaDrone = mapaSensores.get("lidar").asArray().get(3).asArray().get(3).asInt();
+        
         int energia = mapaSensores.get("energy").asArray().get(0).asInt();
         int vivo = mapaSensores.get("alive").asArray().get(0).asInt();
         double angular = mapaSensores.get("angular").asArray().get(0).asDouble();
@@ -205,6 +206,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         int yActual = mapaSensores.get("gps").asArray().get(0).asArray().get(1).asInt();
         yActualDrone = yActual;
         int zActual = mapaSensores.get("gps").asArray().get(0).asArray().get(2).asInt();
+       
+        /*
         ArrayList <ArrayList<Integer>> lidar = new ArrayList<>();
         // crear matriz para lidar
         for (int i=0; i<7; i++){
@@ -213,6 +216,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                 lidar.get(i).add(mapaSensores.get("lidar").asArray().get(i).asArray().get(j).asInt());
             }
         }
+        */
         ArrayList <ArrayList<Integer>> visual = new ArrayList<>();
         // crear matriz para visual
         for (int i=0; i<7; i++){
@@ -222,6 +226,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
         }
         
+        int alturaDrone = zActual - visual.get(3).get(3);//mapaSensores.get("lidar").asArray().get(3).asArray().get(3).asInt();
+                
         ArrayList <ArrayList<Double>> thermal = new ArrayList<>();
         // crear matriz para thermal
         for (int i=0; i<7; i++){
@@ -254,9 +260,9 @@ public class MyWorldExplorer extends IntegratedAgent{
                     
                     int siguientePosicion = calcularSiguientePosicion(visual, angular, zActual);
                     ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
-                    
-                    if (obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual)
-                        && !casillaRecorrida(siguientePosicion) && !vuelveAtras(siguientePosicion)){
+                    int obstaculo = obstaculoARodear(visual, zActual, anguloDrone);
+                    if ((obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual)
+                        && !casillaRecorrida(siguientePosicion) && !vuelveAtras(siguientePosicion)) || obstaculo == -1){
                         Info("GUIADO ANGULAR");
                         Info("Posicion pasada memoria: "+posicionesPasadas.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)));
                         rodeoDecidido = false;
@@ -267,7 +273,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                     else{
                         Info("GUIADO RODEO");
                         if (vuelveAtras(siguientePosicion)){
-                            siguientePosicion = obstaculoARodear(visual, zActual, anguloDrone);
+                            siguientePosicion = obstaculo;
                         }
                         siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, siguientePosicion);
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
@@ -463,14 +469,14 @@ public class MyWorldExplorer extends IntegratedAgent{
         casillasProximas.add(visual.get(2).get(2));
         
         ArrayList<Double> thermalCasillasProximas = new ArrayList<Double>();
-        thermalCasillasProximas.add(thermal.get(2).get(3));
-        thermalCasillasProximas.add(thermal.get(2).get(4));
-        thermalCasillasProximas.add(thermal.get(3).get(4));
-        thermalCasillasProximas.add(thermal.get(4).get(4));
-        thermalCasillasProximas.add(thermal.get(4).get(3));
-        thermalCasillasProximas.add(thermal.get(4).get(2));
-        thermalCasillasProximas.add(thermal.get(3).get(2));
-        thermalCasillasProximas.add(thermal.get(2).get(2));
+        thermalCasillasProximas.add(thermal.get(0).get(3));
+        thermalCasillasProximas.add(thermal.get(0).get(6));
+        thermalCasillasProximas.add(thermal.get(3).get(6));
+        thermalCasillasProximas.add(thermal.get(6).get(6));
+        thermalCasillasProximas.add(thermal.get(6).get(3));
+        thermalCasillasProximas.add(thermal.get(6).get(0));
+        thermalCasillasProximas.add(thermal.get(3).get(0));
+        thermalCasillasProximas.add(thermal.get(0).get(0));
         
         if (!rodeoIniciado){
             rodeoIniciado = true;
@@ -478,8 +484,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             
             //Dcha
             for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual)
-                        && !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
+                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);
+                        //&& !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
                 if (casillaDchaLibre){
                     casillaDcha = ((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size();
                     Info("Casilla dcha "+ casillaDcha);
@@ -488,8 +494,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             
             //Izq
             for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
-                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual) 
-                        && !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
+                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
+                        //&& !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
                 if (casillaIzqLibre){
                     casillaIzq = (casillaDeseada + i) % casillasProximas.size();
                     Info("Casilla izq "+ casillaIzq);
@@ -504,10 +510,17 @@ public class MyWorldExplorer extends IntegratedAgent{
                 siguientePosicion = casillaIzq;
                  rodeoDcha = false;
             }
-            boolean rodeoDecidido = false;
+            rodeoDecidido = false;
             
         }
         else{
+            if (!rodeoDecidido){
+                numPasos++;
+                if (numPasos > 3){
+                    rodeoDecidido = true;
+                    numPasos = 0;
+                }
+            }
             if (thermalInicioRodeo < thermal.get(3).get(3) && !rodeoDecidido){
                 rodeoDcha = !rodeoDcha;
                 rodeoDecidido = true;
@@ -515,8 +528,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             if (rodeoDcha){
                 Info("Rodeo por la derecha");
                 for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                    casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual)
-                            && !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
+                    casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual);
+                            //&& !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
                     if (casillaDchaLibre){
                         siguientePosicion = ((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size();
                     }
@@ -525,8 +538,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             else{
                 Info("Rodeo por la izquierda");
                 for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
-                    casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()), zActual)
-                            && !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
+                    casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()), zActual);
+                            //&& !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
                     if (casillaIzqLibre){
                         siguientePosicion = (casillaDeseada + i) % casillasProximas.size();
                     }
