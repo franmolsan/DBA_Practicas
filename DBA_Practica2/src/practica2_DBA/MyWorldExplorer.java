@@ -731,38 +731,63 @@ public class MyWorldExplorer extends IntegratedAgent{
     */
     private int obstaculoARodear(ArrayList<ArrayList<Integer>> visual, int zActual, int anguloDrone){
         int obs = -1;
+        int angulo = anguloDrone;
+        boolean encontrado = false;
         
-        for (int i=1; i<=8; i++){
-            if (anguloDrone*i == 45){
-                
+        if (anguloDrone < 0){
+            angulo = angulo + 360;
+        }
+        for (int i=45; i<=360 && !encontrado; i+=45){
+            if (angulo-i == -360){
+                if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
+                    obs = 0;
+                    encontrado = true;
+                }
+            }
+            else if (angulo-i == -45){
+                if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
+                    obs = 1;
+                    encontrado = true;
+                }
+            }
+            else if (angulo-i == -90){
+                if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
+                    obs = 2;
+                    encontrado = true;
+                }
+            }
+            else if (angulo-i == -135){
+                if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
+                    obs = 3;
+                    encontrado = true;
+                }
+            }
+            else if (angulo-i == -180){
+                if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
+                    obs = 4;
+                    encontrado = true;
+                }
+            }
+            else if (angulo-i == -225){
+                if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
+                    obs = 5;
+                    encontrado = true;
+                }
+            }
+            else if (angulo-i == -270){
+                if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
+                    obs = 6;
+                    encontrado = true;
+                }
+            }
+            else if (angulo-i == -315){
+                if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
+                    obs = 7;
+                    encontrado = true;
+                }
             }
         }
-        
-        if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
-            obs = 0;
-        }
-        else if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
-            obs = 1;
-        }
-        else if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
-            obs = 2;
-        }
-        else if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
-            obs = 3;
-        }
-        else if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
-            obs = 4;
-        }
-        else if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
-            obs = 5;
-        }
-        else if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
-            obs = 6;
-        }
-        else if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
-            obs = 7;
-        }
-        
+
         return obs;
     }
             
