@@ -123,7 +123,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World9");
+        objeto.add("world","Batman@Playground1");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -256,7 +256,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                 objetivoAlcanzado = true;
             }
             else {  
-                if (!comprobarEnergia(energia, alturaDrone)){
+                if (!comprobarEnergia(energia, alturaDrone, distancia)){
                     
                     int siguientePosicion = calcularSiguientePosicion(visual, angular, zActual);
                     ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
@@ -304,9 +304,9 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Método que permite decir que acción realizar tras leer la información del mundo
     */
-    private boolean comprobarEnergia(int energia, int alturaDrone){
+    private boolean comprobarEnergia(int energia, int alturaDrone, double distancia){
         boolean necesitaRecargar = false;  
-        if (energia <= 270){
+        if (energia <= 200){
             bajarAlSuelo(alturaDrone);
             arrayAcciones.add("recharge");
             necesitaRecargar = true;
@@ -612,19 +612,19 @@ public class MyWorldExplorer extends IntegratedAgent{
         if(posicion == 0 && yActualDrone > 0){
             recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone)) == 1;
         } 
-        else if(posicion == 1 && yActualDrone > 0 && xActualDrone < width){
+        else if(posicion == 1 && yActualDrone > 0 && xActualDrone < width-1){
             recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone+1)) == 1;
         } 
-        else if(posicion == 2 && xActualDrone < width){
+        else if(posicion == 2 && xActualDrone < width-1){
             recorrida = (posicionesPasadas.get(yActualDrone).get(xActualDrone+1)) == 1;
         } 
-        else if(posicion == 3 && yActualDrone < height && xActualDrone < width){
+        else if(posicion == 3 && yActualDrone < height-1 && xActualDrone < width-1){
             recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone+1)) == 1;
         } 
-        else if(posicion == 4 && yActualDrone < height){
+        else if(posicion == 4 && yActualDrone < height-1){
             recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone)) == 1;
         } 
-        else if(posicion == 5 && yActualDrone < height && xActualDrone > 0){
+        else if(posicion == 5 && yActualDrone < height-1 && xActualDrone > 0){
             recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone-1)) == 1;
         } 
         else if(posicion == 6 && xActualDrone > 0){
