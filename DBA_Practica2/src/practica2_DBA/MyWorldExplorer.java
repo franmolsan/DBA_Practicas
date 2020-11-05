@@ -441,8 +441,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         int casillaIzq = -1;
         boolean casillaDchaLibre = false;
         boolean casillaIzqLibre = false;
-        int thermalDcha = 0;
-        int thermalIzq = 0;
         
         ArrayList<Integer> casillasProximas = new ArrayList<Integer>();
         casillasProximas.add(visual.get(2).get(3));
