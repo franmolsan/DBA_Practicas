@@ -27,7 +27,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     ACLMessage ultimoMensaje;
     boolean objetivoAlcanzado = false;
     boolean rodeoIniciado = false;
-    int thermalInicioRodeo = Integer.MAX_VALUE;
+    double thermalInicioRodeo = Double.MAX_VALUE;
     boolean rodeoDecidido = false;
     boolean rodeoDcha = true;
     
@@ -122,7 +122,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World2");
+        objeto.add("world","World8");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -222,12 +222,12 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
         }
         
-        ArrayList <ArrayList<Integer>> thermal = new ArrayList<>();
+        ArrayList <ArrayList<Double>> thermal = new ArrayList<>();
         // crear matriz para thermal
         for (int i=0; i<7; i++){
-            visual.add (new ArrayList <Integer> ());
+            thermal.add (new ArrayList <Double> ());
             for (int j=0;j<7;j++){
-                visual.get(i).add(mapaSensores.get("thermal").asArray().get(i).asArray().get(j).asInt());
+                thermal.get(i).add(mapaSensores.get("thermal").asArray().get(i).asArray().get(j).asDouble());
             }
         }
         
@@ -251,14 +251,21 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
             else {  
                 if (!comprobarEnergia(energia, alturaDrone)){
+                    
                     int siguientePosicion = calcularSiguientePosicion(visual, angular, zActual);
-                    if (obstaculoAlcanzable(visual.get(3).get(4), zActual)){
+                    ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
+                    
+                    if (obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual)
+                        && !casillaRecorrida(siguientePosicion)){
+                        Info("GUIADO ANGULAR");
+                        Info("Posicion pasada memoria: "+posicionesPasadas.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)));
                         rodeoDecidido = false;
                         rodeoIniciado = false;
-                        thermalInicioRodeo = Integer.MAX_VALUE;
+                        thermalInicioRodeo = Double.MAX_VALUE;
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                     else{
+                        Info("GUIADO DOBLE MANO");
                         siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, siguientePosicion);
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
@@ -435,7 +442,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: 
     */
-    private Integer decidirDireccionRodeo(ArrayList<ArrayList<Integer>> visual, ArrayList<ArrayList<Integer>> thermal, int zActual, int casillaDeseada){
+    private Integer decidirDireccionRodeo(ArrayList<ArrayList<Integer>> visual, ArrayList<ArrayList<Double>> thermal, int zActual, int casillaDeseada){
         int siguientePosicion = -1;
         int casillaDcha = -1;
         int casillaIzq = -1;
@@ -452,7 +459,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         casillasProximas.add(visual.get(3).get(2));
         casillasProximas.add(visual.get(2).get(2));
         
-        ArrayList<Integer> thermalCasillasProximas = new ArrayList<Integer>();
+        ArrayList<Double> thermalCasillasProximas = new ArrayList<Double>();
         thermalCasillasProximas.add(thermal.get(2).get(3));
         thermalCasillasProximas.add(thermal.get(2).get(4));
         thermalCasillasProximas.add(thermal.get(3).get(4));
@@ -468,22 +475,24 @@ public class MyWorldExplorer extends IntegratedAgent{
             thermalInicioRodeo = thermal.get(3).get(3);
             
             //Dcha
-            for (int i=1; i<=4 && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
+            for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
+                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);
                 if (casillaDchaLibre){
-                    casillaDcha = (casillaDeseada + i) % casillasProximas.size();
+                    casillaDcha = ((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size();
+                    Info("Casilla dcha "+ casillaDcha);
                 }
             }
             
             //Izq
-            for (int i=1; i<=3 && !casillaIzqLibre; i++){
-                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual);
+            for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
+                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
                 if (casillaIzqLibre){
-                    casillaIzq = ((casillaDeseada - i)+ casillasProximas.size());
+                    casillaIzq = (casillaDeseada + i) % casillasProximas.size();
+                    Info("Casilla izq "+ casillaIzq);
                 }
             }
-            
-            if (thermalCasillasProximas.get(casillasProximas.get(casillaDcha)) <= thermalCasillasProximas.get(casillasProximas.get(casillaIzq))){
+
+            if (thermalCasillasProximas.get(casillaDcha) <= thermalCasillasProximas.get(casillaIzq)){
                 siguientePosicion = casillaDcha;
                 rodeoDcha = true;
             }
@@ -491,22 +500,26 @@ public class MyWorldExplorer extends IntegratedAgent{
                 siguientePosicion = casillaIzq;
                  rodeoDcha = false;
             }
-            boolean rodeoDecidido = false;
+            //boolean rodeoDecidido = false;
             
         }
         else{
             if (rodeoDcha){
+                Info("Rodeo por la derecha");
                 for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
+                    casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual)
+                            && !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
                     if (casillaDchaLibre){
-                        siguientePosicion = (casillaDeseada + i) % casillasProximas.size();
+                        siguientePosicion = ((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size();
                     }
                 }
             }
             else{
-                for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
-                    if (casillaDchaLibre){
+                Info("Rodeo por la izquierda");
+                for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
+                    casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()), zActual)
+                            && !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
+                    if (casillaIzqLibre){
                         siguientePosicion = (casillaDeseada + i) % casillasProximas.size();
                     }
                 }
@@ -570,6 +583,40 @@ public class MyWorldExplorer extends IntegratedAgent{
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: Comprueba si una casilla se ha recorrido anteriormente
+    */
+    private boolean casillaRecorrida(int posicion){
+        boolean recorrida = false;
+
+        if(posicion == 0){
+            recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone)) == 1;
+        } 
+        else if(posicion == 1){
+            recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone+1)) == 1;
+        } 
+        else if(posicion == 2){
+            recorrida = (posicionesPasadas.get(yActualDrone).get(xActualDrone+1)) == 1;
+        } 
+        else if(posicion == 3){
+            recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone+1)) == 1;
+        } 
+        else if(posicion == 4){
+            recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone)) == 1;
+        } 
+        else if(posicion == 5){
+            recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone-1)) == 1;
+        } 
+        else if(posicion == 6){
+            recorrida = (posicionesPasadas.get(yActualDrone).get(xActualDrone-1)) == 1;
+        } 
+        else if(posicion == 7){
+            recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone-1)) == 1;
+        } 
+        return recorrida;
+    }
+    
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Añade las acciones necesarias para que el dron se pose en la superficie
     */
     private void bajarAlSuelo(int alturaDrone){
@@ -596,6 +643,49 @@ public class MyWorldExplorer extends IntegratedAgent{
             arrayAcciones.add("moveUP");
         }
     }
+    
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
+    * @description: devuelve una casilla en función de la posición que se le pasa por parámetro
+    */
+    private ArrayList<Integer> devolverCasillaAlrededor(int posicion){
+        ArrayList<Integer> casilla = new ArrayList <> ();
+        
+        if (posicion == 0){
+            casilla.add(2);
+            casilla.add(3);
+        }
+        else if (posicion == 1){
+            casilla.add(2);
+            casilla.add(4);
+        }
+        else if (posicion == 2){
+            casilla.add(3);
+            casilla.add(4);
+        }
+        else if (posicion == 3){
+            casilla.add(4);
+            casilla.add(4);
+        }
+        else if (posicion == 4){
+            casilla.add(4);
+            casilla.add(3);
+        }
+        else if (posicion == 5){
+            casilla.add(4);
+            casilla.add(2);
+        }
+        else if (posicion == 6){
+            casilla.add(3);
+            casilla.add(2);
+        }
+        else if (posicion == 7){
+            casilla.add(2);
+            casilla.add(2);
+        }
+        return casilla;
+    } 
+    
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
