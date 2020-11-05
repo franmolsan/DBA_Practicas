@@ -122,7 +122,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World9");
+        objeto.add("world","World8");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -489,7 +489,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             
             //Izq
             for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
-                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
+                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual) 
+                        && !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
                 if (casillaIzqLibre){
                     casillaIzq = (casillaDeseada + i) % casillasProximas.size();
                     Info("Casilla izq "+ casillaIzq);
@@ -501,8 +502,8 @@ public class MyWorldExplorer extends IntegratedAgent{
                 rodeoDcha = true;
             }
             else{
-                siguientePosicion = casillaDcha;
-                 rodeoDcha = true;
+                siguientePosicion = casillaIzq;
+                 rodeoDcha = false;
             }
             boolean rodeoDecidido = false;
             
@@ -592,30 +593,33 @@ public class MyWorldExplorer extends IntegratedAgent{
     private boolean casillaRecorrida(int posicion){
         boolean recorrida = false;
 
-        if(posicion == 0){
+        if(posicion == 0 && yActualDrone > 0){
             recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone)) == 1;
         } 
-        else if(posicion == 1){
+        else if(posicion == 1 && yActualDrone > 0 && xActualDrone < width){
             recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone+1)) == 1;
         } 
-        else if(posicion == 2){
+        else if(posicion == 2 && xActualDrone < width){
             recorrida = (posicionesPasadas.get(yActualDrone).get(xActualDrone+1)) == 1;
         } 
-        else if(posicion == 3){
+        else if(posicion == 3 && yActualDrone < height && xActualDrone < width){
             recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone+1)) == 1;
         } 
-        else if(posicion == 4){
+        else if(posicion == 4 && yActualDrone < height){
             recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone)) == 1;
         } 
-        else if(posicion == 5){
+        else if(posicion == 5 && yActualDrone < height && xActualDrone > 0){
             recorrida = (posicionesPasadas.get(yActualDrone+1).get(xActualDrone-1)) == 1;
         } 
-        else if(posicion == 6){
+        else if(posicion == 6 && xActualDrone > 0){
             recorrida = (posicionesPasadas.get(yActualDrone).get(xActualDrone-1)) == 1;
         } 
-        else if(posicion == 7){
+        else if(posicion == 7 && yActualDrone > 0 && xActualDrone > 0){
             recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone-1)) == 1;
         } 
+        else {
+            recorrida = true;
+        }
         return recorrida;
     }
     
@@ -737,56 +741,139 @@ public class MyWorldExplorer extends IntegratedAgent{
         if (anguloDrone < 0){
             angulo = angulo + 360;
         }
-        for (int i=45; i<=360 && !encontrado; i+=45){
-            if (angulo-i == -360){
-                if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
-                    obs = 0;
-                    encontrado = true;
+        
+        if (rodeoDcha){
+            for (int i=45; i<360 && !encontrado; i+=45){
+                if ((angulo+i)%360 == 0){
+                    if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
+                        obs = 0;
+                        encontrado = true;
+                    }
                 }
-            }
-            else if (angulo-i == -45){
-                if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
-                    obs = 1;
-                    encontrado = true;
+                else if ((angulo+i)%360 == +45){
+                    if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
+                        obs = 1;
+                        encontrado = true;
+                    }
                 }
-            }
-            else if (angulo-i == -90){
-                if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
-                    obs = 2;
-                    encontrado = true;
+                else if ((angulo+i)%360 == +90){
+                    if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
+                        obs = 2;
+                        encontrado = true;
+                    }
                 }
-            }
-            else if (angulo-i == -135){
-                if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
-                    obs = 3;
-                    encontrado = true;
+                else if ((angulo+i)%360 == +135){
+                    if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
+                        obs = 3;
+                        encontrado = true;
+                    }
                 }
-            }
-            else if (angulo-i == -180){
-                if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
-                    obs = 4;
-                    encontrado = true;
+                else if ((angulo+i)%360 == +180){
+                    if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
+                        obs = 4;
+                        encontrado = true;
+                    }
                 }
-            }
-            else if (angulo-i == -225){
-                if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
-                    obs = 5;
-                    encontrado = true;
+                else if ((angulo+i)%360 == +225){
+                    if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
+                        obs = 5;
+                        encontrado = true;
+                    }
                 }
-            }
-            else if (angulo-i == -270){
-                if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
-                    obs = 6;
-                    encontrado = true;
+                else if ((angulo+i)%360 == +270){
+                    if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
+                        obs = 6;
+                        encontrado = true;
+                    }
                 }
-            }
-            else if (angulo-i == -315){
-                if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
-                    obs = 7;
-                    encontrado = true;
+                else if ((angulo+i)%360 == +315){
+                    if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
+                        obs = 7;
+                        encontrado = true;
+                    }
                 }
             }
         }
+        else {
+            for (int i=315; i>0 && !encontrado; i-=45){
+                if ((angulo+i)%360 == 0){
+                    if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
+                        obs = 0;
+                        encontrado = true;
+                    }
+                }
+                else if ((angulo+i)%360 == +45){
+                    if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
+                        obs = 1;
+                        encontrado = true;
+                    }
+                }
+                else if ((angulo+i)%360 == +90){
+                    if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
+                        obs = 2;
+                        encontrado = true;
+                    }
+                }
+                else if ((angulo+i)%360 == +135){
+                    if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
+                        obs = 3;
+                        encontrado = true;
+                    }
+                }
+                else if ((angulo+i)%360 == +180){
+                    if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
+                        obs = 4;
+                        encontrado = true;
+                    }
+                }
+                else if ((angulo+i)%360 == +225){
+                    if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
+                        obs = 5;
+                        encontrado = true;
+                    }
+                }
+                else if ((angulo+i)%360 == +270){
+                    if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
+                        obs = 6;
+                        encontrado = true;
+                    }
+                }
+                else if ((angulo+i)%360 == +315){
+                    if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
+                        obs = 7;
+                        encontrado = true;
+                    }
+                }
+            }
+        }
+        
+        
+        /*
+        if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
+            obs = 0;
+        }
+        else if (!obstaculoAlcanzable(visual.get(2).get(4), zActual)){
+            obs = 1;
+        }
+        else if (!obstaculoAlcanzable(visual.get(3).get(4), zActual)){
+            obs = 2;
+        }
+        else if (!obstaculoAlcanzable(visual.get(4).get(4), zActual)){
+            obs = 3;
+        }
+        else if (!obstaculoAlcanzable(visual.get(4).get(3), zActual)){
+            obs = 4;
+        }
+        else if (!obstaculoAlcanzable(visual.get(4).get(2), zActual)){
+            obs = 5;
+        }
+        else if (!obstaculoAlcanzable(visual.get(3).get(2), zActual)){
+            obs = 6;
+        }
+        else if (!obstaculoAlcanzable(visual.get(2).get(2), zActual)){
+            obs = 7;
+        }
+        */
 
         return obs;
     }
