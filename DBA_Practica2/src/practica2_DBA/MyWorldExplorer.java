@@ -28,6 +28,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     boolean objetivoAlcanzado = false;
     boolean rodeoIniciado = false;
     double thermalInicioRodeo = Double.MAX_VALUE;
+    double distanceAnteriorRodeo = Double.MAX_VALUE;
     boolean rodeoDecidido = false;
     boolean rodeoDcha = true;
     int numPasos = 0;
@@ -123,7 +124,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","Batman@Playground1");
+        objeto.add("world","World2");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -261,6 +262,8 @@ public class MyWorldExplorer extends IntegratedAgent{
                     int siguientePosicion = calcularSiguientePosicion(visual, angular, zActual);
                     ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
                     int obstaculo = obstaculoARodear(visual, zActual, anguloDrone);
+                    Info("Casilla deseada: "+ siguientePosicion);
+                    Info("Pos Obstáculo:" + obstaculo);
                     if ((obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual)
                         && !casillaRecorrida(siguientePosicion) && !vuelveAtras(siguientePosicion)) || obstaculo == -1){
                         Info("GUIADO ANGULAR");
@@ -268,14 +271,18 @@ public class MyWorldExplorer extends IntegratedAgent{
                         rodeoDecidido = false;
                         rodeoIniciado = false;
                         thermalInicioRodeo = Double.MAX_VALUE;
+                        distanceAnteriorRodeo = Double.MAX_VALUE;
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                     else{
+                        Info("OBSTACULO ALCANZABLE: "+ obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual));
+                        Info("!CasillaRecorrida:" + !casillaRecorrida(siguientePosicion));
+                        Info("!VuelveAtras: " + !vuelveAtras(siguientePosicion));
                         Info("GUIADO RODEO");
                         if (vuelveAtras(siguientePosicion)){
                             siguientePosicion = obstaculo;
                         }
-                        siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, siguientePosicion);
+                        siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, distancia, siguientePosicion);
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                 }
@@ -306,7 +313,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     */
     private boolean comprobarEnergia(int energia, int alturaDrone, double distancia){
         boolean necesitaRecargar = false;  
-        if (energia <= 200){
+        if (energia <= 270){
             bajarAlSuelo(alturaDrone);
             arrayAcciones.add("recharge");
             necesitaRecargar = true;
@@ -451,7 +458,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: 
     */
-    private Integer decidirDireccionRodeo(ArrayList<ArrayList<Integer>> visual, ArrayList<ArrayList<Double>> thermal, int zActual, int casillaDeseada){
+    private Integer decidirDireccionRodeo(ArrayList<ArrayList<Integer>> visual, ArrayList<ArrayList<Double>> thermal, int zActual, double distancia, int casillaDeseada){
         int siguientePosicion = -1;
         int casillaDcha = -1;
         int casillaIzq = -1;
@@ -481,6 +488,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         if (!rodeoIniciado){
             rodeoIniciado = true;
             thermalInicioRodeo = thermal.get(3).get(3);
+            distanceAnteriorRodeo = distancia;
             
             //Dcha
             for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
@@ -514,6 +522,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             
         }
         else{
+            
+            /*
             if (!rodeoDecidido){
                 numPasos++;
                 if (numPasos > 3){
@@ -521,10 +531,36 @@ public class MyWorldExplorer extends IntegratedAgent{
                     numPasos = 0;
                 }
             }
+            
             if (thermalInicioRodeo < thermal.get(3).get(3) && !rodeoDecidido){
                 rodeoDcha = !rodeoDcha;
                 rodeoDecidido = true;
             }
+            */
+            if (thermal.get(3).get(3) > thermalInicioRodeo && !rodeoDecidido){
+                numPasos++;
+                if (numPasos > 16){
+                    rodeoDcha = !rodeoDcha;
+                    rodeoDecidido = true;
+                    numPasos = 0;
+                }
+            }
+            else {
+                numPasos = 0;
+            }
+            
+            /*
+            if(distanceAnteriorRodeo>distancia && !rodeoDecidido){
+                numPasos++;
+                if (numPasos > 3){
+                    rodeoDcha = !rodeoDcha;
+                    rodeoDecidido = true;
+                }    
+            }
+            else if (distancia < distanceAnteriorRodeo){
+                numPasos = 0;
+            }*/
+            
             if (rodeoDcha){
                 Info("Rodeo por la derecha");
                 for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
@@ -583,8 +619,9 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Comprueba si el dron puede alcanzar una determinada casilla
     */
     private boolean obstaculoAlcanzable(int alturaObstaculo, int zActual){
-        boolean alcanzable = alturaObstaculo < alturaMax;
-        
+        boolean alcanzable = alturaObstaculo < alturaMax && alturaObstaculo >= 0;
+        Info("Altura obs: "+ alturaObstaculo);
+        Info("Altura max: "+ alturaMax);
         // si el obstáculo está por debajo de la altura máxima, es alcanzable
         if (alcanzable && alturaObstaculo > zActual){
             int vecesASubir = (alturaObstaculo - zActual)/5; // siempre hay que subir una vez
@@ -634,7 +671,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             recorrida = (posicionesPasadas.get(yActualDrone-1).get(xActualDrone-1)) == 1;
         } 
         else {
-            recorrida = true;
+            recorrida = false;
         }
         return recorrida;
     }
@@ -811,7 +848,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
         }
         else {
-            for (int i=315; i>0 && !encontrado; i-=45){
+            for (int i=360; i>0 && !encontrado; i-=45){
                 if ((angulo+i)%360 == 0){
                     if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
                         obs = 0;
