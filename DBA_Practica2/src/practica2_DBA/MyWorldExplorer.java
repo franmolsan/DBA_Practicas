@@ -13,6 +13,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 16;
+    int umbralEnergia = 270;
     String receiver;
     String estado;
     String key = "";
@@ -286,7 +287,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     */
     private boolean comprobarEnergia(int energia, int alturaDrone){
         boolean necesitaRecargar = false;  
-        if (energia <= 270){
+        if (energia <= umbralEnergia){
             bajarAlSuelo(alturaDrone);
             arrayAcciones.add("recharge");
             necesitaRecargar = true;
