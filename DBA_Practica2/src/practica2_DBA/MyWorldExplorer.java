@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class MyWorldExplorer extends IntegratedAgent{
     
     TTYControlPanel myControlPanel;
-
+    int numVecesThermalPuedeEmpeorarSeguidas = 16;
     String receiver;
     String estado;
     String key = "";
@@ -478,7 +478,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             if (!rodeoDecidido){
                 if (thermal.get(3).get(3) > thermalInicioRodeo){ //Si empeora el thermal y no se ha comprometido con una dirección
                     incrementosThermalSeguidos++;
-                    if (incrementosThermalSeguidos > 16){ //Si ha empeorado 16 veces seguidas cambia la dirección de rodeo
+                    if (incrementosThermalSeguidos > numVecesThermalPuedeEmpeorarSeguidas){ //Si ha empeorado 16 veces seguidas cambia la dirección de rodeo
                         rodeoDcha = !rodeoDcha;
                         rodeoDecidido = true;
                         incrementosThermalSeguidos = 0;
