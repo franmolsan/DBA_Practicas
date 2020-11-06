@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class MyWorldExplorer extends IntegratedAgent{
     
-    //TTYControlPanel myControlPanel;
+    TTYControlPanel myControlPanel;
 
     String receiver;
     String estado;
@@ -48,7 +48,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         receiver = this.whoLarvaAgent();
         _exitRequested = false;
         
-        //myControlPanel = new TTYControlPanel(getAID());
+        myControlPanel = new TTYControlPanel(getAID());
     }
 
     /**
@@ -120,7 +120,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","Batman@Playground1");
+        objeto.add("world","Link@Playground1");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -168,8 +168,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        //myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
-        //myControlPanel.fancyShow();
+        myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
+        myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
@@ -253,7 +253,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                     }
                     else{ //Rodea el obstáculo por la derecha o por la izquierda
                         Info("GUIADO RODEO");
-                        if (vuelveAtras(siguientePosicion) || casillaRecorrida(siguientePosicion)){ //Si la razón para rodear es que no se puede volver atrá, se calcula el obstáculo a rodear
+                        if (vuelveAtras(siguientePosicion) || casillaRecorrida(siguientePosicion)){ //Si la razón para rodear es que no se puede volver atrás, se calcula el obstáculo a rodear
                             siguientePosicion = obstaculo;
                         }
                         siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, distancia, siguientePosicion);
@@ -924,7 +924,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Se finaliza la conexión con el servidor
     */
     private void ejecutarFin(){
-        //myControlPanel.close();
+        myControlPanel.close();
         Info ("Bye");
         _exitRequested = true;  
     }
