@@ -30,6 +30,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     boolean rodeoDecidido = false;
     boolean rodeoDcha = true;
     int numPasos = 0;
+    int numPasosTotales = 0;
     
     ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
     int anguloActualDrone;
@@ -120,7 +121,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World2");
+        objeto.add("world","World9");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -258,6 +259,7 @@ public class MyWorldExplorer extends IntegratedAgent{
                         rodeoIniciado = false;
                         thermalInicioRodeo = Double.MAX_VALUE;
                         distanceAnteriorRodeo = Double.MAX_VALUE;
+                        numPasosTotales = 0;
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                     else{ //Rodea el obstáculo por la derecha o por la izquierda
@@ -458,6 +460,8 @@ public class MyWorldExplorer extends IntegratedAgent{
             rodeoIniciado = true;
             thermalInicioRodeo = thermal.get(3).get(3);
             distanceAnteriorRodeo = distancia;
+            numPasos = 0;
+            numPasosTotales = 0;
             
             //Dcha
             for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
@@ -489,17 +493,27 @@ public class MyWorldExplorer extends IntegratedAgent{
             
         }
         else{
-            if (thermal.get(3).get(3) > thermalInicioRodeo && !rodeoDecidido){ //Si empeora el thermal y no se ha comprometido con una dirección
-                numPasos++;
-                if (numPasos > 16){ //Si ha empeorado 16 veces seguidas cambia la dirección de rodeo
-                    rodeoDcha = !rodeoDcha;
-                    rodeoDecidido = true;
-                    numPasos = 0;
+            numPasosTotales++; // aumentar el número de pasos totales
+            if (!rodeoDecidido){
+                Info("Num pasos: "+numPasos);
+                Info("Num pasos totales: "+ numPasosTotales);
+                if (thermal.get(3).get(3) > thermalInicioRodeo){ //Si empeora el thermal y no se ha comprometido con una dirección
+                    numPasos++;
+                    if (numPasos > 69){ //Si ha empeorado 16 veces seguidas cambia la dirección de rodeo
+                        rodeoDcha = !rodeoDcha;
+                        rodeoDecidido = true;
+                        numPasos = 0;
+                    }
+                    if (numPasosTotales > 80){ // si lleva 20 pasos en una dirección, se compromete con ella
+                        rodeoDecidido = true;
+                    }
+                }
+                else if (numPasos > 0){ //Si el thermal no empeora
+                    numPasos=0;
                 }
             }
-            else { //Si el thermal no empeora
-                numPasos = 0;
-            }
+            
+
             
             if (rodeoDcha){
                 Info("Rodeo por la derecha");
