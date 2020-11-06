@@ -6,10 +6,8 @@ import IntegratedAgent.IntegratedAgent;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import com.eclipsesource.json.*;
-import static java.lang.Math.abs;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.AbstractMap;
 
 public class MyWorldExplorer extends IntegratedAgent{
     
@@ -56,7 +54,6 @@ public class MyWorldExplorer extends IntegratedAgent{
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Definción del plainExecute, en el que se realizarán todas la gestión del dron
-    * 
     */
     @Override
     public void plainExecute() {
@@ -116,7 +113,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         vector_sensores.add("gps");
         vector_sensores.add("distance");
         vector_sensores.add("angular");
-        //vector_sensores.add("lidar");
         vector_sensores.add("energy");
         vector_sensores.add("visual");
         vector_sensores.add("compass");
@@ -207,17 +203,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         int yActual = mapaSensores.get("gps").asArray().get(0).asArray().get(1).asInt();
         yActualDrone = yActual;
         int zActual = mapaSensores.get("gps").asArray().get(0).asArray().get(2).asInt();
-       
-        /*
-        ArrayList <ArrayList<Integer>> lidar = new ArrayList<>();
-        // crear matriz para lidar
-        for (int i=0; i<7; i++){
-            lidar.add (new ArrayList <Integer> ());
-            for (int j=0;j<7;j++){
-                lidar.get(i).add(mapaSensores.get("lidar").asArray().get(i).asArray().get(j).asInt());
-            }
-        }
-        */
+
         ArrayList <ArrayList<Integer>> visual = new ArrayList<>();
         // crear matriz para visual
         for (int i=0; i<7; i++){
@@ -227,7 +213,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
         }
         
-        int alturaDrone = zActual - visual.get(3).get(3);//mapaSensores.get("lidar").asArray().get(3).asArray().get(3).asInt();
+        int alturaDrone = zActual - visual.get(3).get(3);
                 
         ArrayList <ArrayList<Double>> thermal = new ArrayList<>();
         // crear matriz para thermal
@@ -259,12 +245,12 @@ public class MyWorldExplorer extends IntegratedAgent{
             else {  
                 if (!comprobarEnergia(energia, alturaDrone, distancia)){
                     
-                    int siguientePosicion = calcularSiguientePosicion(visual, angular, zActual);
+                    int siguientePosicion = calcularSiguientePosicion(angular);
                     ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
                     int obstaculo = obstaculoARodear(visual, zActual, anguloDrone);
                     Info("Casilla deseada: "+ siguientePosicion);
                     Info("Pos Obstáculo:" + obstaculo);
-                    if ((obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual)
+                    if ((obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual) //Puede usar guiado con Angular para ir hacia el objetivo
                         && !casillaRecorrida(siguientePosicion) && !vuelveAtras(siguientePosicion)) || obstaculo == -1){
                         Info("GUIADO ANGULAR");
                         Info("Posicion pasada memoria: "+posicionesPasadas.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)));
@@ -274,12 +260,12 @@ public class MyWorldExplorer extends IntegratedAgent{
                         distanceAnteriorRodeo = Double.MAX_VALUE;
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
-                    else{
+                    else{ //Rodea el obstáculo por la derecha o por la izquierda
                         Info("OBSTACULO ALCANZABLE: "+ obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual));
                         Info("!CasillaRecorrida:" + !casillaRecorrida(siguientePosicion));
                         Info("!VuelveAtras: " + !vuelveAtras(siguientePosicion));
                         Info("GUIADO RODEO");
-                        if (vuelveAtras(siguientePosicion)){
+                        if (vuelveAtras(siguientePosicion)){ //Si la razón para rodear es que no se puede volver atrá, se calcula el obstáculo a rodear
                             siguientePosicion = obstaculo;
                         }
                         siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, distancia, siguientePosicion);
@@ -355,100 +341,83 @@ public class MyWorldExplorer extends IntegratedAgent{
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
-    * @description: Calcula un coste que busca el mejor ángulo para encontrar al objetivo y evita casillas inalcanzables
+    * @description: Calcula la mejor posición a la que el drone puede ir, teniendo en cuenta el ángulo al objetivo
     */
-    private Integer calcularSiguientePosicion(ArrayList<ArrayList<Integer>> visual, double angular, int zActual){
+    private Integer calcularSiguientePosicion(double angular){
         int siguientePosicion = -1;
         double minimo = Double.MAX_VALUE;
         double costeAccion = 0;
         if(yActualDrone > 0){
-            //if (obstaculoAlcanzable(visual.get(2).get(3), zActual) && posicionesPasadas.get(yActualDrone-1).get(xActualDrone) == 0 ){
-                costeAccion = Math.abs(angular);
-                if (costeAccion < minimo){
-                    minimo = costeAccion;
-                    siguientePosicion = 0;
-                }
-            //}
+            costeAccion = Math.abs(angular);
+            if (costeAccion < minimo){
+                minimo = costeAccion;
+                siguientePosicion = 0;
+            }
         } 
         
         if(yActualDrone > 0 && xActualDrone < height-1){
-            //if (obstaculoAlcanzable(visual.get(2).get(4), zActual) && posicionesPasadas.get(yActualDrone-1).get(xActualDrone+1) == 0 ){
-                costeAccion = Math.abs(Math.abs(angular - 45));
-                if (costeAccion < minimo){
-                    minimo = costeAccion;
-                    siguientePosicion = 1;
-                }
-            //}
+            costeAccion = Math.abs(Math.abs(angular - 45));
+            if (costeAccion < minimo){
+                minimo = costeAccion;
+                siguientePosicion = 1;
+            }
         }
         
         if(xActualDrone < width-1){
-            //if (obstaculoAlcanzable(visual.get(3).get(4), zActual) && posicionesPasadas.get(yActualDrone).get(xActualDrone+1) == 0 ){
-                costeAccion = Math.abs(Math.abs(angular - 90));
-                if (costeAccion < minimo){
-                    minimo = costeAccion;
-                    siguientePosicion = 2;
-                }
-            //}
+            costeAccion = Math.abs(Math.abs(angular - 90));
+            if (costeAccion < minimo){
+                minimo = costeAccion;
+                siguientePosicion = 2;
+            }
         } 
         
         if(yActualDrone < height-1 && xActualDrone < width-1){
-            //if (obstaculoAlcanzable(visual.get(4).get(4), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone+1) == 0 ){
-                costeAccion = Math.abs(Math.abs(angular - 135));
-                if (costeAccion < minimo){
-                    minimo = costeAccion;
-                    siguientePosicion = 3;
-                }
-            //}
+            costeAccion = Math.abs(Math.abs(angular - 135));
+            if (costeAccion < minimo){
+                minimo = costeAccion;
+                siguientePosicion = 3;
+            }
         }
         
         if(yActualDrone < height-1){
-            //if (obstaculoAlcanzable(visual.get(4).get(3), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone) == 0 ){
-                if (angular > 0){
-                    costeAccion = Math.abs(Math.abs(angular - 180));
-                    if (costeAccion < minimo){
-                        minimo = costeAccion;
-                        siguientePosicion = 4;
-                    }
+            if (angular > 0){
+                costeAccion = Math.abs(Math.abs(angular - 180));
+                if (costeAccion < minimo){
+                    minimo = costeAccion;
+                    siguientePosicion = 4;
                 }
-                else {
-                    costeAccion = Math.abs(Math.abs(angular + 180));
-                    if (costeAccion < minimo){
-                        minimo = costeAccion;
-                        siguientePosicion = 4;
-                    }
+            }
+            else {
+                costeAccion = Math.abs(Math.abs(angular + 180));
+                if (costeAccion < minimo){
+                    minimo = costeAccion;
+                    siguientePosicion = 4;
                 }
-            //}
+            }
         } 
         
         if(yActualDrone < height-1 && xActualDrone > 0){
-            //if (obstaculoAlcanzable(visual.get(4).get(2), zActual) && posicionesPasadas.get(yActualDrone+1).get(xActualDrone-1) == 0){
-                costeAccion = Math.abs(Math.abs(angular + 135));
-                    if (costeAccion < minimo){
-                        minimo = costeAccion;
-                        siguientePosicion = 5;
-                    }
-            //}
+            costeAccion = Math.abs(Math.abs(angular + 135));
+            if (costeAccion < minimo){
+                minimo = costeAccion;
+                siguientePosicion = 5;
+            }
         }
         
         if(xActualDrone > 0){
-            //if (obstaculoAlcanzable(visual.get(3).get(2), zActual) && posicionesPasadas.get(yActualDrone).get(xActualDrone-1) == 0){
-                costeAccion = Math.abs(Math.abs(angular + 90));
-                    if (costeAccion < minimo){
-                        minimo = costeAccion;
-                        siguientePosicion = 6;
-                    }
-                
-            //}
+            costeAccion = Math.abs(Math.abs(angular + 90));
+            if (costeAccion < minimo){
+                minimo = costeAccion;
+                siguientePosicion = 6;
+            }
         }
         
         if(yActualDrone > 0 && xActualDrone > 0){
-            //if (obstaculoAlcanzable(visual.get(2).get(2), zActual) && posicionesPasadas.get(yActualDrone-1).get(xActualDrone-1) == 0){
-                costeAccion = Math.abs(Math.abs(angular + 45));
-                    if (costeAccion < minimo){
-                        minimo = costeAccion;
-                        siguientePosicion = 7;
-                    }
-            //}
+            costeAccion = Math.abs(Math.abs(angular + 45));
+            if (costeAccion < minimo){
+                minimo = costeAccion;
+                siguientePosicion = 7;
+            }
         } 
    
         return siguientePosicion;
@@ -456,7 +425,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     
      /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
-    * @description: 
+    * @description: Elige hacia qué dirección rodear el obtáculo
     */
     private Integer decidirDireccionRodeo(ArrayList<ArrayList<Integer>> visual, ArrayList<ArrayList<Double>> thermal, int zActual, double distancia, int casillaDeseada){
         int siguientePosicion = -1;
@@ -485,15 +454,14 @@ public class MyWorldExplorer extends IntegratedAgent{
         thermalCasillasProximas.add(thermal.get(3).get(0));
         thermalCasillasProximas.add(thermal.get(0).get(0));
         
-        if (!rodeoIniciado){
+        if (!rodeoIniciado){ //Cuando inicia el rodeo
             rodeoIniciado = true;
             thermalInicioRodeo = thermal.get(3).get(3);
             distanceAnteriorRodeo = distancia;
             
             //Dcha
             for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);
-                        //&& !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
+                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);   
                 if (casillaDchaLibre){
                     casillaDcha = ((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size();
                     Info("Casilla dcha "+ casillaDcha);
@@ -503,7 +471,6 @@ public class MyWorldExplorer extends IntegratedAgent{
             //Izq
             for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
                 casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
-                        //&& !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
                 if (casillaIzqLibre){
                     casillaIzq = (casillaDeseada + i) % casillasProximas.size();
                     Info("Casilla izq "+ casillaIzq);
@@ -522,50 +489,22 @@ public class MyWorldExplorer extends IntegratedAgent{
             
         }
         else{
-            
-            /*
-            if (!rodeoDecidido){
+            if (thermal.get(3).get(3) > thermalInicioRodeo && !rodeoDecidido){ //Si empeora el thermal y no se ha comprometido con una dirección
                 numPasos++;
-                if (numPasos > 3){
-                    rodeoDecidido = true;
-                    numPasos = 0;
-                }
-            }
-            
-            if (thermalInicioRodeo < thermal.get(3).get(3) && !rodeoDecidido){
-                rodeoDcha = !rodeoDcha;
-                rodeoDecidido = true;
-            }
-            */
-            if (thermal.get(3).get(3) > thermalInicioRodeo && !rodeoDecidido){
-                numPasos++;
-                if (numPasos > 16){
+                if (numPasos > 16){ //Si ha empeorado 16 veces seguidas cambia la dirección de rodeo
                     rodeoDcha = !rodeoDcha;
                     rodeoDecidido = true;
                     numPasos = 0;
                 }
             }
-            else {
+            else { //Si el thermal no empeora
                 numPasos = 0;
             }
-            
-            /*
-            if(distanceAnteriorRodeo>distancia && !rodeoDecidido){
-                numPasos++;
-                if (numPasos > 3){
-                    rodeoDcha = !rodeoDcha;
-                    rodeoDecidido = true;
-                }    
-            }
-            else if (distancia < distanceAnteriorRodeo){
-                numPasos = 0;
-            }*/
             
             if (rodeoDcha){
                 Info("Rodeo por la derecha");
                 for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
                     casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual);
-                            //&& !casillaRecorrida(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()); //&& !vuelveAtras(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size());
                     if (casillaDchaLibre){
                         siguientePosicion = ((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size();
                     }
@@ -575,7 +514,6 @@ public class MyWorldExplorer extends IntegratedAgent{
                 Info("Rodeo por la izquierda");
                 for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
                     casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()), zActual);
-                            //&& !casillaRecorrida((casillaDeseada + i) % casillasProximas.size());
                     if (casillaIzqLibre){
                         siguientePosicion = (casillaDeseada + i) % casillasProximas.size();
                     }
@@ -795,7 +733,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             angulo = angulo + 360;
         }
         
-        if (rodeoDcha){
+        if (rodeoDcha){ //Si se está rodeando hacia la derecha, se prioriza el siguiente a la derecha
             for (int i=45; i<360 && !encontrado; i+=45){
                 if ((angulo+i)%360 == 0){
                     if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
@@ -848,7 +786,7 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
         }
         else {
-            for (int i=360; i>0 && !encontrado; i-=45){
+            for (int i=360; i>0 && !encontrado; i-=45){ //Si se está rodeando hacia la izquierda, se prioriza el siguiente a la izquierda
                 if ((angulo+i)%360 == 0){
                     if (!obstaculoAlcanzable(visual.get(2).get(3), zActual)){
                         obs = 0;
