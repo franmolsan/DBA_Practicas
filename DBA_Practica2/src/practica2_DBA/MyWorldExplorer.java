@@ -11,7 +11,7 @@ import java.util.HashMap;
 
 public class MyWorldExplorer extends IntegratedAgent{
     
-    TTYControlPanel myControlPanel;
+    //TTYControlPanel myControlPanel;
 
     String receiver;
     String estado;
@@ -29,8 +29,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     double distanceAnteriorRodeo = Double.MAX_VALUE;
     boolean rodeoDecidido = false;
     boolean rodeoDcha = true;
-    int numPasos = 0;
-    int numPasosTotales = 0;
+    int incrementosThermalSeguidos = 0;
     
     ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
     int anguloActualDrone;
@@ -49,7 +48,7 @@ public class MyWorldExplorer extends IntegratedAgent{
         receiver = this.whoLarvaAgent();
         _exitRequested = false;
         
-        myControlPanel = new TTYControlPanel(getAID());
+        //myControlPanel = new TTYControlPanel(getAID());
     }
 
     /**
@@ -121,7 +120,7 @@ public class MyWorldExplorer extends IntegratedAgent{
 
         // añadir al objeto
         objeto.add("command","login");
-        objeto.add("world","World9");
+        objeto.add("world","Batman@Playground1");
         objeto.add("attach", vector_sensores);
 
         // Serializar objeto en string
@@ -169,8 +168,8 @@ public class MyWorldExplorer extends IntegratedAgent{
         responderServidor(msgRespuesta, comando_leer);
         
         msgRespuesta = recibirRespuestaServidor();
-        myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
-        myControlPanel.fancyShow();
+        //myControlPanel.feedData(msgRespuesta,width,height,alturaMax);
+        //myControlPanel.fancyShow();
         String respuesta = msgRespuesta.getContent();
         Info("Respuesta del servidor: " + respuesta);
         JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
@@ -227,12 +226,6 @@ public class MyWorldExplorer extends IntegratedAgent{
         
         //Marcar que has pasado por la posicion actual.
         posicionesPasadas.get(yActual).set(xActual, 1);
-
-        Info("vivo "+vivo+"");
-        Info("distancia "+distancia+"");
-        Info("altura "+alturaDrone+"");
-        Info("angulo objetivo "+angular+"");
-        Info("anguloDrone "+anguloDrone+"");
        
         if (vivo == 0 || energia == 0){
             estado = "LOGOUT";
@@ -244,37 +237,29 @@ public class MyWorldExplorer extends IntegratedAgent{
                 objetivoAlcanzado = true;
             }
             else {  
-                if (!comprobarEnergia(energia, alturaDrone, distancia)){
+                if (!comprobarEnergia(energia, alturaDrone)){
                     
                     int siguientePosicion = calcularSiguientePosicion(angular);
                     ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
                     int obstaculo = obstaculoARodear(visual, zActual, anguloDrone);
-                    Info("Casilla deseada: "+ siguientePosicion);
-                    Info("Pos Obstáculo:" + obstaculo);
                     if ((obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual) //Puede usar guiado con Angular para ir hacia el objetivo
                         && !casillaRecorrida(siguientePosicion) && !vuelveAtras(siguientePosicion)) || obstaculo == -1){
                         Info("GUIADO ANGULAR");
-                        Info("Posicion pasada memoria: "+posicionesPasadas.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)));
                         rodeoDecidido = false;
                         rodeoIniciado = false;
                         thermalInicioRodeo = Double.MAX_VALUE;
                         distanceAnteriorRodeo = Double.MAX_VALUE;
-                        numPasosTotales = 0;
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                     else{ //Rodea el obstáculo por la derecha o por la izquierda
-                        Info("OBSTACULO ALCANZABLE: "+ obstaculoAlcanzable(visual.get(casillaObjetivo.get(0)).get(casillaObjetivo.get(1)), zActual));
-                        Info("!CasillaRecorrida:" + !casillaRecorrida(siguientePosicion));
-                        Info("!VuelveAtras: " + !vuelveAtras(siguientePosicion));
                         Info("GUIADO RODEO");
-                        if (vuelveAtras(siguientePosicion)){ //Si la razón para rodear es que no se puede volver atrá, se calcula el obstáculo a rodear
+                        if (vuelveAtras(siguientePosicion) || casillaRecorrida(siguientePosicion)){ //Si la razón para rodear es que no se puede volver atrá, se calcula el obstáculo a rodear
                             siguientePosicion = obstaculo;
                         }
                         siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, distancia, siguientePosicion);
                         calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                 }
-
                 estado = "EJECUTAR_ACCIONES";
             }
         }
@@ -299,7 +284,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Método que permite decir que acción realizar tras leer la información del mundo
     */
-    private boolean comprobarEnergia(int energia, int alturaDrone, double distancia){
+    private boolean comprobarEnergia(int energia, int alturaDrone){
         boolean necesitaRecargar = false;  
         if (energia <= 270){
             bajarAlSuelo(alturaDrone);
@@ -460,15 +445,13 @@ public class MyWorldExplorer extends IntegratedAgent{
             rodeoIniciado = true;
             thermalInicioRodeo = thermal.get(3).get(3);
             distanceAnteriorRodeo = distancia;
-            numPasos = 0;
-            numPasosTotales = 0;
+            incrementosThermalSeguidos = 0;
             
             //Dcha
             for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
                 casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);   
                 if (casillaDchaLibre){
                     casillaDcha = ((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size();
-                    Info("Casilla dcha "+ casillaDcha);
                 }
             }
             
@@ -477,7 +460,6 @@ public class MyWorldExplorer extends IntegratedAgent{
                 casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
                 if (casillaIzqLibre){
                     casillaIzq = (casillaDeseada + i) % casillasProximas.size();
-                    Info("Casilla izq "+ casillaIzq);
                 }
             }
 
@@ -493,28 +475,19 @@ public class MyWorldExplorer extends IntegratedAgent{
             
         }
         else{
-            numPasosTotales++; // aumentar el número de pasos totales
             if (!rodeoDecidido){
-                Info("Num pasos: "+numPasos);
-                Info("Num pasos totales: "+ numPasosTotales);
                 if (thermal.get(3).get(3) > thermalInicioRodeo){ //Si empeora el thermal y no se ha comprometido con una dirección
-                    numPasos++;
-                    if (numPasos > 69){ //Si ha empeorado 16 veces seguidas cambia la dirección de rodeo
+                    incrementosThermalSeguidos++;
+                    if (incrementosThermalSeguidos > 16){ //Si ha empeorado 16 veces seguidas cambia la dirección de rodeo
                         rodeoDcha = !rodeoDcha;
                         rodeoDecidido = true;
-                        numPasos = 0;
-                    }
-                    if (numPasosTotales > 80){ // si lleva 20 pasos en una dirección, se compromete con ella
-                        rodeoDecidido = true;
+                        incrementosThermalSeguidos = 0;
                     }
                 }
-                else if (numPasos > 0){ //Si el thermal no empeora
-                    numPasos=0;
+                else if (incrementosThermalSeguidos > 0){ //Si el thermal no empeora
+                    incrementosThermalSeguidos=0;
                 }
             }
-            
-
-            
             if (rodeoDcha){
                 Info("Rodeo por la derecha");
                 for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
@@ -572,8 +545,8 @@ public class MyWorldExplorer extends IntegratedAgent{
     */
     private boolean obstaculoAlcanzable(int alturaObstaculo, int zActual){
         boolean alcanzable = alturaObstaculo < alturaMax && alturaObstaculo >= 0;
-        Info("Altura obs: "+ alturaObstaculo);
-        Info("Altura max: "+ alturaMax);
+        //Info("Altura obs: "+ alturaObstaculo);
+        //Info("Altura max: "+ alturaMax);
         // si el obstáculo está por debajo de la altura máxima, es alcanzable
         if (alcanzable && alturaObstaculo > zActual){
             int vecesASubir = (alturaObstaculo - zActual)/5; // siempre hay que subir una vez
@@ -951,7 +924,7 @@ public class MyWorldExplorer extends IntegratedAgent{
     * @description: Se finaliza la conexión con el servidor
     */
     private void ejecutarFin(){
-        myControlPanel.close();
+        //myControlPanel.close();
         Info ("Bye");
         _exitRequested = true;  
     }

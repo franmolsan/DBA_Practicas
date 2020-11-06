@@ -17,7 +17,7 @@ public class main {
     public static void main(String[] args) {
         _app = new ConsoleBoot("PRACTICA2_DBA", args);
         _app.selectConnection();
-        _app.launchAgent("Cerebro Computadora 1", MyWorldExplorer.class);
+        _app.launchAgent("Cerebro Computadora", MyWorldExplorer.class);
         _app.shutDown();
     }
     
