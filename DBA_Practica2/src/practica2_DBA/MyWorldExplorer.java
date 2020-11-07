@@ -448,28 +448,28 @@ public class MyWorldExplorer extends IntegratedAgent{
             distanceAnteriorRodeo = distancia;
             incrementosThermalSeguidos = 0;
             
-            //Dcha
-            for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);   
-                if (casillaDchaLibre){
-                    casillaDcha = ((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size();
+            //Para rodeo mano Dcha se gira a la izquierda, dejando el obstáculo a la derecha
+            for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
+                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size()) , zActual);   
+                if (casillaIzqLibre){
+                    casillaIzq = ((casillaDeseada - i) + casillasProximas.size()) % casillasProximas.size();
                 }
             }
             
-            //Izq
-            for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
-                casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
-                if (casillaIzqLibre){
-                    casillaIzq = (casillaDeseada + i) % casillasProximas.size();
+            //Para rodeo mano Izq se gira a la derecha, dejando el obstáculo a la izquierda
+            for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
+                casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()) , zActual);
+                if (casillaDchaLibre){
+                    casillaDcha = (casillaDeseada + i) % casillasProximas.size();
                 }
             }
 
-            if (thermalCasillasProximas.get(casillaDcha) <= thermalCasillasProximas.get(casillaIzq)){
-                siguientePosicion = casillaDcha;
+            if (thermalCasillasProximas.get(casillaIzq) <= thermalCasillasProximas.get(casillaDcha)){
+                siguientePosicion = casillaIzq; 
                 rodeoDcha = true;
             }
             else{
-                siguientePosicion = casillaIzq;
+                siguientePosicion = casillaDcha;
                  rodeoDcha = false;
             }
             rodeoDecidido = false;
@@ -491,18 +491,18 @@ public class MyWorldExplorer extends IntegratedAgent{
             }
             if (rodeoDcha){
                 Info("Rodeo por la derecha");
-                for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
-                    casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual);
-                    if (casillaDchaLibre){
+                for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
+                    casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get(((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size()) , zActual);
+                    if (casillaIzqLibre){
                         siguientePosicion = ((casillaDeseada - i)+ casillasProximas.size()) % casillasProximas.size();
                     }
                 }
             }
             else{
                 Info("Rodeo por la izquierda");
-                for (int i=1; i<casillasProximas.size() && !casillaIzqLibre; i++){
-                    casillaIzqLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()), zActual);
-                    if (casillaIzqLibre){
+                for (int i=1; i<casillasProximas.size() && !casillaDchaLibre; i++){
+                    casillaDchaLibre = obstaculoAlcanzable(casillasProximas.get((casillaDeseada + i) % casillasProximas.size()), zActual);
+                    if (casillaDchaLibre){
                         siguientePosicion = (casillaDeseada + i) % casillasProximas.size();
                     }
                 }
