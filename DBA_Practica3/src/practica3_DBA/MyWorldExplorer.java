@@ -1,4 +1,4 @@
-package practica2_DBA;
+package practica3_DBA;
 
 
 import ControlPanel.TTYControlPanel;
