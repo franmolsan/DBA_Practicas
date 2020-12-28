@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package practica3_DBA;
 
 import AppBoot.ConsoleBoot;
@@ -15,9 +10,9 @@ public class main {
     * @params: args
      */
     public static void main(String[] args) {
-        _app = new ConsoleBoot("PRACTICA2_DBA", args);
+        _app = new ConsoleBoot("PRACTICA3_DBA", args);
         _app.selectConnection();
-        _app.launchAgent("Cerebro Computadora", MyWorldExplorer.class);
+        _app.launchAgent("Cerebro Computadora", Comunicador.class);
         _app.shutDown();
     }
     

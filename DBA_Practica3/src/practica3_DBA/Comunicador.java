@@ -14,9 +14,9 @@ import java.util.ArrayList;
 
 /**
  *
- * @author lcv
+ * @author lcv, Francisco José Molina Sánchez 
  */
-public class Cartographer extends IntegratedAgent {
+public class Comunicador extends IntegratedAgent {
 
     protected YellowPages myYP;
     protected String myStatus, myService, myWorldManager, myWorld, myConvID;
@@ -33,10 +33,10 @@ public class Cartographer extends IntegratedAgent {
         Info("Booting");
 
         // Description of my group
-        myService = "Analytics group Inditex";
+        myService = "Analytics group ArcelorMittal";
 
         // The world I am going to open
-        myWorld = "World1";
+        myWorld = "Playground1";
 
         // First state of the agent
         myStatus = "CHECKIN-LARVA";
