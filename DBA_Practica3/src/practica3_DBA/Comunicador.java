@@ -23,7 +23,7 @@ import java.util.ArrayList;
  * @author Francisco José Molina Sánchez 
  */
 public class Comunicador extends AgenteDrone {
-    
+    final static String TIPO = "LISTENER";
     // atributos heredados del AgenteDrone:
     
     // protected YellowPages yp;
@@ -32,7 +32,17 @@ public class Comunicador extends AgenteDrone {
     // protected boolean hayError;
     // protected ACLMessage in, out;
     // protected Map2DGrayscale mapa;
-
+    private ArrayList<String> buscadores = new ArrayList<String>();
+    private String rescatador = "";
+    
+    @Override
+    public void setup() {
+        super.setup();
+        buscadores.add("NobitaSinGafas");
+        buscadores.add("OvejaOscar");
+        buscadores.add("DoraLaExploradora");
+    }
+    
     @Override
     public void plainExecute() {
         plainWithErrors();
@@ -90,6 +100,7 @@ public class Comunicador extends AgenteDrone {
                 }
                 // Keep the Conversation ID and spread it amongs the team members
                 convID = in.getConversationId();
+                Info(convID);
                 // Move on to get the map
                 estado = "PROCESS-MAP";
                 break;
@@ -113,7 +124,6 @@ public class Comunicador extends AgenteDrone {
                             py = (int) (Math.random() * mapa.getHeight());
                             Info("\tX: " + px + ", Y:" + py + " = " + mapa.getLevel(px, py));
                         }
-                        estado = "CANCEL-WM";
                     } else {
                         Info("\t" + "There was an error processing and saving the image ");
                         estado = "CANCEL-WM";
@@ -124,6 +134,40 @@ public class Comunicador extends AgenteDrone {
                     estado = "CANCEL-WM";
                     break;
                 }
+                estado = "SUBSCRIBE-LISTENER";
+                break;
+            case "SUBSCRIBE-LISTENER":
+                in = suscribirseComo(TIPO);
+                hayError = in.getPerformative() != ACLMessage.INFORM;
+                if (hayError) {
+                    Info(ACLMessage.getPerformative(in.getPerformative())
+                            + " Could not subscribe as LISTENER to "
+                            + worldManager + " due to " + getDetailsLARVA(in));
+                    estado = "CANCEL-WM";
+                    break;
+                }
+                in = blockingReceive();
+                Info("MSG1: "+ in.getContent());
+                in = blockingReceive();
+                Info("MSG2: "+ in.getContent());
+                in = blockingReceive();
+                Info("MSG3: "+ in.getContent());
+                in = blockingReceive();
+                Info("MSG4: "+ in.getContent());
+                estado = "DESPERTAR-DRONES";
+                break;
+            case "DESPERTAR-DRONES":
+                despertarDrones();
+                estado = "ESPERAR-SETUP-DRONES";
+                break;
+            case "ESPERAR-SETUP-DRONES":
+                esperarSetupBuscadores();
+                estado = "CANCEL-BUSCADORES";
+            case "CANCEL-BUSCADORES":
+                informarTodosObjetivosRescatadosABuscadores();
+                Info("EsperandoBuscadores");
+                esperarCancelBuscadores();
+                Info("BuscadoresCancelados");
                 estado = "CANCEL-WM";
                 break;
             case "CANCEL-WM":
@@ -142,5 +186,65 @@ public class Comunicador extends AgenteDrone {
                 break;
         }
     }
-
+    
+    private void despertarDrones(){
+        
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(new JsonObject().add("idListener", getAID().toString()).toString());
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.QUERY_IF);
+        for (int i=0; i<buscadores.size(); i++){
+            out.addReceiver(new AID(buscadores.get(i), AID.ISLOCALNAME));
+        }
+        send(out);
+        //out.addReceiver(new AID(rescatador, AID.ISLOCALNAME));
+        //send(out);
+    }
+    
+    private void informarTodosObjetivosRescatadosABuscadores(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("turnOff");
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.INFORM);
+        for (int i=0; i<buscadores.size(); i++){
+            out.addReceiver(new AID(buscadores.get(i), AID.ISLOCALNAME));
+        }
+        send(out);
+    }
+    
+    private void esperarSetupBuscadores(){
+        for (int i=0; i<buscadores.size(); i++){
+            in = blockingReceive();
+            hayError = (in.getPerformative() != ACLMessage.INFORM);
+                if (hayError) {
+                    Info("\t" + "ERROR");
+                    estado = "EXIT";
+                    break;
+                }
+                else{
+                    Info("MSG: " + in.getContent());
+                }
+        }
+    }
+    
+    private void esperarCancelBuscadores(){
+        for (int i=0; i<buscadores.size(); i++){
+            in = blockingReceive();
+            hayError = (in.getPerformative() != ACLMessage.INFORM);
+                if (hayError) {
+                    Info("\t" + "ERROR");
+                    estado = "EXIT";
+                    break;
+                }
+                else{
+                    Info("MSG: "+in.getContent());
+                }
+        }
+    }
 }

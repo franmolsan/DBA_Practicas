@@ -16,12 +16,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DroneDelMundo extends AgenteDrone{
-    
+    protected String listener = "Cerebro Computadora";
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
     int umbralEnergia = 200;
     String receiver;
-    String estado;
     String key = "";
     int width;
     int height;
@@ -50,12 +49,12 @@ public class DroneDelMundo extends AgenteDrone{
     @Override
     public void setup() {
         super.setup();
-        doCheckinPlatform();
-        doCheckinLARVA();
-        receiver = this.whoLarvaAgent();
-        _exitRequested = false;
+        //doCheckinPlatform();
+        //doCheckinLARVA();
+        //receiver = this.whoLarvaAgent();
+        //_exitRequested = false;
         
-        myControlPanel = new TTYControlPanel(getAID());
+        //myControlPanel = new TTYControlPanel(getAID());
     }
 
     /**

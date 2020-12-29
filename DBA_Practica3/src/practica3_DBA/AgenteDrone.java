@@ -35,11 +35,9 @@ public class AgenteDrone extends IntegratedAgent{
     @Override
     public void setup()   {
         // Indicamos que es sphinx el identity manager
-        // y el único agente conocido
-        _identitymanager = "Sphinx";
-        
+        // y el único agente conocido     
         super.setup();
-
+        _identitymanager = "Sphinx";
         Info("Realizando setup del agente...");
 
         // Descripción del grupo
@@ -65,6 +63,8 @@ public class AgenteDrone extends IntegratedAgent{
     // también para hacer el check-in en LARVA (suscribirse a Sphinx)
     // el mensaje que se le pasa es vacío, "".
     protected ACLMessage suscribirseA(String agente) {
+        Info("HOLA");
+        Info("My ID: " + getAID());
         out = new ACLMessage();
         out.setSender(getAID());
         out.addReceiver(new AID(agente, AID.ISLOCALNAME));
@@ -72,7 +72,7 @@ public class AgenteDrone extends IntegratedAgent{
         out.setProtocol("ANALYTICS");
         out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.SUBSCRIBE);
-        send(out);
+        this.send(out);
         return blockingReceive();
     }
     
@@ -87,19 +87,20 @@ public class AgenteDrone extends IntegratedAgent{
         out.setProtocol("ANALYTICS");
         out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.SUBSCRIBE);
-        send(out);
+        this.send(out);
         return blockingReceive();
     }
     
     // para hacer checkout en LARVA y cancel al World Manager
     protected ACLMessage enviarCancelA(String agente) {
+        Info("My ID2: " + getAID());
         out = new ACLMessage();
         out.setSender(getAID());
         out.addReceiver(new AID(agente, AID.ISLOCALNAME));
         out.setContent("");
         out.setProtocol("ANALYTICS");
         out.setPerformative(ACLMessage.CANCEL);
-        send(out);
+        this.send(out);
         return blockingReceive();
     }
     
@@ -118,5 +119,17 @@ public class AgenteDrone extends IntegratedAgent{
         return blockingReceive();
     }
     
-    
+    protected ACLMessage suscribirseComo(String tipo) {
+        Info("ID: " + convID);
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.setContent(new JsonObject().add("type", tipo).toString());
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.SUBSCRIBE);
+        send(out);
+        return blockingReceive();
+    }
 }

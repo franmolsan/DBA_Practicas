@@ -24,6 +24,9 @@ public class main {
         
         // luego lanzamos el resto de agentes
         _app.launchAgent("Cerebro Computadora", Comunicador.class);
+        _app.launchAgent("NobitaSinGafas", Seeker.class);
+        _app.launchAgent("OvejaOscar", Seeker.class);
+        _app.launchAgent("DoraLaExploradora", Seeker.class);
         _app.shutDown();
     }
     
