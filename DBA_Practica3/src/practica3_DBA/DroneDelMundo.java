@@ -1,3 +1,9 @@
+/*
+ * Práctica 3 DBA
+ * Grupo ArcelorMittal
+ * Curso 2020-2021
+ */
+
 package practica3_DBA;
 
 
@@ -9,7 +15,7 @@ import com.eclipsesource.json.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MyWorldExplorer extends IntegratedAgent{
+public class DroneDelMundo extends AgenteDrone{
     
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
