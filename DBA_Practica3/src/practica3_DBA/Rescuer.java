@@ -32,7 +32,7 @@ public class Rescuer extends DroneDelMundo{
     public void plainExecute() {
         plainWithErrors();
     }
-    
+    /*
         @Override
     public void takeDown() {
         super.takeDown();
@@ -44,7 +44,7 @@ public class Rescuer extends DroneDelMundo{
         Info ("envio cancelación a identity manager");
         Info(in.getContent());
     }
-
+*/
     public void plainWithErrors() {
         // Basic iteration
         switch (estado.toUpperCase()) {
@@ -119,6 +119,7 @@ public class Rescuer extends DroneDelMundo{
                     estado = "CANCEL-WM";
                     break;
                 }
+                Info("Setup finalizado");
                 informarSetupCompletado();
                 estado = "RESCATE-FINALIZADO";
                 break;
@@ -155,6 +156,9 @@ public class Rescuer extends DroneDelMundo{
                 estado = "CHECKOUT-LARVA";
                 break;*/
             case "CHECKOUT-LARVA":
+                Info("Exit LARVA");
+                in = enviarCancelA(_identitymanager);
+                informarCancelacion();
                 estado = "EXIT";
                 break;
             case "EXIT":

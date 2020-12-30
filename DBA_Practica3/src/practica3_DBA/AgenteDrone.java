@@ -85,7 +85,7 @@ public class AgenteDrone extends IntegratedAgent{
         out.addReceiver(new AID(agente, AID.ISLOCALNAME));
         out.setContent(contenidoMensaje);
         out.setProtocol("ANALYTICS");
-        out.setEncoding(_myCardID.getCardID());
+        //out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.SUBSCRIBE);
         this.send(out);
         return blockingReceive();
@@ -128,7 +128,6 @@ public class AgenteDrone extends IntegratedAgent{
         out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
         out.setContent(new JsonObject().add("type", tipo).toString());
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.SUBSCRIBE);
         send(out);
         return blockingReceive();

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DroneDelMundo extends AgenteDrone{
-    protected String listener = "Cerebro Computadora";
+    protected String listener = "Cerebro Computadora2";
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
     int umbralEnergia = 200;
@@ -957,5 +957,24 @@ public class DroneDelMundo extends AgenteDrone{
         out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID(listener, AID.ISLOCALNAME));
         send(out);
+    }
+    
+    protected ACLMessage realizarLoginWM(ArrayList<String> sensores, int posx, int posy){
+        Info("Realizando Login ");
+        JsonObject msg = new JsonObject();
+        msg.add("operation", "login");
+        msg.add("attach", sensores.toString());
+        msg.add("posx", posx);
+        msg.add("posy", posy);
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.setContent(msg.toString());
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.REQUEST);
+        send(out);
+        return blockingReceive();
     }
 }

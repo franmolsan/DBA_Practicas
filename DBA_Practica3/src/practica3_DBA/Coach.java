@@ -38,10 +38,10 @@ public class Coach extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas");
+        buscadores.add("NobitaSinGafas2");
         //buscadores.add("OvejaOscar");
         //buscadores.add("CerditaPeggy");
-        rescatador = "EduardoManosTijeras";
+        rescatador = "EduardoManosTijeras2";
     }
     
     @Override
@@ -139,7 +139,7 @@ public class Coach extends AgenteDrone {
                 break;
                 
             case "DESPERTAR-AWACS":
-                despertarAWACS();
+                //despertarAWACS();
                 try {
                     Thread.sleep(5000);
                 }
@@ -163,7 +163,7 @@ public class Coach extends AgenteDrone {
             case "SETUP-RESCATADOR":
                 despertarRescatador();
                 esperarSetupRescatador();
-                
+                Info(in.getContent());
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             
@@ -276,7 +276,7 @@ public class Coach extends AgenteDrone {
 //                    break;
 //                }
 //                else{
-//                    Info("MSG: " + in.getContent());
+                   Info("MSG: " + in.getContent());
 //                }
         }
     }
@@ -289,13 +289,14 @@ public class Coach extends AgenteDrone {
 //                estado = "EXIT";
 //            }
 //            else{
-//                Info("MSG: " + in.getContent());
+                Info("MSG: " + in.getContent());
 //            }
     }
     
     private void esperarCancelBuscadores(){
         for (int i=0; i<buscadores.size(); i++){
             in = blockingReceive();
+            //Info("MSG: "+in.getContent());
 //            hayError = (in.getPerformative() != ACLMessage.INFORM);
 //                if (hayError) {
 //                    Info("\t" + "ERROR");
@@ -303,7 +304,7 @@ public class Coach extends AgenteDrone {
 //                    break;
 //                }
 //                else{
-//                    Info("MSG: "+in.getContent());
+                   Info("MSG: "+in.getContent());
 //                }
         }
     }

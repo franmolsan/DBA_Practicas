@@ -24,7 +24,6 @@ import java.util.ArrayList;
  *         Miguel Ángel Molina Jordán
  */
 public class Comunicador extends AgenteDrone {
-    final static String TIPO = "LISTENER";
     // atributos heredados del AgenteDrone:
     
     // protected YellowPages yp;
@@ -39,7 +38,7 @@ public class Comunicador extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas");
+        buscadores.add("NobitaSinGafas2");
         //buscadores.add("OvejaOscar");
         //buscadores.add("DoraLaExploradora");
     }
@@ -135,36 +134,17 @@ public class Comunicador extends AgenteDrone {
                     estado = "CANCEL-WM";
                     break;
                 }
-                estado = "SUBSCRIBE-LISTENER";
-                break;
-            case "SUBSCRIBE-LISTENER":
-                in = suscribirseComo(TIPO);
-                hayError = in.getPerformative() != ACLMessage.INFORM;
-                if (hayError) {
-                    Info(ACLMessage.getPerformative(in.getPerformative())
-                            + " Could not subscribe as LISTENER to "
-                            + worldManager + " due to " + getDetailsLARVA(in));
-                    estado = "CANCEL-WM";
-                    break;
-                }
-                in = blockingReceive();
-                Info("MSG1: "+ in.getContent());
-                in = blockingReceive();
-                Info("MSG2: "+ in.getContent());
-                in = blockingReceive();
-                Info("MSG3: "+ in.getContent());
-                in = blockingReceive();
-                Info("MSG4: "+ in.getContent());
                 estado = "DESPERTAR-DRONES";
                 break;
             case "DESPERTAR-DRONES":
-                despertarAWACS();
-                try {
-                    Thread.sleep(5000);
-                }
-                catch (Exception ex){
-                    Info("Error en AWACS: " + ex);
-                };
+                //despertarAWACS();
+//                try {
+//                    //Thread.sleep(5000);
+//                }
+//                catch (Exception ex){
+//                    Info("Error en AWACS: " + ex);
+//                };
+                Info("ENTRO");
                 despertarDrones();
                 estado = "ESPERAR-SETUP-DRONES";
                 break;

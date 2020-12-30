@@ -12,6 +12,7 @@ import YellowPages.YellowPages;
 import com.eclipsesource.json.JsonObject;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
+import java.util.ArrayList;
 
 /**
  *
@@ -33,19 +34,19 @@ public class Seeker extends DroneDelMundo{
     public void plainExecute() {
         plainWithErrors();
     }
-    
+  /*  
         @Override
     public void takeDown() {
         super.takeDown();
         Info("Taking down");
         Info("Exit LARVA");
-        in = enviarCancelA(_identitymanager);
+        //in = enviarCancelA(_identitymanager);
         Info ("cancel LARVA contenido: "+ in.getContent());
         informarCancelacion();
         Info ("envio cancelación a identity manager");
         Info(in.getContent());
     }
-
+*/
     public void plainWithErrors() {
         // Basic iteration
         switch (estado.toUpperCase()) {
@@ -121,6 +122,14 @@ public class Seeker extends DroneDelMundo{
                     break;
                 }
                 informarSetupCompletado();
+                estado = "LOGIN-WM";
+                break;
+            case "LOGIN-WM":
+                int posx = 20;
+                int posy = 30;
+                ArrayList<String> sensores = new ArrayList<>();
+                //in = realizarLoginWM(sensores, posx, posy);
+                Info(in.getContent());
                 estado = "ESPERAR-ORDEN";
                 break;
             case "ESPERAR-ORDEN":
@@ -151,6 +160,9 @@ public class Seeker extends DroneDelMundo{
                 estado = "CHECKOUT-LARVA";
                 break;*/
             case "CHECKOUT-LARVA":
+                Info("Exit LARVA");
+                in = enviarCancelA(_identitymanager);
+                informarCancelacion();
                 estado = "EXIT";
                 break;
             case "EXIT":
