@@ -15,7 +15,8 @@ import jade.lang.acl.ACLMessage;
 
 /**
  *
- * @author Francisco José Molina Sánchez
+ * @author Francisco José Molina Sánchez, Pedro Serrano Pérez,
+ *         Miguel Ángel Molina Jordán
  */
 public class Seeker extends DroneDelMundo{
     final static String TIPO = "SEEKER";
@@ -31,6 +32,18 @@ public class Seeker extends DroneDelMundo{
     @Override
     public void plainExecute() {
         plainWithErrors();
+    }
+    
+        @Override
+    public void takeDown() {
+        super.takeDown();
+        Info("Taking down");
+        Info("Exit LARVA");
+        in = enviarCancelA(_identitymanager);
+        Info ("cancel LARVA contenido: "+ in.getContent());
+        informarCancelacion();
+        Info ("envio cancelación a identity manager");
+        Info(in.getContent());
     }
 
     public void plainWithErrors() {
@@ -107,7 +120,7 @@ public class Seeker extends DroneDelMundo{
                     estado = "CANCEL-WM";
                     break;
                 }
-                informarListenerSetupCompletado();
+                informarSetupCompletado();
                 estado = "ESPERAR-ORDEN";
                 break;
             case "ESPERAR-ORDEN":
@@ -126,7 +139,7 @@ public class Seeker extends DroneDelMundo{
                     break;
                 }
                 else if(in.getContent().equals("")){
-                    
+                    break;
                 }
                 else{
                     estado = "CHECKOUT-LARVA";
@@ -138,10 +151,6 @@ public class Seeker extends DroneDelMundo{
                 estado = "CHECKOUT-LARVA";
                 break;*/
             case "CHECKOUT-LARVA":
-                Info("Exit LARVA");
-                in = enviarCancelA(_identitymanager);
-                Info(in.getContent());
-                informarCancelacionListener();
                 estado = "EXIT";
                 break;
             case "EXIT":
@@ -149,30 +158,6 @@ public class Seeker extends DroneDelMundo{
                 _exitRequested = true;
                 break;
         }
-    }
-    
-    private void informarListenerSetupCompletado(){
-        out = new ACLMessage();
-        out.setSender(getAID());
-        out.setConversationId(convID);
-        out.setContent("setupCompleted");
-        out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
-        out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
-        send(out);
-    }
-    
-    private void informarCancelacionListener(){
-        out = new ACLMessage();
-        out.setSender(getAID());
-        out.setConversationId(convID);
-        out.setContent("turnOffCompleted");
-        out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
-        out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
-        send(out);
     }
     
 }

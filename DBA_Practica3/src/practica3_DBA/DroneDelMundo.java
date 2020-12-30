@@ -934,4 +934,28 @@ public class DroneDelMundo extends AgenteDrone{
         Info ("Bye");
         _exitRequested = true;  
     }
+    
+    protected void informarCancelacion(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("turnOffCompleted");
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        send(out);
+    }
+    
+    protected void informarSetupCompletado(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("setupCompleted");
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        send(out);
+    }
 }

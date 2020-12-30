@@ -3,8 +3,8 @@
  * Grupo ArcelorMittal
  * Curso 2020-2021
  */
-
 package practica3_DBA;
+
 
 import static ACLMessageTools.ACLMessageTools.getDetailsLARVA;
 import static ACLMessageTools.ACLMessageTools.getJsonContentACLM;
@@ -20,11 +20,10 @@ import java.util.ArrayList;
 
 /**
  *
- * @author Francisco José Molina Sánchez, Pedro Serrano Pérez,
- *         Miguel Ángel Molina Jordán
+ * @author franmolsan
  */
-public class Comunicador extends AgenteDrone {
-    final static String TIPO = "LISTENER";
+public class Coach extends AgenteDrone {
+    //final static String TIPO = "LISTENER";
     // atributos heredados del AgenteDrone:
     
     // protected YellowPages yp;
@@ -41,7 +40,8 @@ public class Comunicador extends AgenteDrone {
         super.setup();
         buscadores.add("NobitaSinGafas");
         //buscadores.add("OvejaOscar");
-        //buscadores.add("DoraLaExploradora");
+        //buscadores.add("CerditaPeggy");
+        rescatador = "EduardoManosTijeras";
     }
     
     @Override
@@ -135,29 +135,10 @@ public class Comunicador extends AgenteDrone {
                     estado = "CANCEL-WM";
                     break;
                 }
-                estado = "SUBSCRIBE-LISTENER";
+                estado = "DESPERTAR-AWACS";
                 break;
-            case "SUBSCRIBE-LISTENER":
-                in = suscribirseComo(TIPO);
-                hayError = in.getPerformative() != ACLMessage.INFORM;
-                if (hayError) {
-                    Info(ACLMessage.getPerformative(in.getPerformative())
-                            + " Could not subscribe as LISTENER to "
-                            + worldManager + " due to " + getDetailsLARVA(in));
-                    estado = "CANCEL-WM";
-                    break;
-                }
-                in = blockingReceive();
-                Info("MSG1: "+ in.getContent());
-                in = blockingReceive();
-                Info("MSG2: "+ in.getContent());
-                in = blockingReceive();
-                Info("MSG3: "+ in.getContent());
-                in = blockingReceive();
-                Info("MSG4: "+ in.getContent());
-                estado = "DESPERTAR-DRONES";
-                break;
-            case "DESPERTAR-DRONES":
+                
+            case "DESPERTAR-AWACS":
                 despertarAWACS();
                 try {
                     Thread.sleep(5000);
@@ -165,30 +146,59 @@ public class Comunicador extends AgenteDrone {
                 catch (Exception ex){
                     Info("Error en AWACS: " + ex);
                 };
-                despertarDrones();
-                estado = "ESPERAR-SETUP-DRONES";
+                
+                estado = "SETUP-BUSCADORES";
                 break;
-            case "ESPERAR-SETUP-DRONES":
+                
+            case "SETUP-BUSCADORES":
+                despertarBuscadores();
+                
                 Info("Esperando el setup de los buscadores");
                 esperarSetupBuscadores();
                 Info("Setup de los buscadores completo");
+                
+                estado = "SETUP-RESCATADOR";
+                break;
+                
+            case "SETUP-RESCATADOR":
+                despertarRescatador();
+                esperarSetupRescatador();
+                
+                estado = "ESPERAR-TODOS-RESCATADOS";
+                break;
+            
+            case "ESPERAR-TODOS-RESCATADOS":
+                in = esperarCancelRescatador();
+                hayError = in.getPerformative() != ACLMessage.INFORM;
+                if (hayError) {
+                    Info(ACLMessage.getPerformative(in.getPerformative())
+                            + " Could not open a session with "
+                            + worldManager + " due to " + getDetailsLARVA(in));
+                    estado = "CHECKOUT-LARVA";
+                    break;
+                }
                 estado = "CANCEL-BUSCADORES";
+                break;
+                
             case "CANCEL-BUSCADORES":
                 informarTodosObjetivosRescatadosABuscadores();
                 Info("Esperando cancel Buscadores");
                 esperarCancelBuscadores();
                 Info("Buscadores Cancelados");
+                
                 estado = "CANCEL-WM";
                 break;
+                
             case "CANCEL-WM":
                 Info("Closing the game");
                 in = enviarCancelA(worldManager);
                 
                 // apagar AWACS para que acabe bien el programa
-                in = enviarCancelA("AWACS");
+                //in = enviarCancelA("AWACS");
                 
                 estado = "CHECKOUT-LARVA";
                 break;
+                
             case "CHECKOUT-LARVA":
                 Info("Exit LARVA");
                 in = enviarCancelA(_identitymanager);
@@ -201,7 +211,7 @@ public class Comunicador extends AgenteDrone {
         }
     }
     
-    private void despertarDrones(){   
+    private void despertarBuscadores(){   
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -212,6 +222,19 @@ public class Comunicador extends AgenteDrone {
         for (int i=0; i<buscadores.size(); i++){
             out.addReceiver(new AID(buscadores.get(i), AID.ISLOCALNAME));
         }
+        send(out);
+    }
+    
+    private void despertarRescatador(){   
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(new JsonObject().add("idListener", getAID().toString()).toString());
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.QUERY_IF);
+        out.addReceiver(new AID(rescatador, AID.ISLOCALNAME));
+        
         send(out);
     }
     
@@ -245,31 +268,47 @@ public class Comunicador extends AgenteDrone {
     
     private void esperarSetupBuscadores(){
         for (int i=0; i<buscadores.size(); i++){
-            in = blockingReceive();
-            hayError = (in.getPerformative() != ACLMessage.INFORM);
-                if (hayError) {
-                    Info("\t" + "ERROR");
-                    estado = "EXIT";
-                    break;
-                }
-                else{
-                    Info("MSG: " + in.getContent());
-                }
+//            in = blockingReceive();
+//            hayError = (in.getPerformative() != ACLMessage.INFORM);
+//                if (hayError) {
+//                    Info("\t" + "ERROR");
+//                    estado = "EXIT";
+//                    break;
+//                }
+//                else{
+//                    Info("MSG: " + in.getContent());
+//                }
         }
+    }
+    
+    private void esperarSetupRescatador(){
+        in = blockingReceive();
+//        hayError = (in.getPerformative() != ACLMessage.INFORM);
+//            if (hayError) {
+//                Info("\t" + "ERROR");
+//                estado = "EXIT";
+//            }
+//            else{
+//                Info("MSG: " + in.getContent());
+//            }
     }
     
     private void esperarCancelBuscadores(){
         for (int i=0; i<buscadores.size(); i++){
             in = blockingReceive();
-            hayError = (in.getPerformative() != ACLMessage.INFORM);
-                if (hayError) {
-                    Info("\t" + "ERROR");
-                    estado = "EXIT";
-                    break;
-                }
-                else{
-                    Info("MSG: "+in.getContent());
-                }
+//            hayError = (in.getPerformative() != ACLMessage.INFORM);
+//                if (hayError) {
+//                    Info("\t" + "ERROR");
+//                    estado = "EXIT";
+//                    break;
+//                }
+//                else{
+//                    Info("MSG: "+in.getContent());
+//                }
         }
+    }
+    
+    private ACLMessage esperarCancelRescatador(){
+        return blockingReceive();
     }
 }
