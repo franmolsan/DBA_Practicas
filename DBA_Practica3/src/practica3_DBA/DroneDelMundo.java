@@ -93,17 +93,7 @@ public class DroneDelMundo extends AgenteDrone{
         }
     }
 
-    /**
-    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
-    * @description: Definición del takeDown
-    */
-    @Override
-    public void takeDown() {
-        this.doCheckoutLARVA();
-        this.doCheckoutPlatform();
-        super.takeDown();
-    }
-    
+
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez 
     * @description: Se realiza el login al servidor

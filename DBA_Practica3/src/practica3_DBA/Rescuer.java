@@ -114,7 +114,7 @@ public class Rescuer extends DroneDelMundo{
                 hayError = in.getPerformative() != ACLMessage.INFORM;
                 if (hayError) {
                     Info(ACLMessage.getPerformative(in.getPerformative())
-                            + " Could not subscribe as SEEKER to "
+                            + " Could not subscribe as RESCUER to "
                             + worldManager + " due to " + getDetailsLARVA(in));
                     estado = "CANCEL-WM";
                     break;

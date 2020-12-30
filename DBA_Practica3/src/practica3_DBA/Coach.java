@@ -39,8 +39,8 @@ public class Coach extends AgenteDrone {
     public void setup() {
         super.setup();
         buscadores.add("NobitaSinGafas");
-        //buscadores.add("OvejaOscar");
-        //buscadores.add("CerditaPeggy");
+        buscadores.add("OvejaOscar");
+        buscadores.add("CerditaPeggy");
         rescatador = "EduardoManosTijeras";
     }
     
@@ -139,7 +139,7 @@ public class Coach extends AgenteDrone {
                 break;
                 
             case "DESPERTAR-AWACS":
-                //despertarAWACS();
+                despertarAWACS();
                 try {
                     Thread.sleep(5000);
                 }

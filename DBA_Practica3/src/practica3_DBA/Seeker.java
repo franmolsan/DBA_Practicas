@@ -129,7 +129,7 @@ public class Seeker extends DroneDelMundo{
                 int posy = 30;
                 ArrayList<String> sensores = new ArrayList<>();
                 //in = realizarLoginWM(sensores, posx, posy);
-                Info(in.getContent());
+                //Info(in.getContent());
                 estado = "ESPERAR-ORDEN";
                 break;
             case "ESPERAR-ORDEN":
@@ -161,7 +161,7 @@ public class Seeker extends DroneDelMundo{
                 break;*/
             case "CHECKOUT-LARVA":
                 Info("Exit LARVA");
-                //in = enviarCancelA(_identitymanager);
+                in = enviarCancelA(_identitymanager);
                 informarCancelacion();
                 estado = "EXIT";
                 break;
