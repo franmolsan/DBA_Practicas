@@ -112,42 +112,18 @@ public class Comunicador extends DroneDelMundo {
                         estado = "CANCEL-WM";
                         break;
                     }
+
                     Info("Setup finalizado");
                     informarSetupCompletado();
-                    estado = "RESCATE-FINALIZADO";
+                    estado = "ESPERAR-ORDEN";
                     break;
                 case "ESPERAR-ORDEN":
-                    Info("Esperando Listener");
                     in = blockingReceive();
-                    Info(in.getContent());
-                    hayError = in.getPerformative() != ACLMessage.INFORM;
-                    if (hayError) {
-                        Info(ACLMessage.getPerformative(in.getPerformative())
-                                + " Error en mensaje");
-                        estado = "CANCEL-WM";
-                        break;
-                    }
-                    if (in.getContent().equals("turnOff")){
+                    if (in.getContent().equals("turnOffListener")){
                         estado = "CHECKOUT-LARVA";
                         break;
                     }
-                    else if(in.getContent().equals("")){
-                        break;
-                    }
-                    else{
-                        estado = "CHECKOUT-LARVA";
-                        break;
-                    }
-                case "RESCATE-FINALIZADO":
-                    Info("Rescate Finalizado");
-
-                    estado = "CHECKOUT-LARVA";
                     break;
-                /*case "CANCEL-WM":
-                    Info("Closing the game");
-                    in = enviarCancelA(worldManager);
-                    estado = "CHECKOUT-LARVA";
-                    break;*/
                 case "CHECKOUT-LARVA":
                     Info("Exit LARVA");
                     in = enviarCancelA(_identitymanager);

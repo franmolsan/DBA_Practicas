@@ -34,14 +34,16 @@ public class Coach extends AgenteDrone {
     // protected Map2DGrayscale mapa;
     private ArrayList<String> buscadores = new ArrayList<String>();
     private String rescatador = "";
+    private String listener = "";
     
     @Override
     public void setup() {
         super.setup();
         buscadores.add("NobitaSinGafas");
         buscadores.add("OvejaOscar");
-        buscadores.add("CerditaPeggy");
+        buscadores.add("DoraLaExploradora");
         rescatador = "EduardoManosTijeras";
+        listener = "Dumbo";
     }
     
     @Override
@@ -147,13 +149,21 @@ public class Coach extends AgenteDrone {
                     Info("Error en AWACS: " + ex);
                 };
                 
+                estado = "SETUP-COMUNICADOR";
+                break;
+            
+            case "SETUP-COMUNICADOR":
+                despertarComunicador();
+                
+                esperarSetupComunicador();
+                Info("Setup del comunicador completo");
+                
                 estado = "SETUP-BUSCADORES";
                 break;
                 
             case "SETUP-BUSCADORES":
                 despertarBuscadores();
                 
-                Info("Esperando el setup de los buscadores");
                 esperarSetupBuscadores();
                 Info("Setup de los buscadores completo");
                 
@@ -162,8 +172,10 @@ public class Coach extends AgenteDrone {
                 
             case "SETUP-RESCATADOR":
                 despertarRescatador();
+                
                 esperarSetupRescatador();
-                Info(in.getContent());
+                Info("Setup del rescatador completo");
+                
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             
@@ -182,9 +194,16 @@ public class Coach extends AgenteDrone {
                 
             case "CANCEL-BUSCADORES":
                 informarTodosObjetivosRescatadosABuscadores();
-                Info("Esperando cancel Buscadores");
                 esperarCancelBuscadores();
                 Info("Buscadores Cancelados");
+                
+                estado = "CANCEL-COMUNICADOR";
+                break;
+            
+            case "CANCEL-COMUNICADOR":
+                informarTodosObjetivosRescatadosAComunicador();
+                esperarCancelComunicador();
+                Info("Comunicador cancelados");
                 
                 estado = "CANCEL-WM";
                 break;
@@ -209,6 +228,20 @@ public class Coach extends AgenteDrone {
                 _exitRequested = true;
                 break;
         }
+    }
+    
+    
+    private void despertarComunicador(){   
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(new JsonObject().add("idListener", getAID().toString()).toString());
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.QUERY_IF);
+        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        
+        send(out);
     }
     
     private void despertarBuscadores(){   
@@ -266,6 +299,19 @@ public class Coach extends AgenteDrone {
         send(out);
     }
     
+    private void informarTodosObjetivosRescatadosAComunicador(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("turnOffListener");
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        
+        send(out);
+    }
+    
     private void esperarSetupBuscadores(){
         for (int i=0; i<buscadores.size(); i++){
             in = blockingReceive();
@@ -280,6 +326,19 @@ public class Coach extends AgenteDrone {
                 }
         }
     }
+    
+    private void esperarSetupComunicador(){
+        in = blockingReceive();
+//        hayError = (in.getPerformative() != ACLMessage.INFORM);
+//            if (hayError) {
+//                Info("\t" + "ERROR");
+//                estado = "EXIT";
+//            }
+//            else{
+//                Info("MSG: " + in.getContent());
+//            }
+    }
+    
     
     private void esperarSetupRescatador(){
         in = blockingReceive();
@@ -310,6 +369,10 @@ public class Coach extends AgenteDrone {
     }
     
     private ACLMessage esperarCancelRescatador(){
+        return blockingReceive();
+    }
+    
+    private ACLMessage esperarCancelComunicador(){
         return blockingReceive();
     }
 }
