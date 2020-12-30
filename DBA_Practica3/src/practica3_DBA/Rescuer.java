@@ -6,11 +6,10 @@
 package practica3_DBA;
 
 import static ACLMessageTools.ACLMessageTools.getDetailsLARVA;
-import static ACLMessageTools.ACLMessageTools.getJsonContentACLM;
-import Map2D.Map2DGrayscale;
 import YellowPages.YellowPages;
+import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
-import jade.core.AID;
+import com.eclipsesource.json.JsonValue;
 import jade.lang.acl.ACLMessage;
 
 /**
@@ -120,6 +119,8 @@ public class Rescuer extends DroneDelMundo{
                     break;
                 }
                 
+                JsonObject respuesta = Json.parse(in.getContent()).asObject();
+                guardarCoins(respuesta.get("coins").asArray());
                 estado = "OBTENER-TIENDA";
                 break;
             case "OBTENER-TIENDA":

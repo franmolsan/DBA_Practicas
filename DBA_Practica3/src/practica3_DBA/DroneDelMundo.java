@@ -42,6 +42,9 @@ public class DroneDelMundo extends AgenteDrone{
     int xActualDrone;
     int yActualDrone;
     
+    
+    ArrayList<String> misCoins = new ArrayList <> ();
+    
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Definición del setup
@@ -979,5 +982,17 @@ public class DroneDelMundo extends AgenteDrone{
         out.addReceiver(new AID(nombreTienda, AID.ISLOCALNAME));
         send(out);
         return blockingReceive();
+    }
+    
+    /**
+    * @author: Francisco José Molina Sánchez
+    * @params: coins es el array json con los valores de las monedas
+    * @description: el drone guarda las monedas que ha recibido del servidor
+    */
+    protected void guardarCoins(JsonArray coins){
+        for (JsonValue c : coins){
+            misCoins.add(c.asString());
+        }
+        Info ("\nMis coins: \n" + misCoins);
     }
 }

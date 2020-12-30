@@ -9,6 +9,7 @@ import static ACLMessageTools.ACLMessageTools.getDetailsLARVA;
 import static ACLMessageTools.ACLMessageTools.getJsonContentACLM;
 import Map2D.Map2DGrayscale;
 import YellowPages.YellowPages;
+import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -109,9 +110,24 @@ public class Seeker extends DroneDelMundo{
                     estado = "CANCEL-WM";
                     break;
                 }
+                JsonObject respuesta = Json.parse(in.getContent()).asObject();
+                guardarCoins(respuesta.get("coins").asArray());
+                estado = "OBTENER-TIENDA";
+                break;
+                
+            case "OBTENER-TIENDA":
+                
+                yp.updateYellowPages(in);
+                
+                Info("YP = " + yp.queryProvidersofService(convID).toString());
+                Info("Setup finalizado");
                 informarSetupCompletado();
+                
+                in = obtenerPreciosTienda(yp.queryProvidersofService(convID).iterator().next());
+                Info("PRECIOS DE LA TIENDA: " + in.getContent());
                 estado = "LOGIN-WM";
                 break;
+                
             case "LOGIN-WM":
                 int posx = 20;
                 int posy = 30;
