@@ -94,7 +94,7 @@ public class Seeker extends DroneDelMundo{
                 }
                 // Choose one of the available service providers, i.e., the first one
                 worldManager = yp.queryProvidersofService(servicio).iterator().next();
-
+                Info(worldManager);
                 // Keep the Conversation ID and spread it amongs the team members
                 // Move on to get the map
                 estado = "SUBSCRIBE-SEEKER";
@@ -142,11 +142,6 @@ public class Seeker extends DroneDelMundo{
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
-            /*case "CANCEL-WM":
-                Info("Closing the game");
-                in = enviarCancelA(worldManager);
-                estado = "CHECKOUT-LARVA";
-                break;*/
             case "CHECKOUT-LARVA":
                 Info("Exit LARVA");
                 in = enviarCancelA(_identitymanager);

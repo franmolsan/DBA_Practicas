@@ -119,8 +119,20 @@ public class Rescuer extends DroneDelMundo{
                     estado = "CANCEL-WM";
                     break;
                 }
+                
+                estado = "OBTENER-TIENDA";
+                break;
+            case "OBTENER-TIENDA":
+                
+                yp.updateYellowPages(in);
+                
+                Info("YP = " + yp.queryProvidersofService(convID).toString());
                 Info("Setup finalizado");
                 informarSetupCompletado();
+                
+                in = obtenerPreciosTienda(yp.queryProvidersofService(convID).iterator().next());
+                Info("PRECIOS DE LA TIENDA: " + in.getContent());
+                
                 estado = "RESCATE-FINALIZADO";
                 break;
             case "ESPERAR-ORDEN":
@@ -166,6 +178,5 @@ public class Rescuer extends DroneDelMundo{
                 _exitRequested = true;
                 break;
         }
-    }    
-
+    }
 }

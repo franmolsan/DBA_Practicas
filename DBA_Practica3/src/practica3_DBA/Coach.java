@@ -39,11 +39,11 @@ public class Coach extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas");
-        buscadores.add("OvejaOscar");
-        buscadores.add("DoraLaExploradora");
-        rescatador = "EduardoManosTijeras";
-        listener = "Dumbo";
+        buscadores.add("NobitaSinGafas2");
+        buscadores.add("OvejaOscar2");
+        buscadores.add("DoraLaExploradora2");
+        rescatador = "EduardoManosTijeras2";
+        listener = "Dumbo2";
     }
     
     @Override
@@ -141,7 +141,7 @@ public class Coach extends AgenteDrone {
                 break;
                 
             case "DESPERTAR-AWACS":
-                despertarAWACS();
+                //despertarAWACS();
                 try {
                     Thread.sleep(5000);
                 }

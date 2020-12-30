@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DroneDelMundo extends AgenteDrone{
-    protected String listener = "Cerebro Computadora";
+    protected String listener = "Cerebro Computadora2";
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
     int umbralEnergia = 200;
@@ -964,6 +964,19 @@ public class DroneDelMundo extends AgenteDrone{
         out.setProtocol("REGULAR");
         out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.REQUEST);
+        send(out);
+        return blockingReceive();
+    }
+    
+        
+    protected ACLMessage obtenerPreciosTienda(String nombreTienda){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("{}");
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.QUERY_REF);
+        out.addReceiver(new AID(nombreTienda, AID.ISLOCALNAME));
         send(out);
         return blockingReceive();
     }

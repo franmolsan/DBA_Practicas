@@ -38,19 +38,7 @@ public class Comunicador extends DroneDelMundo {
         public void plainExecute() {
             plainWithErrors();
         }
-        /*
-            @Override
-        public void takeDown() {
-            super.takeDown();
-            Info("Taking down");
-            Info("Exit LARVA");
-            in = enviarCancelA(_identitymanager);
-            Info ("cancel LARVA contenido: "+ in.getContent());
-            informarCancelacion();
-            Info ("envio cancelación a identity manager");
-            Info(in.getContent());
-        }
-    */
+
         public void plainWithErrors() {
             // Basic iteration
             switch (estado.toUpperCase()) {
