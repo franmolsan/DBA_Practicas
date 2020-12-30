@@ -65,6 +65,7 @@ public class AgenteDrone extends IntegratedAgent{
     protected ACLMessage suscribirseA(String agente) {
         Info("HOLA");
         Info("My ID: " + getAID());
+        String a = getAID().toString();
         out = new ACLMessage();
         out.setSender(getAID());
         out.addReceiver(new AID(agente, AID.ISLOCALNAME));
@@ -93,7 +94,14 @@ public class AgenteDrone extends IntegratedAgent{
     
     // para hacer checkout en LARVA y cancel al World Manager
     protected ACLMessage enviarCancelA(String agente) {
+        Info("---------------");
+        Info("HACIENDO CANCEL A " + agente);
+        String a = getAID().toString();
+        Info(a);
+        Info("---------------");
+        
         out = new ACLMessage();
+        out.setConversationId(convID);
         out.setSender(getAID());
         out.addReceiver(new AID(agente, AID.ISLOCALNAME));
         Info("Envio cancelar: " + getAID());

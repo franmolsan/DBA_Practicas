@@ -38,10 +38,10 @@ public class Coach extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas2");
+        buscadores.add("NobitaSinGafas");
         //buscadores.add("OvejaOscar");
         //buscadores.add("CerditaPeggy");
-        rescatador = "EduardoManosTijeras2";
+        rescatador = "EduardoManosTijeras";
     }
     
     @Override
@@ -268,16 +268,16 @@ public class Coach extends AgenteDrone {
     
     private void esperarSetupBuscadores(){
         for (int i=0; i<buscadores.size(); i++){
-//            in = blockingReceive();
-//            hayError = (in.getPerformative() != ACLMessage.INFORM);
-//                if (hayError) {
-//                    Info("\t" + "ERROR");
-//                    estado = "EXIT";
-//                    break;
-//                }
-//                else{
+            in = blockingReceive();
+            hayError = (in.getPerformative() != ACLMessage.INFORM);
+                if (hayError) {
+                    Info("\t" + "ERROR");
+                    estado = "EXIT";
+                    break;
+                }
+                else{
                    Info("MSG: " + in.getContent());
-//                }
+                }
         }
     }
     
@@ -289,7 +289,7 @@ public class Coach extends AgenteDrone {
 //                estado = "EXIT";
 //            }
 //            else{
-                Info("MSG: " + in.getContent());
+//                Info("MSG: " + in.getContent());
 //            }
     }
     

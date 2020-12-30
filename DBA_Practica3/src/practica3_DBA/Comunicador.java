@@ -38,7 +38,7 @@ public class Comunicador extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas2");
+        buscadores.add("NobitaSinGafas");
         //buscadores.add("OvejaOscar");
         //buscadores.add("DoraLaExploradora");
     }

@@ -161,7 +161,7 @@ public class Seeker extends DroneDelMundo{
                 break;*/
             case "CHECKOUT-LARVA":
                 Info("Exit LARVA");
-                in = enviarCancelA(_identitymanager);
+                //in = enviarCancelA(_identitymanager);
                 informarCancelacion();
                 estado = "EXIT";
                 break;

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DroneDelMundo extends AgenteDrone{
-    protected String listener = "Cerebro Computadora2";
+    protected String listener = "Cerebro Computadora";
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
     int umbralEnergia = 200;
