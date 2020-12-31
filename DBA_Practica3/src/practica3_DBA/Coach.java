@@ -14,9 +14,11 @@ import YellowPages.YellowPages;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  *
@@ -39,11 +41,11 @@ public class Coach extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas2");
-        buscadores.add("OvejaOscar2");
-        buscadores.add("DoraLaExploradora2");
-        rescatador = "EduardoManosTijeras2";
-        listener = "Dumbo2";
+        buscadores.add("NobitaSinGafas");
+        buscadores.add("OvejaOscar");
+        buscadores.add("DoraLaExploradora");
+        rescatador = "EduardoManosTijeras";
+        listener = "Dumbo";
     }
     
     @Override
@@ -165,6 +167,7 @@ public class Coach extends AgenteDrone {
                 despertarBuscadores();
                 
                 esperarSetupBuscadores();
+               
                 Info("Setup de los buscadores completo");
                 
                 estado = "SETUP-RESCATADOR";
@@ -176,6 +179,29 @@ public class Coach extends AgenteDrone {
                 esperarSetupRescatador();
                 Info("Setup del rescatador completo");
                 
+                estado = "GESTIONAR-COMPRA";
+                break;
+                
+            case "GESTIONAR-COMPRA":
+                in = obtenerYP(_identitymanager); // As seen oon slides
+                yp.updateYellowPages(in);
+                Object T[] = yp.queryProvidersofService(convID).toArray();
+                in = obtenerPreciosTienda(T[0].toString());
+                Info("PRECIOS DE LA TIENDA: "+ T[0].toString() + " --> "+ in.getContent());
+                in = obtenerPreciosTienda(T[1].toString());
+                Info("PRECIOS DE LA TIENDA: "+ T[1].toString() + " --> "+ in.getContent());
+                in = obtenerPreciosTienda(T[2].toString());
+                Info("PRECIOS DE LA TIENDA: "+ T[2].toString() + " --> "+ in.getContent());
+                estado = "COMPRAR-SENSORES";
+                break;
+            case "COMPRAR-SENSORES":
+                Object tiendas[] = yp.queryProvidersofService(convID).toArray();
+                for(int i=0;i<buscadores.size();i++){
+                    JsonValue resultado  = obtenerMejorPrecioParaSensor(tiendas, "alive");
+                    enviarCompraBuscador(resultado, buscadores.get(i));
+                    in = blockingReceive();
+                }
+                Info(in.getContent());
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             
@@ -339,6 +365,20 @@ public class Coach extends AgenteDrone {
 //            }
     }
     
+    private void esperarConfirmacionCompraBuscadores(){
+        for (int i=0; i<buscadores.size(); i++){
+            in = blockingReceive();
+            hayError = (in.getPerformative() != ACLMessage.INFORM);
+                if (hayError) {
+                    Info("\t" + "ERROR");
+                    estado = "EXIT";
+                    break;
+                }
+                else{
+                   Info("MSG: " + in.getContent());
+                }
+        }
+    }
     
     private void esperarSetupRescatador(){
         in = blockingReceive();
@@ -374,5 +414,22 @@ public class Coach extends AgenteDrone {
     
     private ACLMessage esperarCancelComunicador(){
         return blockingReceive();
+    }
+    
+    private void enviarCompraBuscador(JsonValue resultado, String buscador){   
+        JsonObject msg = new JsonObject();
+        msg.add("Tienda", resultado.asObject().get("tienda").asInt());
+        msg.add("Referencia", resultado.asObject().get("reference"));
+        msg.add("Serie", resultado.asObject().get("serie").asInt());
+        msg.add("Precio", resultado.asObject().get("price").asInt());
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(msg.toString());
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.QUERY_IF);
+        out.addReceiver(new AID(buscador, AID.ISLOCALNAME));
+        send(out);
     }
 }

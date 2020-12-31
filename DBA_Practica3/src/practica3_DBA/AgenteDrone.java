@@ -13,9 +13,12 @@ import YellowPages.YellowPages;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonArray;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -140,4 +143,45 @@ public class AgenteDrone extends IntegratedAgent{
         send(out);
         return blockingReceive();
     }
+    
+    protected ACLMessage obtenerPreciosTienda(String nombreTienda){
+        Info("Precios de "+ nombreTienda);
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("{}");
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.QUERY_REF);
+        out.addReceiver(new AID(nombreTienda, AID.ISLOCALNAME));
+        send(out);
+        return blockingReceive();
+    }
+    
+      /**
+    * @author: Jose Armando Albarado Mamani
+    * @params: T[] array de tiendas
+    * @params: sensor es el sensor pendiente a buscar
+    * @description: Se busca la referencia del sensor más barato entre las 3 tiendas
+    */
+    protected JsonValue obtenerMejorPrecioParaSensor(Object T[], String sensor){
+        int mejorPrecio = 1000000;
+        JsonValue mejorResultado = null;
+        for(int i=0;i<3;i++){
+            JsonObject respuesta = Json.parse(in.getContent()).asObject();
+            JsonArray products = respuesta.get("products").asArray();
+            for (JsonValue p : products){
+                if(p.asObject().get("reference").toString().contains(sensor.toUpperCase())){
+                    Info(T[i] + " contiene " + sensor + " a un precio de " + p.asObject().get("price").toString()+ " referencia:"+p.asObject().get("reference").toString());
+                    int precio = Integer.parseInt(p.asObject().get("price").toString());
+                    if(precio<=mejorPrecio){
+                        mejorPrecio = precio;
+                        mejorResultado = p;
+                        mejorResultado.asObject().add("tienda", i);
+                    }
+                }
+            }
+        }
+        return mejorResultado;
+    }
+    
 }

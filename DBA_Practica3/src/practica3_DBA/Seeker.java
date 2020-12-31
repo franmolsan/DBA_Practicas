@@ -14,6 +14,8 @@ import com.eclipsesource.json.JsonObject;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -112,39 +114,54 @@ public class Seeker extends DroneDelMundo{
                 }
                 JsonObject respuesta = Json.parse(in.getContent()).asObject();
                 guardarCoins(respuesta.get("coins").asArray());
-                estado = "OBTENER-TIENDA";
-                break;
                 
-            case "OBTENER-TIENDA":
                 yp.updateYellowPages(in);
-
                 Info("YP = " + yp.queryProvidersofService(convID).toString());
+
                 Info("Setup finalizado");
+                Info("Esperando a comprar");
                 informarSetupCompletado();
-                Object T[] = yp.queryProvidersofService(convID).toArray();
-                in = obtenerPreciosTienda(T[0].toString());
-                Info("PRECIOS DE LA TIENDA: "+ T[0].toString() + " --> "+ in.getContent());
-                in = obtenerPreciosTienda(T[1].toString());
-                Info("PRECIOS DE LA TIENDA: "+ T[1].toString() + " --> "+ in.getContent());
-                in = obtenerPreciosTienda(T[2].toString());
-                Info("PRECIOS DE LA TIENDA: "+ T[2].toString() + " --> "+ in.getContent());
+                in = blockingReceive();
+                Info("Procediendo a comprar " + in.getContent());
                 estado = "COMPRAR-SENSORES";
                 break;
+                
             case "COMPRAR-SENSORES":
                 Object tiendas[] = yp.queryProvidersofService(convID).toArray();
-                JsonObject resultado  = obtenerMejorPrecioParaSensor(tiendas, "alive");
+                JsonObject res = Json.parse(in.getContent()).asObject();
+                Map<String, String> resultado  = new HashMap<String, String>();
+                resultado.put("Referencia", res.get("Referencia").toString());
+                resultado.put("Serie", res.get("Serie").toString());
+                resultado.put("Precio", res.get("Precio").toString());
+                resultado.put("Tienda", res.get("Tienda").toString());
                 Info("Datos del mejor sensor:" + resultado.toString());
                 
-                in = comprarSensor(resultado.get("reference").toString(), misCoins, resultado.get("tienda").toString());
-                hayError = in.getPerformative() != ACLMessage.INFORM;
-                if (hayError) {
-                    Info(ACLMessage.getPerformative(in.getPerformative())
-                            + " Could not subscribe as SEEKER to "
-                            + worldManager + " due to " + getDetailsLARVA(in));
+                ArrayList<String> pago = new ArrayList<>();
+                int coinsNecesarias = Integer.parseInt(resultado.get("Precio"));
+                if(coinsNecesarias<=misCoins.size()){
+                    for(int i=0;i<coinsNecesarias;i++){
+                        pago.add(misCoins.get(i));
+                        misCoins.remove(i);
+                    }
+                    in = comprarSensor(resultado.get("Referencia").substring(1, resultado.get("Referencia").length()-1), pago, tiendas[Integer.parseInt(resultado.get("Tienda"))].toString());
+                }else{
+                    Info(" Could not buy from " + resultado.get("Tienda")+
+                             " due to not have enough money");
                     estado = "CANCEL-WM";
                     break;
                 }
-                Info(in.getContent());
+                
+                hayError = in.getPerformative() != ACLMessage.INFORM;
+                if (hayError) {
+                    Info(ACLMessage.getPerformative(in.getPerformative())
+                            + " Could not buy from " + resultado.get("Tienda")+
+                             " due to " + getDetailsLARVA(in));
+                    estado = "CANCEL-WM";
+                    break;
+                }
+                
+                Info("Sensor comprado correctamente" + in.getContent());
+                informarSensorComprado();
                 estado = "LOGIN-WM";
                 break;
             case "LOGIN-WM":

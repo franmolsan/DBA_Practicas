@@ -14,9 +14,10 @@ import jade.lang.acl.ACLMessage;
 import com.eclipsesource.json.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class DroneDelMundo extends AgenteDrone{
-    protected String listener = "Cerebro Computadora2";
+    protected String listener = "Cerebro Computadora";
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
     int umbralEnergia = 200;
@@ -952,6 +953,18 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
     }
     
+    protected void informarSensorComprado(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("sensorOk");
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        send(out);
+    }
+    
     protected ACLMessage realizarLoginWM(ArrayList<String> sensores, int posx, int posy){
         Info("Realizando Login ");
         JsonObject msg = new JsonObject();
@@ -983,7 +996,7 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
         return blockingReceive();
     }
-    
+      
     /**
     * @author: Francisco José Molina Sánchez
     * @params: coins es el array json con los valores de las monedas
@@ -1002,7 +1015,9 @@ public class DroneDelMundo extends AgenteDrone{
     * @params: sensor es el sensor pendiente a buscar
     * @description: Se busca la referencia del sensor más barato entre las 3 tiendas
     */
-    protected JsonObject obtenerMejorPrecioParaSensor(Object T[], String sensor){
+    /*
+    protected Map<String, String> obtenerMejorPrecioParaSensor(Object T[], String sensor){
+        Map<String, String> map = new HashMap<String, String>();
         int mejorPrecio = 1000000;
         JsonValue mejorResultado = null;
         for(int i=0;i<3;i++){
@@ -1016,13 +1031,17 @@ public class DroneDelMundo extends AgenteDrone{
                     if(precio<=mejorPrecio){
                         mejorPrecio = precio;
                         mejorResultado = p;
-                        mejorResultado.asObject().add("tienda", T[i].toString());
+                        mejorResultado.asObject().add("tienda", i);
+                        map.put("Referencia", p.asObject().get("reference").toString());
+                        map.put("Serie", p.asObject().get("serie").toString());
+                        map.put("Precio", p.asObject().get("price").toString());
+                        map.put("Tienda", p.asObject().get("tienda").toString());
                     }
                 }
             }
         }
-        return mejorResultado.asObject();
-    }
+        return map;
+    }*/
     
     /**
     * @author: Jose Armando Albarado Mamani
@@ -1031,10 +1050,15 @@ public class DroneDelMundo extends AgenteDrone{
     */
     protected ACLMessage comprarSensor(String referencia, ArrayList<String> payment, String nombreTienda){
         Info("Comprando "+ referencia + " en " + nombreTienda);
+        JsonArray jarr = new JsonArray();
+        for(String c:payment){
+            jarr.add(c);
+        }
         JsonObject msg = new JsonObject();
         msg.add("operation", "buy");
         msg.add("reference", referencia);
-        msg.add("attach", payment.toString());
+        msg.add("payment", jarr);
+        Info(payment.toString());
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -1042,6 +1066,7 @@ public class DroneDelMundo extends AgenteDrone{
         out.setPerformative(ACLMessage.REQUEST);
         out.setProtocol("REGULAR");
         out.addReceiver(new AID(nombreTienda, AID.ISLOCALNAME));
+        Info(out.getContent());
         send(out);
         return blockingReceive();
     }
