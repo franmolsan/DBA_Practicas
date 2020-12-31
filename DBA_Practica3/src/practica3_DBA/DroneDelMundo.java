@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DroneDelMundo extends AgenteDrone{
-    protected String listener = "Cerebro Computadora1";
+    protected String coach = "Cerebro Computadora1";
     protected String tipo;
     protected ArrayList<String> sensoresDrone = new ArrayList<String>();
     TTYControlPanel myControlPanel;
@@ -940,7 +940,7 @@ public class DroneDelMundo extends AgenteDrone{
         out.setContent("turnOffCompleted");
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
         send(out);
     }
     
@@ -951,7 +951,7 @@ public class DroneDelMundo extends AgenteDrone{
         out.setContent("setupCompleted");
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
         send(out);
     }
     
@@ -962,24 +962,24 @@ public class DroneDelMundo extends AgenteDrone{
         out.setContent("sensorOk");
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
         send(out);
     }
     
-    protected ACLMessage realizarLoginWM(ArrayList<String> sensores, int posx, int posy){
+    protected ACLMessage realizarLoginWM(){
         Info("Realizando Login ");
         JsonObject msg = new JsonObject();
         msg.add("operation", "login");
-        msg.add("attach", sensores.toString());
-        msg.add("posx", posx);
-        msg.add("posy", posy);
+        msg.add("attach", sensoresDrone.toString());
+        msg.add("posx", resultadoComunicacion.get("posx").asInt());
+        msg.add("posy", resultadoComunicacion.get("posy").asInt());
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
         out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
         out.setContent(msg.toString());
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
+        //out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.REQUEST);
         send(out);
         return blockingReceive();
@@ -1124,8 +1124,8 @@ public class DroneDelMundo extends AgenteDrone{
     }
     
     protected void comprar(){
-        resultadoComunicacion = Json.parse(in.getContent()).asObject();
-        while (resultadoComunicacion.get("action").asString().equals("comprar")){
+        String accion = obtenerResultado();
+        while (accion.equals("comprar")){
             Object tiendas[] = yp.queryProvidersofService(convID).toArray();
             Map<String, String> resultado  = new HashMap<String, String>();
             resultado.put("Referencia", resultadoComunicacion.get("Referencia").toString());
@@ -1160,8 +1160,27 @@ public class DroneDelMundo extends AgenteDrone{
             Info("Sensor comprado correctamente"); // + in.getContent());
             informarSensorComprado();
             in = blockingReceive();
-            resultadoComunicacion = Json.parse(in.getContent()).asObject();
+            accion = obtenerResultado();
         }
         estado = "ESPERAR-ORDEN";
+    }
+    
+    protected String obtenerResultado(){
+        Info("OBTENIENDO RESULTADO " + in.getContent());
+        resultadoComunicacion = Json.parse(in.getContent()).asObject();
+        String accion = resultadoComunicacion.get("action").asString();
+        
+        return accion;
+    }
+    
+    protected void informarCoachLoginRealizado(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
+        out.setContent("login completado");
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        send(out);
     }
 }

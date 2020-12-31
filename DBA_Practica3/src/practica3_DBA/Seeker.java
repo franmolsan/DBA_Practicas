@@ -64,9 +64,10 @@ public class Seeker extends DroneDelMundo{
                 estado = "ESPERAR-ORDEN";
                 break;
             case "ESPERAR-ORDEN":
-                Info("Esperando Listener");
+                Info("Esperando orden");
                 in = blockingReceive();
                 Info(in.getContent());
+                String accion = obtenerResultado();
                 hayError = in.getPerformative() != ACLMessage.INFORM;
                 if (hayError) {
                     Info(ACLMessage.getPerformative(in.getPerformative())
@@ -74,17 +75,26 @@ public class Seeker extends DroneDelMundo{
                     estado = "CANCEL-WM";
                     break;
                 }
-                if (in.getContent().equals("turnOff")){
+                if (accion.equals("turnOff")){
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
-                else if(in.getContent().equals("")){
+                else if(accion.equals("")){
+                    break;
+                }
+                else if(accion.equals("login")){
+                    estado = "REALIZAR-LOGIN";
                     break;
                 }
                 else{
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
+            case "REALIZAR-LOGIN":
+                realizarLoginWM();
+                informarCoachLoginRealizado();
+                estado = "ESPERAR-ORDEN";
+                break;
             case "CHECKOUT-LARVA":
                 checkOutLarva();
                 break;

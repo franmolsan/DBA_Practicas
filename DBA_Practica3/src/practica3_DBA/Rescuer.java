@@ -52,9 +52,10 @@ public class Rescuer extends DroneDelMundo{
                 comprar();
                 break;
             case "ESPERAR-ORDEN":
-                Info("Esperando Listener");
+                Info("Esperando orden");
                 in = blockingReceive();
                 Info(in.getContent());
+                String accion = obtenerResultado();
                 hayError = in.getPerformative() != ACLMessage.INFORM;
                 if (hayError) {
                     Info(ACLMessage.getPerformative(in.getPerformative())
@@ -62,17 +63,28 @@ public class Rescuer extends DroneDelMundo{
                     estado = "CANCEL-WM";
                     break;
                 }
-                if (in.getContent().equals("turnOff")){
+                if (accion.equals("turnOff")){
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
-                else if(in.getContent().equals("")){
+                else if(accion.equals("")){
+                    break;
+                }
+                else if(accion.equals("login")){
+                    estado = "REALIZAR-LOGIN";
                     break;
                 }
                 else{
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
+                
+            case "REALIZAR-LOGIN":
+                realizarLoginWM();
+                informarCoachLoginRealizado();
+                //estado = "ESPERAR-ORDEN";
+                estado = "RESCATE-FINALIZADO";
+                break;
             case "RESCATE-FINALIZADO":
                 Info("Rescate Finalizado");
                 

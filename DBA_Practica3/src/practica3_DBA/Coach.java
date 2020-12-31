@@ -98,10 +98,16 @@ public class Coach extends AgenteDrone {
                 break;
             case "COMPRAR-SENSORES":
                 comprarSensores();
+                estado = "REALIZAR-LOGIN";
+                break;
+            case "REALIZAR-LOGIN":
+                realizarLoginDrones();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
+                Info("ANTES TODOS RESCATADOS");
                 esperarTodosRescatados();
+                Info("DESPUES TODOS RESCATADOS");
                 estado = "CANCEL-BUSCADORES";
                 break;
             case "CANCEL-BUSCADORES":
@@ -169,7 +175,6 @@ public class Coach extends AgenteDrone {
         out.setConversationId(convID);
         out.setContent(new JsonObject().add("idListener", getAID().toString()).toString());
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.QUERY_IF);
         out.addReceiver(new AID(listener, AID.ISLOCALNAME));
         
@@ -187,7 +192,6 @@ public class Coach extends AgenteDrone {
         out.setConversationId(convID);
         out.setContent(new JsonObject().add("idListener", getAID().toString()).toString());
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.QUERY_IF);
         for (int i=0; i<buscadores.size(); i++){
             out.addReceiver(new AID(buscadores.get(i), AID.ISLOCALNAME));
@@ -201,7 +205,6 @@ public class Coach extends AgenteDrone {
         out.setConversationId(convID);
         out.setContent(new JsonObject().add("idListener", getAID().toString()).toString());
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.QUERY_IF);
         out.addReceiver(new AID(rescatador, AID.ISLOCALNAME));
         
@@ -286,6 +289,8 @@ public class Coach extends AgenteDrone {
             in = blockingReceive();
             Info("Compra realziada: " + in.getContent());
         }
+        
+        finalizarCompra(rescatador);
 
         for(int i=0;i<buscadores.size();i++){
             tiendas = yp.queryProvidersofService(convID).toArray();
@@ -295,6 +300,7 @@ public class Coach extends AgenteDrone {
                 in = blockingReceive();
                 Info(in.getContent());
             }
+            finalizarCompra(buscadores.get(i));
         }
 
     }
@@ -331,10 +337,12 @@ public class Coach extends AgenteDrone {
     }
         
     private void informarTodosObjetivosRescatadosABuscadores(){
+        JsonObject msg = new JsonObject();
+        msg.add("action", "turnOff");
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
-        out.setContent("turnOff");
+        out.setContent(msg.toString());
         out.setProtocol("REGULAR");
         out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.INFORM);
@@ -447,9 +455,59 @@ public class Coach extends AgenteDrone {
         out.setConversationId(convID);
         out.setContent(msg.toString());
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
-        out.setPerformative(ACLMessage.QUERY_IF);
+        out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID(drone, AID.ISLOCALNAME));
+        send(out);
+    }
+    
+    private void realizarLoginDrones(){
+        for(int i = 0; i < 0; i++){
+            realizarLoginDrone(buscadores.get(i), 50+i, 50+i);
+        }
+        //esperarLoginBuscadores();
+        
+        realizarLoginDrone(rescatador, 20, 20);
+        esperarLoginRescatador();
+        
+    }
+    
+    private void realizarLoginDrone(String nombre, int posx, int posy){
+        JsonObject msg = new JsonObject();
+        msg.add("action", "login");
+        msg.add("posx", posx);
+        msg.add("posy", posy);
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(msg.toString());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(nombre, AID.ISLOCALNAME));
+        send(out);
+    }
+    
+    private void esperarLoginRescatador(){
+        in = blockingReceive();
+        Info("Despues de esperar Rescatador "+in.getContent());
+    }
+    
+    private void esperarLoginBuscadores(){
+        for(int i = 0; i < buscadores.size(); i++){
+            in = blockingReceive();
+            Info("Despues de esperar Buscador "+in.getContent());
+        }
+    }
+    
+    private void finalizarCompra(String nombre){
+        JsonObject msg = new JsonObject();
+        msg.add("action", "finalizarCompra");
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(msg.toString());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(nombre, AID.ISLOCALNAME));
         send(out);
     }
 }
