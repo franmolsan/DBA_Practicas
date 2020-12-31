@@ -24,7 +24,7 @@ import java.util.Map;
  *
  * @author Francisco José Molina Sánchez
  */
-public class AgenteDrone extends IntegratedAgent{
+public abstract class AgenteDrone extends IntegratedAgent{
     
     // protected para que se puedan ver en la subclase
     protected YellowPages yp;
@@ -33,7 +33,7 @@ public class AgenteDrone extends IntegratedAgent{
     protected boolean hayError;
     protected ACLMessage in, out;
     protected Map2DGrayscale mapa;
-    
+    protected JsonObject resultadoComunicacion;
     
     @Override
     public void setup()   {
@@ -130,19 +130,35 @@ public class AgenteDrone extends IntegratedAgent{
         this.send(out);
         return blockingReceive();
     }
-    
-    protected ACLMessage suscribirseComo(String tipo) {
-        Info("ID: " + convID);
-        out = new ACLMessage();
-        out.setSender(getAID());
-        out.setConversationId(convID);
-        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
-        out.setContent(new JsonObject().add("type", tipo).toString());
-        out.setProtocol("REGULAR");
-        out.setPerformative(ACLMessage.SUBSCRIBE);
-        send(out);
-        return blockingReceive();
+
+    protected void checkInLarva(){
+        Info("Checkin in LARVA with " + _identitymanager);
+        in = suscribirseA(_identitymanager); // As seen in slides
+        hayError = (in.getPerformative() != ACLMessage.INFORM);
+        if (hayError) {
+            Info("\t" + ACLMessage.getPerformative(in.getPerformative())
+                    + " Checkin failed due to " + getDetailsLARVA(in));
+            estado = "EXIT";
+        }
+        else{
+            estado = "SUBSCRIBE-WM";
+            Info("\tCheckin ok");
+        }
     }
+    
+    protected void checkOutLarva(){
+        Info("Exit LARVA");
+        in = enviarCancelA(_identitymanager);
+        estado = "EXIT";
+    }
+    
+    protected void exit(){
+        Info("The agent dies");
+        _exitRequested = true;
+    }
+    
+
+    protected abstract void suscribirseWM();
     
     protected ACLMessage obtenerPreciosTienda(String nombreTienda){
         Info("Precios de "+ nombreTienda);
@@ -167,6 +183,7 @@ public class AgenteDrone extends IntegratedAgent{
         int mejorPrecio = 1000000;
         JsonValue mejorResultado = null;
         for(int i=0;i<3;i++){
+            in = obtenerPreciosTienda(T[i].toString());
             JsonObject respuesta = Json.parse(in.getContent()).asObject();
             JsonArray products = respuesta.get("products").asArray();
             for (JsonValue p : products){

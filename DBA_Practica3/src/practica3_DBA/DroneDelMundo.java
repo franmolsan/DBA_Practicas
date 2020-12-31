@@ -7,8 +7,10 @@
 package practica3_DBA;
 
 
+import static ACLMessageTools.ACLMessageTools.getDetailsLARVA;
 import ControlPanel.TTYControlPanel;
 import IntegratedAgent.IntegratedAgent;
+import YellowPages.YellowPages;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 import com.eclipsesource.json.*;
@@ -17,7 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DroneDelMundo extends AgenteDrone{
-    protected String listener = "Cerebro Computadora";
+    protected String listener = "Cerebro Computadora1";
+    protected String tipo;
+    protected ArrayList<String> sensoresDrone = new ArrayList<String>();
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
     int umbralEnergia = 200;
@@ -935,7 +939,6 @@ public class DroneDelMundo extends AgenteDrone{
         out.setConversationId(convID);
         out.setContent("turnOffCompleted");
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID(listener, AID.ISLOCALNAME));
         send(out);
@@ -947,7 +950,6 @@ public class DroneDelMundo extends AgenteDrone{
         out.setConversationId(convID);
         out.setContent("setupCompleted");
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID(listener, AID.ISLOCALNAME));
         send(out);
@@ -959,7 +961,6 @@ public class DroneDelMundo extends AgenteDrone{
         out.setConversationId(convID);
         out.setContent("sensorOk");
         out.setProtocol("REGULAR");
-        out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID(listener, AID.ISLOCALNAME));
         send(out);
@@ -1009,40 +1010,7 @@ public class DroneDelMundo extends AgenteDrone{
         Info ("\nMis coins: \n" + misCoins);
     }
     
-    /**
-    * @author: Jose Armando Albarado Mamani
-    * @params: T[] array de tiendas
-    * @params: sensor es el sensor pendiente a buscar
-    * @description: Se busca la referencia del sensor más barato entre las 3 tiendas
-    */
-    /*
-    protected Map<String, String> obtenerMejorPrecioParaSensor(Object T[], String sensor){
-        Map<String, String> map = new HashMap<String, String>();
-        int mejorPrecio = 1000000;
-        JsonValue mejorResultado = null;
-        for(int i=0;i<3;i++){
-            ACLMessage in = obtenerPreciosTienda(T[i].toString());
-            JsonObject respuesta = Json.parse(in.getContent()).asObject();
-            JsonArray products = respuesta.get("products").asArray();
-            for (JsonValue p : products){
-                if(p.asObject().get("reference").toString().contains(sensor.toUpperCase())){
-                    Info(T[i] + " contiene " + sensor + " a un precio de " + p.asObject().get("price").toString()+ " referencia:"+p.asObject().get("reference").toString());
-                    int precio = Integer.parseInt(p.asObject().get("price").toString());
-                    if(precio<=mejorPrecio){
-                        mejorPrecio = precio;
-                        mejorResultado = p;
-                        mejorResultado.asObject().add("tienda", i);
-                        map.put("Referencia", p.asObject().get("reference").toString());
-                        map.put("Serie", p.asObject().get("serie").toString());
-                        map.put("Precio", p.asObject().get("price").toString());
-                        map.put("Tienda", p.asObject().get("tienda").toString());
-                    }
-                }
-            }
-        }
-        return map;
-    }*/
-    
+   
     /**
     * @author: Jose Armando Albarado Mamani
     * @params: T[] array de tiendas, sensor es el sensor pendiente a buscar
@@ -1069,5 +1037,131 @@ public class DroneDelMundo extends AgenteDrone{
         Info(out.getContent());
         send(out);
         return blockingReceive();
+    }
+    
+    protected ACLMessage suscribirseComo(String tipo) {
+        Info("ID: " + convID);
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.setContent(new JsonObject().add("type", tipo).toString());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.SUBSCRIBE);
+        send(out);
+        return blockingReceive();
+    }
+    
+    @Override
+    protected void checkInLarva(){
+        Info("Duermo");
+        in = blockingReceive();
+        convID = in.getConversationId();
+        Info("Despierto");
+        super.checkInLarva();
+    }
+    
+    @Override
+    protected void checkOutLarva(){
+        super.checkOutLarva();
+        informarCancelacion();
+    }
+    
+    @Override
+    protected void suscribirseWM(){
+        Info("Retrieve who is my WM");
+            // First update Yellow Pages
+            in = obtenerYP(_identitymanager); // As seen oon slides
+            Info("YP obtenidas");
+            hayError = in.getPerformative() != ACLMessage.INFORM;
+            if (hayError) {
+                Info("\t" + ACLMessage.getPerformative(in.getPerformative())
+                        + " Query YellowPages failed due to " + getDetailsLARVA(in));
+                estado = "CHECKOUT-LARVA";
+            }
+            else{
+                yp = new YellowPages();
+                yp.updateYellowPages(in);
+                // It might be the case that YP are right but we dont find an appropriate service for us, then leave
+                if (yp.queryProvidersofService(servicio).isEmpty()) {
+                    Info("\t" + "There is no agent providing the service " + servicio);
+                    estado = "CHECKOUT-LARVA";
+                }
+                else{ // Choose one of the available service providers, i.e., the first one
+                    worldManager = yp.queryProvidersofService(servicio).iterator().next();
+                    Info(worldManager);
+                    // Keep the Conversation ID and spread it amongs the team members
+                    // Move on to get the map
+                }
+            }
+                
+        in = suscribirseComo(tipo);
+        hayError = in.getPerformative() != ACLMessage.INFORM;
+        if (hayError) {
+            Info(ACLMessage.getPerformative(in.getPerformative())
+                    + " Could not subscribe as " + tipo + " to "
+                    + worldManager + " due to " + getDetailsLARVA(in));
+            estado = "CANCEL-WM";
+        }
+        else{
+            JsonObject respuesta = Json.parse(in.getContent()).asObject();
+            guardarCoins(respuesta.get("coins").asArray());
+            Info("YP = " + yp.queryProvidersofService(convID).toString());
+
+            Info("Setup finalizado");
+            informarSetupCompletado();
+            
+            if (tipo.equals("LISTENER")){
+                estado = "ESPERAR-ORDEN";
+            }
+            else{
+                Info("Esperando a comprar");
+                in = blockingReceive();
+                Info("Procediendo a comprar " + in.getContent());
+                estado = "COMPRAR-SENSORES";
+            }
+        }   
+    }
+    
+    protected void comprar(){
+        resultadoComunicacion = Json.parse(in.getContent()).asObject();
+        while (resultadoComunicacion.get("action").asString().equals("comprar")){
+            Object tiendas[] = yp.queryProvidersofService(convID).toArray();
+            Map<String, String> resultado  = new HashMap<String, String>();
+            resultado.put("Referencia", resultadoComunicacion.get("Referencia").toString());
+            resultado.put("Serie", resultadoComunicacion.get("Serie").toString());
+            resultado.put("Precio", resultadoComunicacion.get("Precio").toString());
+            resultado.put("Tienda", resultadoComunicacion.get("Tienda").toString());
+            Info("Datos del mejor sensor:" + resultado.toString());
+
+            ArrayList<String> pago = new ArrayList<>();
+            int coinsNecesarias = Integer.parseInt(resultado.get("Precio"));
+            if(coinsNecesarias<=misCoins.size()){
+                for(int i=0;i<coinsNecesarias;i++){
+                    pago.add(misCoins.get(i));
+                    misCoins.remove(i);
+                }
+                in = comprarSensor(resultado.get("Referencia").substring(1, resultado.get("Referencia").length()-1), pago, tiendas[Integer.parseInt(resultado.get("Tienda"))].toString());
+            }else{
+                Info(" Could not buy from " + resultado.get("Tienda")+
+                         " due to not have enough money");
+                estado = "CANCEL-WM";
+                break;
+            }
+            sensoresDrone.add(resultadoComunicacion.get("Referencia").asString());
+            hayError = in.getPerformative() != ACLMessage.INFORM;
+            if (hayError) {
+                Info(ACLMessage.getPerformative(in.getPerformative())
+                        + " Could not buy from " + resultado.get("Tienda")+
+                         " due to " + in.getContent());
+                estado = "CANCEL-WM";
+                break;
+            }
+            Info("Sensor comprado correctamente"); // + in.getContent());
+            informarSensorComprado();
+            in = blockingReceive();
+            resultadoComunicacion = Json.parse(in.getContent()).asObject();
+        }
+        estado = "ESPERAR-ORDEN";
     }
 }
