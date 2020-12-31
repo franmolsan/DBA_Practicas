@@ -116,18 +116,37 @@ public class Seeker extends DroneDelMundo{
                 break;
                 
             case "OBTENER-TIENDA":
-                
                 yp.updateYellowPages(in);
-                
+
                 Info("YP = " + yp.queryProvidersofService(convID).toString());
                 Info("Setup finalizado");
                 informarSetupCompletado();
+                Object T[] = yp.queryProvidersofService(convID).toArray();
+                in = obtenerPreciosTienda(T[0].toString());
+                Info("PRECIOS DE LA TIENDA: "+ T[0].toString() + " --> "+ in.getContent());
+                in = obtenerPreciosTienda(T[1].toString());
+                Info("PRECIOS DE LA TIENDA: "+ T[1].toString() + " --> "+ in.getContent());
+                in = obtenerPreciosTienda(T[2].toString());
+                Info("PRECIOS DE LA TIENDA: "+ T[2].toString() + " --> "+ in.getContent());
+                estado = "COMPRAR-SENSORES";
+                break;
+            case "COMPRAR-SENSORES":
+                Object tiendas[] = yp.queryProvidersofService(convID).toArray();
+                JsonObject resultado  = obtenerMejorPrecioParaSensor(tiendas, "alive");
+                Info("Datos del mejor sensor:" + resultado.toString());
                 
-                in = obtenerPreciosTienda(yp.queryProvidersofService(convID).iterator().next());
-                Info("PRECIOS DE LA TIENDA: " + in.getContent());
+                in = comprarSensor(resultado.get("reference").toString(), misCoins, resultado.get("tienda").toString());
+                hayError = in.getPerformative() != ACLMessage.INFORM;
+                if (hayError) {
+                    Info(ACLMessage.getPerformative(in.getPerformative())
+                            + " Could not subscribe as SEEKER to "
+                            + worldManager + " due to " + getDetailsLARVA(in));
+                    estado = "CANCEL-WM";
+                    break;
+                }
+                Info(in.getContent());
                 estado = "LOGIN-WM";
                 break;
-                
             case "LOGIN-WM":
                 int posx = 20;
                 int posy = 30;

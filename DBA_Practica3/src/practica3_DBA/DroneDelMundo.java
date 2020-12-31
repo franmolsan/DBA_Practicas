@@ -970,9 +970,9 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
         return blockingReceive();
     }
-    
         
     protected ACLMessage obtenerPreciosTienda(String nombreTienda){
+        Info("Precios de "+ nombreTienda);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -994,5 +994,55 @@ public class DroneDelMundo extends AgenteDrone{
             misCoins.add(c.asString());
         }
         Info ("\nMis coins: \n" + misCoins);
+    }
+    
+    /**
+    * @author: Jose Armando Albarado Mamani
+    * @params: T[] array de tiendas
+    * @params: sensor es el sensor pendiente a buscar
+    * @description: Se busca la referencia del sensor más barato entre las 3 tiendas
+    */
+    protected JsonObject obtenerMejorPrecioParaSensor(Object T[], String sensor){
+        int mejorPrecio = 1000000;
+        JsonValue mejorResultado = null;
+        for(int i=0;i<3;i++){
+            ACLMessage in = obtenerPreciosTienda(T[i].toString());
+            JsonObject respuesta = Json.parse(in.getContent()).asObject();
+            JsonArray products = respuesta.get("products").asArray();
+            for (JsonValue p : products){
+                if(p.asObject().get("reference").toString().contains(sensor.toUpperCase())){
+                    Info(T[i] + " contiene " + sensor + " a un precio de " + p.asObject().get("price").toString()+ " referencia:"+p.asObject().get("reference").toString());
+                    int precio = Integer.parseInt(p.asObject().get("price").toString());
+                    if(precio<=mejorPrecio){
+                        mejorPrecio = precio;
+                        mejorResultado = p;
+                        mejorResultado.asObject().add("tienda", T[i].toString());
+                    }
+                }
+            }
+        }
+        return mejorResultado.asObject();
+    }
+    
+    /**
+    * @author: Jose Armando Albarado Mamani
+    * @params: T[] array de tiendas, sensor es el sensor pendiente a buscar
+    * @description: Se busca la referencia del sensor más barato entre las 3 tiendas
+    */
+    protected ACLMessage comprarSensor(String referencia, ArrayList<String> payment, String nombreTienda){
+        Info("Comprando "+ referencia + " en " + nombreTienda);
+        JsonObject msg = new JsonObject();
+        msg.add("operation", "buy");
+        msg.add("reference", referencia);
+        msg.add("attach", payment.toString());
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(msg.toString());
+        out.setPerformative(ACLMessage.REQUEST);
+        out.setProtocol("REGULAR");
+        out.addReceiver(new AID(nombreTienda, AID.ISLOCALNAME));
+        send(out);
+        return blockingReceive();
     }
 }
