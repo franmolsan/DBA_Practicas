@@ -33,7 +33,9 @@ public abstract class AgenteDrone extends IntegratedAgent{
     protected boolean hayError;
     protected ACLMessage in, out;
     protected Map2DGrayscale mapa;
+    protected int ALTURA_MAX = 256;
     protected JsonObject resultadoComunicacion;
+    protected String inReplyTo = "";
     
     @Override
     public void setup()   {
@@ -46,7 +48,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
         // Descripción del grupo
         servicio = "Analytics group ArcelorMittal";
         // Mundo a abrir
-        mundo = "World1";
+        mundo = "World2";
         // Estado inicial del agente
         estado = "CHECKIN-LARVA";
         // Por ahora no existen errores

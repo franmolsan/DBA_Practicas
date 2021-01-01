@@ -837,7 +837,7 @@ public class DroneDelMundo extends AgenteDrone{
     * @params: Mensaje es el mensaje que se envía al servidor
     * @description: Se envía un mensaje al agente en el servidor
     */
-    private void enviarMensajeServidor (String mensaje){
+    protected void enviarMensajeServidor (String mensaje){
         // enviar mensaje al agente en el servidor
         ACLMessage msg = new ACLMessage();
         msg.setSender(getAID());
@@ -851,7 +851,7 @@ public class DroneDelMundo extends AgenteDrone{
     * @return: ACLMessage el mensaje recibido del servidor como respuesta
     * @description: se devuelve el mensaje recibido del servidor
     */
-    private ACLMessage recibirRespuestaServidor (){
+    protected ACLMessage recibirRespuestaServidor (){
         ACLMessage msgReceive = this.blockingReceive();
         return msgReceive;
     }
@@ -982,7 +982,10 @@ public class DroneDelMundo extends AgenteDrone{
         //out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.REQUEST);
         send(out);
-        return blockingReceive();
+        
+        in = blockingReceive();
+        inReplyTo = in.getInReplyTo();
+        return in;
     }
         
     protected ACLMessage obtenerPreciosTienda(String nombreTienda){

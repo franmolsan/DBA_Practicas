@@ -20,7 +20,7 @@ public class main {
         _app.selectConnection();
         
         // primero lanzamos AWACS para visualizar todo
-        //_app.launchAgent("AWACS", Awacs.class);
+        _app.launchAgent("AWACS", Awacs.class);
         
         // luego lanzamos el resto de agentes
         _app.launchAgent("NobitaSinGafas1", Seeker.class);

@@ -39,6 +39,7 @@ public class Coach extends AgenteDrone {
     private ArrayList<String> sensoresRescatador = new ArrayList<String>();
     private String rescatador = "";
     private String listener = "";
+    private ArrayList<ArrayList<Integer>> matrizPosiciones = new ArrayList<>();
     
     @Override
     public void setup() {
@@ -51,7 +52,8 @@ public class Coach extends AgenteDrone {
         
         sensoresBuscadores.add("alive");
         sensoresBuscadores.add("energy");
-        //sensoresBuscadores.add("thermal");
+        
+        // luego añadiremos otros sensores en función del tamaño del mapa
         
         sensoresRescatador.add("alive");
         sensoresRescatador.add("energy");
@@ -75,9 +77,10 @@ public class Coach extends AgenteDrone {
                 break;
             case "PROCESS-MAP":
                 procesarMapa();
+                calcularParametrosSegunWorldSize();
                 break;
             case "DESPERTAR-AWACS":
-                //despertarAWACS();
+                despertarAWACS();
                 estado = "SETUP-COMUNICADOR";
                 break;
             case "SETUP-COMUNICADOR":
@@ -267,7 +270,7 @@ public class Coach extends AgenteDrone {
         out.setContent(new JsonObject().toString());
         out.setProtocol("REGULAR");
         out.setEncoding(_myCardID.getCardID());
-        out.setPerformative(ACLMessage.QUERY_IF);
+        out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID("AWACS", AID.ISLOCALNAME));
         send(out);
         
@@ -460,13 +463,56 @@ public class Coach extends AgenteDrone {
         send(out);
     }
     
+    private void calcularParametrosSegunWorldSize(){
+        calcularSensoresSegunWorldSize();
+        calcularPosicionSegunWorldSize();
+    }
+    
+    private void calcularSensoresSegunWorldSize(){
+        int worldSize = mapa.getWidth() * mapa.getHeight();
+        
+        if (worldSize < 2000){
+            sensoresBuscadores.add("thermal");
+        }
+        
+        else {
+            sensoresBuscadores.add("thermalHQ");
+        }
+    }
+    
+    private void calcularPosicionSegunWorldSize(){
+        int worldSize = mapa.getWidth() * mapa.getHeight();
+        int visionThermal = 0;
+        
+        if (worldSize < 2000){
+            visionThermal = 3; // hemos comprado el thermal estandar   
+        }
+        
+        else {
+            visionThermal = 10; // hemos comprado el thermal HQ
+        }
+        
+        ArrayList <Integer> posicion = new ArrayList<> ();
+            posicion.add(visionThermal);
+            posicion.add(visionThermal);
+            matrizPosiciones.add(posicion);
+            
+            posicion.set(0, mapa.getWidth()-visionThermal);
+            posicion.set(0, visionThermal);
+            matrizPosiciones.add(posicion);
+            
+            posicion.set(0, mapa.getWidth()/2 );
+            posicion.set(0, mapa.getHeight() - visionThermal);
+            matrizPosiciones.add(posicion);
+    }
+    
     private void realizarLoginDrones(){
         for(int i = 0; i < 0; i++){
-            realizarLoginDrone(buscadores.get(i), 50+i, 50+i);
+            realizarLoginDrone(buscadores.get(i), matrizPosiciones.get(i).get(0), matrizPosiciones.get(i).get(1));
         }
         //esperarLoginBuscadores();
         
-        realizarLoginDrone(rescatador, 20, 20);
+        realizarLoginDrone(rescatador, mapa.getWidth()/2 , mapa.getHeight()/2);
         esperarLoginRescatador();
         
     }
