@@ -57,6 +57,7 @@ public class DroneDelMundo extends AgenteDrone{
     @Override
     public void setup() {
         super.setup();
+        myReply = "myReply";
         //doCheckinPlatform();
         //doCheckinLARVA();
         //receiver = this.whoLarvaAgent();
@@ -966,7 +967,7 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
     }
     
-    protected ACLMessage realizarLoginWM(){
+    protected void realizarLoginWM(){
         Info("Realizando Login ");
         JsonObject msg = new JsonObject();
         msg.add("operation", "login");
@@ -978,6 +979,7 @@ public class DroneDelMundo extends AgenteDrone{
         obtenerResultado();
         msg.add("posx", resultadoComunicacion.get("posx").asInt());
         msg.add("posy", resultadoComunicacion.get("posy").asInt());
+            
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -988,13 +990,12 @@ public class DroneDelMundo extends AgenteDrone{
         out.setPerformative(ACLMessage.REQUEST);
         out.setInReplyTo(inReplyTo);
         out.setReplyWith(myReply);
-        Info (""+out);
+        Info ("reply: "+ inReplyTo);
         send(out);
         
         in = blockingReceive();
         inReplyTo = in.getReplyWith();
         Info ("Recibo respuesta servidor");
-        return in;
     }
         
     protected ACLMessage obtenerPreciosTienda(String nombreTienda){
@@ -1047,7 +1048,7 @@ public class DroneDelMundo extends AgenteDrone{
         return blockingReceive();
     }
     
-    protected ACLMessage suscribirseComo(String tipo) {
+    protected void suscribirseComo(String tipo) {
         Info("ID: " + convID);
         out = new ACLMessage();
         out.setSender(getAID());
@@ -1059,7 +1060,7 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
         in = blockingReceive();
         inReplyTo = in.getReplyWith();
-        return in;
+        Info("sus reply: " + inReplyTo);
     }
     
     @Override
@@ -1105,7 +1106,7 @@ public class DroneDelMundo extends AgenteDrone{
                 }
             }
                 
-        in = suscribirseComo(tipo);
+        suscribirseComo(tipo);
         hayError = in.getPerformative() != ACLMessage.INFORM;
         if (hayError) {
             Info(ACLMessage.getPerformative(in.getPerformative())
@@ -1130,6 +1131,7 @@ public class DroneDelMundo extends AgenteDrone{
                 Info("Procediendo a comprar " + in.getContent());
                 estado = "COMPRAR-SENSORES";
             }
+            
         }   
     }
     
@@ -1193,4 +1195,24 @@ public class DroneDelMundo extends AgenteDrone{
         out.setPerformative(ACLMessage.INFORM);
         send(out);
     }
+    
+    protected ACLMessage obtenerDatosSensores(){
+        JsonObject objeto = new JsonObject();
+
+        objeto.add("operation", "read");
+
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(objeto.toString());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.QUERY_REF);
+        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.setInReplyTo(inReplyTo);
+        send(out);
+        in = blockingReceive();
+        inReplyTo = in.getReplyWith();
+        return in;
+    }
+
 }
