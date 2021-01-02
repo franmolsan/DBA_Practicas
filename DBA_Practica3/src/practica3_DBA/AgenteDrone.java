@@ -36,6 +36,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
     protected int ALTURA_MAX = 256;
     protected JsonObject resultadoComunicacion;
     protected String inReplyTo = "";
+    protected String replyWith = "Reply1";
     
     @Override
     public void setup()   {
@@ -48,7 +49,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
         // Descripción del grupo
         servicio = "Analytics group ArcelorMittal";
         // Mundo a abrir
-        mundo = "World2";
+        mundo = "Playground1";
         // Estado inicial del agente
         estado = "CHECKIN-LARVA";
         // Por ahora no existen errores
@@ -163,7 +164,6 @@ public abstract class AgenteDrone extends IntegratedAgent{
     protected abstract void suscribirseWM();
     
     protected ACLMessage obtenerPreciosTienda(String nombreTienda){
-        Info("Precios de "+ nombreTienda);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);

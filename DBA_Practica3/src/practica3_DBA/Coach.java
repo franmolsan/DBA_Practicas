@@ -80,7 +80,7 @@ public class Coach extends AgenteDrone {
                 calcularParametrosSegunWorldSize();
                 break;
             case "DESPERTAR-AWACS":
-                despertarAWACS();
+                //despertarAWACS();
                 estado = "SETUP-COMUNICADOR";
                 break;
             case "SETUP-COMUNICADOR":
@@ -493,24 +493,27 @@ public class Coach extends AgenteDrone {
         }
         
         ArrayList <Integer> posicion = new ArrayList<> ();
-            posicion.add(visionThermal);
-            posicion.add(visionThermal);
-            matrizPosiciones.add(posicion);
-            
-            posicion.set(0, mapa.getWidth()-visionThermal);
-            posicion.set(0, visionThermal);
-            matrizPosiciones.add(posicion);
-            
-            posicion.set(0, mapa.getWidth()/2 );
-            posicion.set(0, mapa.getHeight() - visionThermal);
-            matrizPosiciones.add(posicion);
+        posicion.add(visionThermal);
+        posicion.add(visionThermal);
+        matrizPosiciones.add(posicion);
+
+        posicion = new ArrayList<> ();
+        posicion.add(mapa.getWidth()-visionThermal);
+        posicion.add(visionThermal);
+        matrizPosiciones.add(posicion);
+
+        posicion = new ArrayList<> ();
+        posicion.add(mapa.getWidth()/2 );
+        posicion.add(mapa.getHeight() - visionThermal);
+        matrizPosiciones.add(posicion);
     }
     
     private void realizarLoginDrones(){
-        for(int i = 0; i < 0; i++){
+        for(int i = 0; i < buscadores.size(); i++){
             realizarLoginDrone(buscadores.get(i), matrizPosiciones.get(i).get(0), matrizPosiciones.get(i).get(1));
+            
         }
-        //esperarLoginBuscadores();
+        esperarLoginBuscadores();
         
         realizarLoginDrone(rescatador, mapa.getWidth()/2 , mapa.getHeight()/2);
         esperarLoginRescatador();

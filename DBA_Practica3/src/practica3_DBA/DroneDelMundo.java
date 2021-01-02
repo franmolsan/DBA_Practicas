@@ -970,7 +970,12 @@ public class DroneDelMundo extends AgenteDrone{
         Info("Realizando Login ");
         JsonObject msg = new JsonObject();
         msg.add("operation", "login");
-        msg.add("attach", sensoresDrone.toString());
+        JsonArray jarr = new JsonArray();
+        for(String c:sensoresDrone){
+            jarr.add(c);
+        }
+        msg.add("attach", jarr);
+        obtenerResultado();
         msg.add("posx", resultadoComunicacion.get("posx").asInt());
         msg.add("posy", resultadoComunicacion.get("posy").asInt());
         out = new ACLMessage();
@@ -981,15 +986,18 @@ public class DroneDelMundo extends AgenteDrone{
         out.setProtocol("REGULAR");
         //out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.REQUEST);
+        out.setInReplyTo(inReplyTo);
+        out.setReplyWith("Reply2");
+        Info (""+out);
         send(out);
         
         in = blockingReceive();
         inReplyTo = in.getInReplyTo();
+        Info ("Recibo respuesta servidor");
         return in;
     }
         
     protected ACLMessage obtenerPreciosTienda(String nombreTienda){
-        Info("Precios de "+ nombreTienda);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -1020,7 +1028,6 @@ public class DroneDelMundo extends AgenteDrone{
     * @description: Se busca la referencia del sensor más barato entre las 3 tiendas
     */
     protected ACLMessage comprarSensor(String referencia, ArrayList<String> payment, String nombreTienda){
-        Info("Comprando "+ referencia + " en " + nombreTienda);
         JsonArray jarr = new JsonArray();
         for(String c:payment){
             jarr.add(c);
@@ -1029,7 +1036,6 @@ public class DroneDelMundo extends AgenteDrone{
         msg.add("operation", "buy");
         msg.add("reference", referencia);
         msg.add("payment", jarr);
-        Info(payment.toString());
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -1037,7 +1043,6 @@ public class DroneDelMundo extends AgenteDrone{
         out.setPerformative(ACLMessage.REQUEST);
         out.setProtocol("REGULAR");
         out.addReceiver(new AID(nombreTienda, AID.ISLOCALNAME));
-        Info(out.getContent());
         send(out);
         return blockingReceive();
     }
@@ -1051,8 +1056,11 @@ public class DroneDelMundo extends AgenteDrone{
         out.setContent(new JsonObject().add("type", tipo).toString());
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.SUBSCRIBE);
+        out.setReplyWith(replyWith);
         send(out);
-        return blockingReceive();
+        in = blockingReceive();
+        inReplyTo = in.getReplyWith();
+        return in;
     }
     
     @Override
