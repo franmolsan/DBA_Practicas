@@ -36,7 +36,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
     protected int ALTURA_MAX = 256;
     protected JsonObject resultadoComunicacion;
     protected String inReplyTo = "";
-    protected String replyWith = "Reply1";
+    protected String myReply = "Reply2";
     
     @Override
     public void setup()   {

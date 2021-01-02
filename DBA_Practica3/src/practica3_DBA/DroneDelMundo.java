@@ -987,12 +987,12 @@ public class DroneDelMundo extends AgenteDrone{
         //out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.REQUEST);
         out.setInReplyTo(inReplyTo);
-        out.setReplyWith("Reply2");
+        out.setReplyWith(myReply);
         Info (""+out);
         send(out);
         
         in = blockingReceive();
-        inReplyTo = in.getInReplyTo();
+        inReplyTo = in.getReplyWith();
         Info ("Recibo respuesta servidor");
         return in;
     }
@@ -1056,7 +1056,6 @@ public class DroneDelMundo extends AgenteDrone{
         out.setContent(new JsonObject().add("type", tipo).toString());
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.SUBSCRIBE);
-        out.setReplyWith(replyWith);
         send(out);
         in = blockingReceive();
         inReplyTo = in.getReplyWith();
