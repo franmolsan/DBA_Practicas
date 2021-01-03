@@ -34,9 +34,7 @@ public class Rescuer extends DroneDelMundo{
     private ArrayList<Integer> posActual;
     private ArrayList<Integer> inicio;
     private static final int costeAccion = 4;
-    private int anguloActual;
-    private int zActual;
-    private int energia;
+
     
     @Override
     public void setup() {
@@ -107,7 +105,10 @@ public class Rescuer extends DroneDelMundo{
                 break;
             case "RESCATE-FINALIZADO":
                 Info("Rescate Finalizado");
-                
+                estado = "CHECKOUT-LARVA";
+                break;
+            case "INFORMAR-MUERTE":
+                Info ("El drone ha muerto");
                 estado = "CHECKOUT-LARVA";
                 break;
             case "CHECKOUT-LARVA":
@@ -236,32 +237,32 @@ public class Rescuer extends DroneDelMundo{
                 energia = 1000;
             }
             if (p1X < p2X && p1Y < p2Y){
-                anguloActual = 135;
+                angulo = 135;
                 p1X ++;
                 p1Y ++;
             } else if (p1X > p2X && p1Y < p2Y){
-                anguloActual = -135;
+                angulo = -135;
                 p1X --;
                 p1Y ++;
             } else if (p1X < p2X && p1Y > p2Y){
-                anguloActual = 45;
+                angulo = 45;
                 p1X ++;
                 p1Y --;
             } else if (p1X > p2X && p1Y > p2Y){
-                anguloActual = -45;
+                angulo = -45;
                 p1X --;
                 p1Y --;
             } else if (p1X < p2X && p1Y == p2Y){
-                anguloActual = 90;
+                angulo = 90;
                 p1X ++;
             } else if (p1X > p2X && p1Y == p2Y){
-                anguloActual = -90;
+                angulo = -90;
                 p1X --;
             } else if (p1X == p2X && p1Y < p2Y){
-                anguloActual = 180;
+                angulo = 180;
                 p1Y ++;
             } else if (p1X == p2X && p1Y > p2Y){
-                anguloActual = 0;
+                angulo = 0;
                 p1Y --;
             }
              
@@ -278,8 +279,8 @@ public class Rescuer extends DroneDelMundo{
     }
 
     private int girar(){
-        for (int i=0; i<Math.abs(anguloActual); i+=45){
-            if (anguloActual<0){
+        for (int i=0; i<Math.abs(angulo); i+=45){
+            if (angulo<0){
                 arrayAcciones.add("rotateL");
             }
             else{
@@ -328,7 +329,7 @@ public class Rescuer extends DroneDelMundo{
         inicio.add(posX);
         inicio.add(posY);
         
-        anguloActual = 0;
+        angulo = 0;
         //zActual = getzActual(); //ver info del mapa
         energia = 10;
     }

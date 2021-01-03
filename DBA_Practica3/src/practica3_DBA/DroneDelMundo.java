@@ -21,6 +21,7 @@ import java.util.Map;
 public class DroneDelMundo extends AgenteDrone{
     protected String coach = "Cerebro Computadora1";
     protected String tipo;
+    protected int angulo;
     protected ArrayList<String> sensoresDrone = new ArrayList<String>();
     TTYControlPanel myControlPanel;
     int numVecesThermalPuedeEmpeorarSeguidas = 14;
@@ -41,12 +42,16 @@ public class DroneDelMundo extends AgenteDrone{
     boolean rodeoDecidido = false;
     boolean rodeoDcha = true;
     int incrementosThermalSeguidos = 0;
-    
+
     ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
-    int anguloActualDrone;
-    int xActualDrone;
-    int yActualDrone;
     
+    protected HashMap<String,JsonArray> mapaSensores;
+    protected int anguloActualDrone;
+    protected int xActualDrone;
+    protected int yActualDrone;
+    protected int zActual;
+    protected int energia = 10;
+    protected boolean alive = true;
     
     ArrayList<String> misCoins = new ArrayList <> ();
     
@@ -199,7 +204,7 @@ public class DroneDelMundo extends AgenteDrone{
         
         double distancia = mapaSensores.get("distance").asArray().get(0).asDouble();
         
-        int energia = mapaSensores.get("energy").asArray().get(0).asInt();
+        energia = mapaSensores.get("energy").asArray().get(0).asInt();
         int vivo = mapaSensores.get("alive").asArray().get(0).asInt();
         double angular = mapaSensores.get("angular").asArray().get(0).asDouble();
         int anguloDrone = (int) Math.round(mapaSensores.get("compass").asArray().get(0).asDouble());
@@ -242,7 +247,7 @@ public class DroneDelMundo extends AgenteDrone{
                 objetivoAlcanzado = true;
             }
             else {  
-                if (!comprobarEnergia(energia, alturaDrone)){
+                if (!comprobarEnergia(alturaDrone)){
                     
                     int siguientePosicion = calcularSiguientePosicion(angular);
                     ArrayList<Integer> casillaObjetivo = devolverCasillaAlrededor(siguientePosicion);
@@ -289,7 +294,7 @@ public class DroneDelMundo extends AgenteDrone{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Método que permite decir que acción realizar tras leer la información del mundo
     */
-    private boolean comprobarEnergia(int energia, int alturaDrone){
+    private boolean comprobarEnergia(int alturaDrone){
         boolean necesitaRecargar = false;  
         if (energia <= umbralEnergia){
             bajarAlSuelo(alturaDrone);
@@ -969,6 +974,10 @@ public class DroneDelMundo extends AgenteDrone{
     
     protected boolean realizarLoginWM(){
         Info("Realizando Login " + in.getContent());
+        
+        xActualDrone = resultadoComunicacion.get("posx").asInt();
+        yActualDrone =resultadoComunicacion.get("posy").asInt();
+                
         JsonObject msg = new JsonObject();
         msg.add("operation", "login");
         JsonArray jarr = new JsonArray();
@@ -976,9 +985,9 @@ public class DroneDelMundo extends AgenteDrone{
             jarr.add(c);
         }
         msg.add("attach", jarr);
-        msg.add("posx", resultadoComunicacion.get("posx").asInt());
-        msg.add("posy", resultadoComunicacion.get("posy").asInt());
-            
+        msg.add("posx", xActualDrone);
+        msg.add("posy", yActualDrone);
+        
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -1084,7 +1093,13 @@ public class DroneDelMundo extends AgenteDrone{
     @Override
     protected void checkOutLarva(){
         super.checkOutLarva();
-        informarCancelacion();
+        
+        if (!alive){
+            informarMuerteACoach();
+        }
+        else {
+            informarCancelacion(); 
+        }
     }
     
     @Override
@@ -1207,7 +1222,7 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
     }
     
-    protected ACLMessage obtenerDatosSensores(){
+    protected boolean obtenerDatosSensores(){
         JsonObject objeto = new JsonObject();
 
         objeto.add("operation", "read");
@@ -1223,7 +1238,71 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
         in = blockingReceive();
         inReplyTo = in.getReplyWith();
-        return in;
+        
+        return in.getPerformative() != ACLMessage.INFORM;
+    }
+    
+    
+    protected void actualizarMapaSensores (){
+
+        if (obtenerDatosSensores()){
+            String respuesta = in.getContent();
+            Info("Respuesta del servidor: " + respuesta);
+            JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
+            JsonArray arrayRespuesta = objetoRespuesta.get("details").asObject().get("perceptions").asArray();
+            Info(arrayRespuesta+"");
+
+
+            for (int i=0; i<arrayRespuesta.size(); i++){
+                mapaSensores.put(arrayRespuesta.get(i).asObject().get("sensor").asString(), 
+                        arrayRespuesta.get(i).asObject().get("data").asArray());
+            }
+        }
+        else {
+            estado = "CHECKOUT-LARVA";
+        }
+    }
+    
+    protected void actualizarValorSensores (){
+        energia = mapaSensores.get("energy").asInt();
+        alive = mapaSensores.get("alive").asBoolean();
+    }
+    
+    protected boolean comprobarAlive(){
+        if (!alive){
+            estado = "INFORMAR-MUERTE";
+        }
+        return alive;
+    }
+    
+    protected void informarMuerteACoach(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("dead");
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.setInReplyTo(inReplyTo);
+        send(out);
+    }
+    
+    protected void recargar(){
+        JsonObject objeto = new JsonObject();
+
+        objeto.add("operation", "recharge");
+
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(objeto.toString());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.QUERY_REF);
+        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.setInReplyTo(inReplyTo);
+        send(out);
+        in = blockingReceive();
+        inReplyTo = in.getReplyWith();
     }
 
 }

@@ -26,12 +26,13 @@ import java.util.Map;
  */
 public class Seeker extends DroneDelMundo{
     final static String TIPO = "SEEKER";
-    final int thermalSize = 7;
     
-    protected boolean primeraLecturaThermal;
-    protected int angulo;
-    protected int siguienteCasilla;
-    protected ArrayList<ArrayList<Integer>> objetivosEncontrados;
+    private boolean primeraLecturaThermal;
+    private int siguienteCasilla;
+    private ArrayList<ArrayList<Integer>> objetivosEncontrados;
+    ArrayList <ArrayList<Double>> thermal;
+    
+    
     
     // atributos heredados del AgenteDrone:
     // protected YellowPages yp;
@@ -66,14 +67,6 @@ public class Seeker extends DroneDelMundo{
                 break;
             case "COMPRAR-SENSORES":
                 comprar();
-                break;
-            case "LOGIN-WM":
-                int posx = 20;
-                int posy = 30;
-                ArrayList<String> sensores = new ArrayList<>();
-                //in = realizarLoginWM(sensores, posx, posy);
-                //Info(in.getContent());
-                estado = "ESPERAR-ORDEN";
                 break;
             case "ESPERAR-ORDEN":
                 Info("Esperando orden");
@@ -110,10 +103,19 @@ public class Seeker extends DroneDelMundo{
                 }
                 break;
             case "LEER-SENSORES":
-                //obtener datos sensores
+                actualizarMapaSensores ();
+                actualizarValorSensores();
+                if (comprobarAlive()){ // nos llevará a INFORMAR MUERTE si hemos muerto
+                    estado = "TRAZAR-RECORRIDO";
+                } 
                 break;
-            case "TRAZAR-RECORRIDO":    
-                buscarObjetivo(null, 2, 2);
+            case "TRAZAR-RECORRIDO":
+                comprobarEnergia();
+                buscarObjetivo();
+                break;
+            case "INFORMAR-MUERTE":
+                Info ("El drone ha muerto");
+                estado = "CHECKOUT-LARVA";
                 break;
             case "CHECKOUT-LARVA":
                 checkOutLarva();
@@ -123,24 +125,37 @@ public class Seeker extends DroneDelMundo{
                 break;
         }
     }
-     
-    protected void buscarObjetivo(HashMap<String,JsonArray> mapaSensores, int posx, int posy){
-         ArrayList <ArrayList<Double>> thermal = new ArrayList<>();
+
+    @Override
+    protected void actualizarValorSensores (){
+        super.actualizarValorSensores();
+        
         // crear matriz para thermal
-        for (int i=0; i<thermalSize; i++){
+        thermal = new ArrayList <> ();
+        for (int i=0; i< mapaSensores.get("thermal").asArray().size(); i++){
             thermal.add (new ArrayList <Double> ());
-            for (int j=0;j<thermalSize;j++){
+            for (int j=0;j<thermal.size();j++){
                 thermal.get(i).add(mapaSensores.get("thermal").asArray().get(i).asArray().get(j).asDouble());
             }
         }
+    }
+    
+    private void comprobarEnergia(){
+        if (energia < umbralEnergia){
+            recargar();
+            energia = 1000; // nos ahorramos una lectura de sensores
+        }
+    }
         
+    private void buscarObjetivo(){
+
         if(primeraLecturaThermal){
-            for (int i = 0; i < thermalSize; i++) {
-                for (int j = 0; j < thermalSize; j++) {
+            for (int i = 0; i < thermal.size(); i++) {
+                for (int j = 0; j < thermal.size(); j++) {
                     if(thermal.get(i).get(j) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + j - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + j - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                     }
                 }
@@ -154,127 +169,127 @@ public class Seeker extends DroneDelMundo{
             switch(angulo){
                 case 45:
                     //Comprueba la fila superior
-                    for (int i = 0; i < thermalSize; i++) {
+                    for (int i = 0; i < thermal.size(); i++) {
                         if(thermal.get(0).get(i) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     //Comprueba la columna de la derecha
-                    for (int i = 0; i < thermalSize; i++) {
-                        if(thermal.get(i).get(thermalSize-1) == 0){
+                    for (int i = 0; i < thermal.size(); i++) {
+                        if(thermal.get(i).get(thermal.size()-1) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + i - 3);
-                        arr.add(posy + thermalSize-1 - 3);
+                        arr.add(xActualDrone + i - 3);
+                        arr.add(yActualDrone + thermal.size()-1 - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     break;
                 case 0:
                     //Comprueba la fila superior
-                    for (int i = 0; i < thermalSize; i++) {
+                    for (int i = 0; i < thermal.size(); i++) {
                         if(thermal.get(0).get(i) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     break;
                 case 90:
                     //Comprueba la columna de la derecha
-                    for (int i = 0; i < thermalSize; i++) {
-                        if(thermal.get(i).get(thermalSize-1) == 0){
+                    for (int i = 0; i < thermal.size(); i++) {
+                        if(thermal.get(i).get(thermal.size()-1) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + i - 3);
-                        arr.add(posy + thermalSize-1 - 3);
+                        arr.add(xActualDrone + i - 3);
+                        arr.add(yActualDrone + thermal.size()-1 - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     break;
                 case 135:
                     //Comprueba la columna de la derecha
-                    for (int i = 0; i < thermalSize; i++) {
-                        if(thermal.get(i).get(thermalSize-1) == 0){
+                    for (int i = 0; i < thermal.size(); i++) {
+                        if(thermal.get(i).get(thermal.size()-1) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + i - 3);
-                        arr.add(posy + thermalSize-1 - 3);
+                        arr.add(xActualDrone + i - 3);
+                        arr.add(yActualDrone + thermal.size()-1 - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     
                     //Comprueba la fila inferior
-                    for (int i = 0; i < thermalSize; i++) {
-                        if(thermal.get(thermalSize-1).get(i) == 0){
+                    for (int i = 0; i < thermal.size(); i++) {
+                        if(thermal.get(thermal.size()-1).get(i) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + thermalSize-1 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + thermal.size()-1 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     break;
                 case 180:
                     //Comprueba la fila inferior
-                    for (int i = 0; i < thermalSize; i++) {
-                        if(thermal.get(thermalSize-1).get(i) == 0){
+                    for (int i = 0; i < thermal.size(); i++) {
+                        if(thermal.get(thermal.size()-1).get(i) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     break;
                 case -135:
                     //Comprueba la fila inferior
-                    for (int i = 0; i < thermalSize; i++) {
-                        if(thermal.get(thermalSize-1).get(i) == 0){
+                    for (int i = 0; i < thermal.size(); i++) {
+                        if(thermal.get(thermal.size()-1).get(i) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     
                     //Comprueba la columna de la izquierda
-                    for (int i = 0; i < thermalSize; i++) {
+                    for (int i = 0; i < thermal.size(); i++) {
                         if(thermal.get(i).get(0) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     break;
                 case -90:
                     //Comprueba la columna de la izquierda
-                    for (int i = 0; i < thermalSize; i++) {
+                    for (int i = 0; i < thermal.size(); i++) {
                         if(thermal.get(i).get(0) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     break;
                 case -45:
                     //Comprueba la columna de la izquierda
-                    for (int i = 0; i < thermalSize; i++) {
+                    for (int i = 0; i < thermal.size(); i++) {
                         if(thermal.get(i).get(0) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
                     
                     //Comprueba la fila superior
-                    for (int i = 0; i < thermalSize; i++) {
+                    for (int i = 0; i < thermal.size(); i++) {
                         if(thermal.get(0).get(i) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(posx + 0 - 3);
-                        arr.add(posy + i - 3);
+                        arr.add(xActualDrone + 0 - 3);
+                        arr.add(yActualDrone + i - 3);
                         objetivosEncontrados.add(arr);
                         }
                     }
@@ -287,19 +302,19 @@ public class Seeker extends DroneDelMundo{
                 //Añadimos la esquina superior izquierda
                 res.add(thermal.get(0).get(0));
                 //Añadimos la parte superior 
-                res.add(thermal.get(0).get(thermalSize-1/2));
+                res.add(thermal.get(0).get(thermal.size()-1/2));
                 //Añadimos la esquina superior dcha
-                res.add(thermal.get(0).get(thermalSize-1));
+                res.add(thermal.get(0).get(thermal.size()-1));
                 //Añadimos la parte derecha
-                res.add(thermal.get(thermalSize-1/2).get(thermalSize-1));
+                res.add(thermal.get(thermal.size()-1/2).get(thermal.size()-1));
                 //Añadimos la esquina inferior derecha
-                res.add(thermal.get(thermalSize-1).get(thermalSize-1));
+                res.add(thermal.get(thermal.size()-1).get(thermal.size()-1));
                 //Añadimos la parte de abajo
-                res.add(thermal.get(thermalSize-1).get(thermalSize-1/2));
+                res.add(thermal.get(thermal.size()-1).get(thermal.size()-1/2));
                 //Añadimos la esquina inferior izquierda
-                res.add(thermal.get(thermalSize-1).get(0));
+                res.add(thermal.get(thermal.size()-1).get(0));
                 //Añadimos la parte izquierda
-                res.add(thermal.get(thermalSize-1/2).get(0));
+                res.add(thermal.get(thermal.size()-1/2).get(0));
                 
                 for (int i = 0; i < res.size(); i++) {
                     if(res.get(i)<=mejorResultado){
@@ -344,7 +359,7 @@ public class Seeker extends DroneDelMundo{
         }
     }
     
-    protected void notificarCoachObjetivosEncontrados(){
+    private void notificarCoachObjetivosEncontrados(){
         JsonObject msg = new JsonObject();
         JsonArray jarr = new JsonArray();
         for (int i = 0; i <objetivosEncontrados.size() ; i++) {

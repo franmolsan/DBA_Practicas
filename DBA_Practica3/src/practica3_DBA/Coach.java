@@ -79,10 +79,6 @@ public class Coach extends AgenteDrone {
                 procesarMapa();
                 calcularParametrosSegunWorldSize();
                 break;
-            case "DESPERTAR-AWACS":
-                //despertarAWACS();
-                estado = "SETUP-COMUNICADOR";
-                break;
             case "SETUP-COMUNICADOR":
                 setupComunicador();
                 estado = "SETUP-BUSCADORES";
@@ -105,13 +101,22 @@ public class Coach extends AgenteDrone {
                 break;
             case "REALIZAR-LOGIN":
                 realizarLoginDrones();
+                estado = "DESPERTAR-AWACS";
+                break;
+            case "DESPERTAR-AWACS":
+                despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
-                Info("ANTES TODOS RESCATADOS");
-                esperarTodosRescatados();
-                Info("DESPUES TODOS RESCATADOS");
-                estado = "CANCEL-BUSCADORES";
+                in = blockingReceive();
+                if (in.getContent().equals("dead")){
+                    gestionarMuerte();
+                }
+                
+                if (in.getContent().equals("turnOffCompleted") && 
+                    in.getSender().getName().contains(rescatador)){
+                    estado = "CANCEL-BUSCADORES";
+                }
                 break;
             case "CANCEL-BUSCADORES":
                 cancelarBuscadores();
@@ -233,7 +238,7 @@ public class Coach extends AgenteDrone {
                     py = (int) (Math.random() * mapa.getHeight());
                     Info("\tX: " + px + ", Y:" + py + " = " + mapa.getLevel(px, py));
                 }
-                estado = "DESPERTAR-AWACS";
+                estado = "SETUP-COMUNICADOR";
             } else {
                 Info("\t" + "There was an error processing and saving the image ");
                 estado = "CANCEL-WM";
@@ -308,8 +313,8 @@ public class Coach extends AgenteDrone {
 
     }
     
-    private void esperarTodosRescatados(){
-        in = esperarCancelRescatador();
+    private void esperarCancelRescatador(){
+        in = blockingReceive();
         hayError = in.getPerformative() != ACLMessage.INFORM;
         if (hayError) {
             Info(ACLMessage.getPerformative(in.getPerformative())
@@ -320,13 +325,13 @@ public class Coach extends AgenteDrone {
     }
     
     private void cancelarBuscadores(){
-        informarTodosObjetivosRescatadosABuscadores();
+        informarCancelacionABuscadores();
         esperarCancelBuscadores();
         Info("Buscadores Cancelados");
     }
     
     private void cancelarComunicador(){
-        informarTodosObjetivosRescatadosAComunicador();
+        informaCancelacionAComunicador();
         esperarCancelComunicador();
         Info("Comunicador cancelados");
     }
@@ -339,7 +344,7 @@ public class Coach extends AgenteDrone {
         //in = enviarCancelA("AWACS"); 
     }
         
-    private void informarTodosObjetivosRescatadosABuscadores(){
+    private void informarCancelacionABuscadores(){
         JsonObject msg = new JsonObject();
         msg.add("action", "turnOff");
         out = new ACLMessage();
@@ -355,7 +360,7 @@ public class Coach extends AgenteDrone {
         send(out);
     }
     
-    private void informarTodosObjetivosRescatadosAComunicador(){
+    private void informaCancelacionAComunicador(){
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -425,6 +430,9 @@ public class Coach extends AgenteDrone {
     private void esperarCancelBuscadores(){
         for (int i=0; i<buscadores.size(); i++){
             in = blockingReceive();
+            if (! in.getContent().equals("turnOffCompleted")){
+                i--;
+            }
             //Info("MSG: "+in.getContent());
 //            hayError = (in.getPerformative() != ACLMessage.INFORM);
 //                if (hayError) {
@@ -433,13 +441,9 @@ public class Coach extends AgenteDrone {
 //                    break;
 //                }
 //                else{
-                   Info("MSG: "+in.getContent());
+                  
 //                }
         }
-    }
-    
-    private ACLMessage esperarCancelRescatador(){
-        return blockingReceive();
     }
     
     private ACLMessage esperarCancelComunicador(){
@@ -558,5 +562,41 @@ public class Coach extends AgenteDrone {
         out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID(nombre, AID.ISLOCALNAME));
         send(out);
+    }
+    
+    private void gestionarMuerte(){
+        String muerto = in.getSender().getName();
+        boolean encontrado = false;
+        
+        for (int i=0; i<buscadores.size() && !encontrado; i++){
+            if (muerto.contains(buscadores.get(i))){
+                encontrado = true;
+                buscadores.remove(i);
+            }
+        }
+        
+        if (buscadores.size() == 0){
+            cancelarRescatador();
+        }
+       
+    }
+    
+    private void cancelarRescatador(){
+        JsonObject msg = new JsonObject();
+        msg.add("action", "turnOff");
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(msg.toString());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(rescatador, AID.ISLOCALNAME));
+        send(out);
+        
+        do {
+            in = blockingReceive();
+        } while (in.getSender().getName().equals(rescatador) && in.getContent().equals("turnOffCompleted"));
+        
+        estado = "CANCEL-COMUNICADOR";
     }
 }
