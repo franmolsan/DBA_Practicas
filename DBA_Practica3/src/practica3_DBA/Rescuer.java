@@ -230,7 +230,7 @@ public class Rescuer extends DroneDelMundo{
     private void moverseDePuntoAPunto (int p1X, int p1Y, int p2X, int p2Y, boolean rescatar){
         while (p1X != p2X && p1Y != p2Y){
             if (energia < 250){
-                zActual = recargar(zActual);//revisar si se puede reutilizar
+//                zActual = recargar(zActual);//revisar si se puede reutilizar
                 energia = 1000;
             }
             if (p1X < p2X && p1Y < p2Y){
@@ -266,8 +266,7 @@ public class Rescuer extends DroneDelMundo{
             moverse(p1X, p1Y);
         }
 
-        ArrayList<Integer> estadoDescenso = descender(energia);//revisar si se puede reutilizar
-        energia = estadoDescenso.get(0);
+//        descender(energia);//revisar si se puede reutilizar
 
         if(rescatar){
             arrayAcciones.add("rescue");
@@ -307,10 +306,10 @@ public class Rescuer extends DroneDelMundo{
 
     private void moverse(int p1X, int p1Y){
         girar();
-        int alturaCasilla = getAlturaCasilla (p1X, p1Y);// ver cómo se obtiene el mapa
-        if (alturaCasilla - zActual > 0){
-            subirAAltura (alturaCasilla - zActual);
-        }
+//        int alturaCasilla = getAlturaCasilla (p1X, p1Y);// ver cómo se obtiene el mapa
+//        if (alturaCasilla - zActual > 0){
+//            subirAAltura (alturaCasilla - zActual);
+//        }
 
         arrayAcciones.add("moveF");
         energia = energia - costeAccion;
@@ -328,7 +327,7 @@ public class Rescuer extends DroneDelMundo{
         inicio.add(posY);
         
         anguloActual = 0;
-        zActual = getzActual(); //ver info del mapa
+        //zActual = getzActual(); //ver info del mapa
         energia = 10;
     }
 }
