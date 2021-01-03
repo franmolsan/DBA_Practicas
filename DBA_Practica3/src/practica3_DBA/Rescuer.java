@@ -82,14 +82,18 @@ public class Rescuer extends DroneDelMundo{
                     estado = "REALIZAR-LOGIN";
                     break;
                 }
-                else if (accion.equals("rescate")){
-                    iniciarRescateObjetivos(getVectorObjetivos(resultadoComunicacion.get("vectorObjetivos").asArray()));
+                else if (accion.equals("rescata")){
+                    estado = "INICIAR-RESCATE";
                 }
                 else{
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
-                
+            case "FINALIZAR-COMPRA":
+                Info("eNVIA");
+                enviarCoins();
+                estado = "ESPERAR-ORDEN";
+                break;
             case "REALIZAR-LOGIN":
                 actualizarPosicionActual(resultadoComunicacion.get("posx").asInt(), resultadoComunicacion.get("posy").asInt());
                 setInicio(resultadoComunicacion.get("posx").asInt(), resultadoComunicacion.get("posy").asInt());
@@ -99,9 +103,11 @@ public class Rescuer extends DroneDelMundo{
                     obtenerDatosSensores();
                     Info("Datos sensores: " + in.getContent());
                     moverse_pocho();
-                    //estado = "ESPERAR-ORDEN";
-                    estado = "RESCATE-FINALIZADO";
+                    estado = "ESPERAR-ORDEN";
                 }
+                break;
+            case "INICIAR-RESCATE":
+                iniciarRescateObjetivos();
                 break;
             case "RESCATE-FINALIZADO":
                 Info("Rescate Finalizado");
@@ -120,8 +126,7 @@ public class Rescuer extends DroneDelMundo{
         }
     }
     
-    private void moverse_pocho (){
-        
+    private void moverse_pocho(){
         // Crear objeto json
         JsonObject objeto = new JsonObject();
 
@@ -165,8 +170,26 @@ public class Rescuer extends DroneDelMundo{
         return vector;
     }
     
-    private void iniciarRescateObjetivos (ArrayList<ArrayList<Integer>> vectorObjetivos){
+    private void iniciarRescateObjetivos (){
+        ArrayList<ArrayList<Integer>> vectorObjetivos = new ArrayList<>();
+        resultadoComunicacion.get("action").asString();
+        for (int i=0; i<resultadoComunicacion.get("objetivos").asArray().size(); i++){
+            ArrayList<Integer> vectorPosicion = new ArrayList<>();
+            for (int j=0; j<resultadoComunicacion.get("objetivos").asArray().get(i).asArray().size(); j++){
+                vectorPosicion.add(resultadoComunicacion.get("objetivos").asArray().get(i).asArray().get(j).asInt());
+            }
+            vectorObjetivos.add(vectorPosicion);
+        }
         realizarRuta(calcularRutaGreedy(vectorObjetivos));
+        ejecutarAcciones();
+        //comprobar objetivos restantes
+        if (numObjetivosRestantes == 0){
+            estado = "TODOS-RESCATADOS";
+        }
+        else{
+            estado = "ESPERAR-ORDEN";
+        }
+    }
     }
     
     //Distancia entre dos puntos
@@ -233,43 +256,61 @@ public class Rescuer extends DroneDelMundo{
     private void moverseDePuntoAPunto (int p1X, int p1Y, int p2X, int p2Y, boolean rescatar){
         while (p1X != p2X && p1Y != p2Y){
             if (energia < 250){
-//                zActual = recargar(zActual);//revisar si se puede reutilizar
-                energia = 1000;
+                solicitarRecargaACoach();
+                in = blockingReceive();
+                String accion = obtenerResultado();
+                if(accion.equals("recargar")){
+                    bajarAlSuelo(getAlturaActual());
+                    if (!iniciarRecarga()){ //No hay error
+                        Info("He recargado");
+                        energia = 1000;
+                    }
+                    else{
+                        estado = "CHECKOUT-LARVA";
+                    }
+                    break;
+                }
+                else if(accion.equals("noRecargar")){
+                    estado = "INFORMAR-MUERTE";
+                    break;
+                }
             }
-            if (p1X < p2X && p1Y < p2Y){
-                angulo = 135;
-                p1X ++;
-                p1Y ++;
-            } else if (p1X > p2X && p1Y < p2Y){
-                angulo = -135;
-                p1X --;
-                p1Y ++;
-            } else if (p1X < p2X && p1Y > p2Y){
-                angulo = 45;
-                p1X ++;
-                p1Y --;
-            } else if (p1X > p2X && p1Y > p2Y){
-                angulo = -45;
-                p1X --;
-                p1Y --;
-            } else if (p1X < p2X && p1Y == p2Y){
-                angulo = 90;
-                p1X ++;
-            } else if (p1X > p2X && p1Y == p2Y){
-                angulo = -90;
-                p1X --;
-            } else if (p1X == p2X && p1Y < p2Y){
-                angulo = 180;
-                p1Y ++;
-            } else if (p1X == p2X && p1Y > p2Y){
-                angulo = 0;
-                p1Y --;
+            else{
+                if (p1X < p2X && p1Y < p2Y){
+                    angulo = 135;
+                    p1X ++;
+                    p1Y ++;
+                } else if (p1X > p2X && p1Y < p2Y){
+                    angulo = -135;
+                    p1X --;
+                    p1Y ++;
+                } else if (p1X < p2X && p1Y > p2Y){
+                    angulo = 45;
+                    p1X ++;
+                    p1Y --;
+                } else if (p1X > p2X && p1Y > p2Y){
+                    angulo = -45;
+                    p1X --;
+                    p1Y --;
+                } else if (p1X < p2X && p1Y == p2Y){
+                    angulo = 90;
+                    p1X ++;
+                } else if (p1X > p2X && p1Y == p2Y){
+                    angulo = -90;
+                    p1X --;
+                } else if (p1X == p2X && p1Y < p2Y){
+                    angulo = 180;
+                    p1Y ++;
+                } else if (p1X == p2X && p1Y > p2Y){
+                    angulo = 0;
+                    p1Y --;
+                }
+
+                moverse(p1X, p1Y);
             }
-             
-            moverse(p1X, p1Y);
         }
 
-//        descender(energia);//revisar si se puede reutilizar
+        bajarAlSuelo(getAlturaActual());
 
         if(rescatar){
             arrayAcciones.add("rescue");
@@ -277,7 +318,7 @@ public class Rescuer extends DroneDelMundo{
             //comunicar Rescate Objetivo posxposy
         }
     }
-
+    
     private int girar(){
         for (int i=0; i<Math.abs(angulo); i+=45){
             if (angulo<0){
@@ -309,11 +350,10 @@ public class Rescuer extends DroneDelMundo{
 
     private void moverse(int p1X, int p1Y){
         girar();
-//        int alturaCasilla = getAlturaCasilla (p1X, p1Y);// ver cómo se obtiene el mapa
-//        if (alturaCasilla - zActual > 0){
-//            subirAAltura (alturaCasilla - zActual);
-//        }
-
+        int alturaCasilla = getAlturaCasilla (p1X, p1Y);// ver cómo se obtiene el mapa
+        if (alturaCasilla - zActual > 0){
+            subirAAltura (alturaCasilla - zActual);
+        }
         arrayAcciones.add("moveF");
         energia = energia - costeAccion;
     }
@@ -330,7 +370,7 @@ public class Rescuer extends DroneDelMundo{
         inicio.add(posY);
         
         angulo = 0;
-        //zActual = getzActual(); //ver info del mapa
+        zActual = getzActual(); //ver info del mapa
         energia = 10;
     }
 }

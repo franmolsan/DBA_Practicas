@@ -878,7 +878,7 @@ public class DroneDelMundo extends AgenteDrone{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Se ejecuta la acción numAccionActual en el array de acciones arrayAcciones
     */
-    private void ejecutarAcciones(){
+    protected void ejecutarAcciones(){
         Info("Ejecutando acciones");
         
         while (arrayAcciones.size() > 0){
@@ -887,25 +887,30 @@ public class DroneDelMundo extends AgenteDrone{
 
             String accion = arrayAcciones.get(0);
             // añadir al objeto
-            objeto.add("command","execute");
-            objeto.add("action", accion);
+            objeto.add("operation", accion);
+
+            out = new ACLMessage();
+            out.setSender(getAID());
+            out.setConversationId(convID);
+            out.setContent(objeto.toString());
+            out.setProtocol("REGULAR");
+            out.setPerformative(ACLMessage.REQUEST);
+            out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+            Info ("Reply: " + inReplyTo);
+            out.setInReplyTo(inReplyTo);
+            send(out);
             arrayAcciones.remove(0);
-            objeto.add("key", key);
-
-            // Serializar objeto en string
-            String comando_ejecutar = objeto.toString();
-
-            enviarMensajeServidor(comando_ejecutar);
-
-            ACLMessage msgRespuesta = recibirRespuestaServidor();
-            String respuesta = msgRespuesta.getContent();
-            Info("Respuesta a accion " + accion + ": " + respuesta);
-        }
-        if (!objetivoAlcanzado){
-            estado = "TOMAR_DECISION";
-        }
-        else{
-            estado = "LOGOUT";
+            
+            in = blockingReceive();
+            hayError = in.getPerformative() != ACLMessage.INFORM;
+            if (hayError) {
+                Info(ACLMessage.getPerformative(in.getPerformative())
+                        + " Could not login" + " due to " + getDetailsLARVA(in));
+                estado = "CHECKOUT-LARVA";
+            }
+            else{
+                inReplyTo = in.getReplyWith();
+            }
         }
     }
     
@@ -1174,8 +1179,8 @@ public class DroneDelMundo extends AgenteDrone{
             int coinsNecesarias = Integer.parseInt(resultado.get("Precio"));
             if(coinsNecesarias<=misCoins.size()){
                 for(int i=0;i<coinsNecesarias;i++){
-                    pago.add(misCoins.get(i));
-                    misCoins.remove(i);
+                    pago.add(misCoins.get(0));
+                    misCoins.remove(0);
                 }
                 in = comprarSensor(resultado.get("Referencia").substring(1, resultado.get("Referencia").length()-1), pago, tiendas[Integer.parseInt(resultado.get("Tienda"))].toString());
                 Info ("compra de sensor: " + in.getContent());
@@ -1198,9 +1203,12 @@ public class DroneDelMundo extends AgenteDrone{
             Info("Sensor comprado correctamente"); // + in.getContent());
             informarSensorComprado();
             in = blockingReceive();
-            accion = obtenerResultado();
+            accion = obtenerResultado();    
         }
-        estado = "ESPERAR-ORDEN";
+        if (accion.equals("finalizarCompra")){
+            estado = "FINALIZAR-COMPRA";
+
+        }
     }
     
     protected String obtenerResultado(){
@@ -1226,7 +1234,6 @@ public class DroneDelMundo extends AgenteDrone{
         JsonObject objeto = new JsonObject();
 
         objeto.add("operation", "read");
-
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -1238,21 +1245,18 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
         in = blockingReceive();
         inReplyTo = in.getReplyWith();
-        
         return in.getPerformative() != ACLMessage.INFORM;
     }
     
     
     protected void actualizarMapaSensores (){
-
-        if (obtenerDatosSensores()){
+        if (!obtenerDatosSensores()){
             String respuesta = in.getContent();
             Info("Respuesta del servidor: " + respuesta);
             JsonObject objetoRespuesta = Json.parse(respuesta).asObject();
             JsonArray arrayRespuesta = objetoRespuesta.get("details").asObject().get("perceptions").asArray();
             Info(arrayRespuesta+"");
-
-
+            mapaSensores = new HashMap<>();
             for (int i=0; i<arrayRespuesta.size(); i++){
                 mapaSensores.put(arrayRespuesta.get(i).asObject().get("sensor").asString(), 
                         arrayRespuesta.get(i).asObject().get("data").asArray());
@@ -1264,8 +1268,14 @@ public class DroneDelMundo extends AgenteDrone{
     }
     
     protected void actualizarValorSensores (){
-        energia = mapaSensores.get("energy").asInt();
-        alive = mapaSensores.get("alive").asBoolean();
+        energia = mapaSensores.get("energy").asArray().get(0).asInt();
+        if(mapaSensores.get("alive").asArray().get(0).asInt() == 1){
+            alive = true;
+        }
+        else{
+            alive = false;
+        }
+        Info("Energia: " + energia);
     }
     
     protected boolean comprobarAlive(){
@@ -1287,22 +1297,67 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
     }
     
-    protected void recargar(){
-        JsonObject objeto = new JsonObject();
+    protected void enviarCoins(){
+        JsonObject msg = new JsonObject();
+        
+        JsonArray coins = new JsonArray();
 
-        objeto.add("operation", "recharge");
-
+        for(String c:misCoins){
+            coins.add(c);
+        }
+        msg.add("coins", coins);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
-        out.setContent(objeto.toString());
+        out.setContent(msg.toString());
         out.setProtocol("REGULAR");
-        out.setPerformative(ACLMessage.QUERY_REF);
-        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
-        out.setInReplyTo(inReplyTo);
+        out.setPerformative(ACLMessage.INFORM);
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
         send(out);
-        in = blockingReceive();
-        inReplyTo = in.getReplyWith();
+        
+        misCoins = null;
     }
 
+    protected boolean iniciarRecarga(){
+        JsonObject msg = new JsonObject();
+        msg.add("operation", "recharge");
+   
+        msg.add("recharge", resultadoComunicacion.get("recarga").asString());
+        
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.setContent(msg.toString());
+        Info ("contenido login: " + out.getContent());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.REQUEST);
+        out.setInReplyTo(inReplyTo);
+        Info ("reply: "+ inReplyTo);
+        send(out);
+        
+        in = blockingReceive();
+        hayError = in.getPerformative() != ACLMessage.INFORM;
+        if (hayError) {
+            Info(ACLMessage.getPerformative(in.getPerformative())
+                    + " Could not recharge" + " due to " + getDetailsLARVA(in));
+            estado = "CHECKOUT-LARVA";
+        }
+        else{
+            inReplyTo = in.getReplyWith();
+        }
+        
+        return hayError;
+    }
+    
+    protected void solicitarRecargaACoach(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
+        out.setContent("recargar");
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        send(out);
+    }
 }
