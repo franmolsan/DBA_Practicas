@@ -967,8 +967,8 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
     }
     
-    protected void realizarLoginWM(){
-        Info("Realizando Login ");
+    protected boolean realizarLoginWM(){
+        Info("Realizando Login " + in.getContent());
         JsonObject msg = new JsonObject();
         msg.add("operation", "login");
         JsonArray jarr = new JsonArray();
@@ -976,7 +976,6 @@ public class DroneDelMundo extends AgenteDrone{
             jarr.add(c);
         }
         msg.add("attach", jarr);
-        obtenerResultado();
         msg.add("posx", resultadoComunicacion.get("posx").asInt());
         msg.add("posy", resultadoComunicacion.get("posy").asInt());
             
@@ -985,6 +984,7 @@ public class DroneDelMundo extends AgenteDrone{
         out.setConversationId(convID);
         out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
         out.setContent(msg.toString());
+        Info ("contenido login: " + out.getContent());
         out.setProtocol("REGULAR");
         //out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.REQUEST);
@@ -994,8 +994,17 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
         
         in = blockingReceive();
-        inReplyTo = in.getReplyWith();
-        Info ("Recibo respuesta servidor");
+        hayError = in.getPerformative() != ACLMessage.INFORM;
+        if (hayError) {
+            Info(ACLMessage.getPerformative(in.getPerformative())
+                    + " Could not login" + " due to " + getDetailsLARVA(in));
+            estado = "CHECKOUT-LARVA";
+        }
+        else{
+            inReplyTo = in.getReplyWith();
+        }
+
+        return hayError;
     }
         
     protected ACLMessage obtenerPreciosTienda(String nombreTienda){
@@ -1154,13 +1163,15 @@ public class DroneDelMundo extends AgenteDrone{
                     misCoins.remove(i);
                 }
                 in = comprarSensor(resultado.get("Referencia").substring(1, resultado.get("Referencia").length()-1), pago, tiendas[Integer.parseInt(resultado.get("Tienda"))].toString());
+                Info ("compra de sensor: " + in.getContent());
             }else{
                 Info(" Could not buy from " + resultado.get("Tienda")+
                          " due to not have enough money");
                 estado = "CANCEL-WM";
                 break;
             }
-            sensoresDrone.add(resultadoComunicacion.get("Referencia").asString());
+            JsonValue jsonRespuesta = Json.parse(in.getContent());
+            sensoresDrone.add(jsonRespuesta.asObject().get("reference").asString());
             hayError = in.getPerformative() != ACLMessage.INFORM;
             if (hayError) {
                 Info(ACLMessage.getPerformative(in.getPerformative())

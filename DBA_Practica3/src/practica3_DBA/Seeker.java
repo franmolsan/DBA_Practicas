@@ -103,15 +103,15 @@ public class Seeker extends DroneDelMundo{
                     break;
                 }
             case "REALIZAR-LOGIN":
-                realizarLoginWM();
+                boolean error = realizarLoginWM();
                 informarCoachLoginRealizado();
-                estado = "ESPERAR-ORDEN";
+                if (!error){
+                    estado = "ESPERAR-ORDEN";
+                }
                 break;
-            
             case "LEER-SENSORES":
                 //obtener datos sensores
                 break;
-            
             case "TRAZAR-RECORRIDO":    
                 buscarObjetivo(null, 2, 2);
                 break;

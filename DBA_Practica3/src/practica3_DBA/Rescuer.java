@@ -95,13 +95,15 @@ public class Rescuer extends DroneDelMundo{
             case "REALIZAR-LOGIN":
                 actualizarPosicionActual(resultadoComunicacion.get("posx").asInt(), resultadoComunicacion.get("posy").asInt());
                 setInicio(resultadoComunicacion.get("posx").asInt(), resultadoComunicacion.get("posy").asInt());
-                realizarLoginWM();
+                boolean error = realizarLoginWM();
                 informarCoachLoginRealizado();
-                obtenerDatosSensores();
-                Info("Datos sensores: " + in.getContent());
-                moverse_pocho();
-                //estado = "ESPERAR-ORDEN";
-                estado = "RESCATE-FINALIZADO";
+                if (!error){
+                    obtenerDatosSensores();
+                    Info("Datos sensores: " + in.getContent());
+                    moverse_pocho();
+                    //estado = "ESPERAR-ORDEN";
+                    estado = "RESCATE-FINALIZADO";
+                }
                 break;
             case "RESCATE-FINALIZADO":
                 Info("Rescate Finalizado");
