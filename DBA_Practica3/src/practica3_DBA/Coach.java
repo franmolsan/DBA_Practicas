@@ -48,11 +48,11 @@ public class Coach extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas1");
-        buscadores.add("OvejaOscar1");
-        buscadores.add("DoraLaExploradora1");
-        rescatador = "EduardoManosTijeras1";
-        listener = "Dumbo1";
+        buscadores.add("NobitaSinGafas");
+        buscadores.add("HansTopo");
+        buscadores.add("DoraLaExploradora");
+        rescatador = "OvejaOscar";
+        listener = "Dumbo";
         
         sensoresBuscadores.add("alive");
         sensoresBuscadores.add("energy");
@@ -109,7 +109,7 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                despertarAWACS();
+                //despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
@@ -171,6 +171,8 @@ public class Coach extends AgenteDrone {
 
             // Now it is time to start the game and turn on the lights within a given world
             in = suscribirseA(worldManager, new JsonObject().add("problem", mundo).toString());
+            Info("msg " + in);Info("msg " + in);Info("msg " + in);
+
             hayError = in.getPerformative() != ACLMessage.INFORM;
             if (hayError) {
                 Info(ACLMessage.getPerformative(in.getPerformative())
@@ -181,7 +183,7 @@ public class Coach extends AgenteDrone {
         }
         // Keep the Conversation ID and spread it amongs the team members
         convID = in.getConversationId();
-        Info(convID);
+        Info("id" + convID);
     }
         
     

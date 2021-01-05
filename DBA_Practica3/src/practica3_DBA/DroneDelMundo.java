@@ -42,7 +42,7 @@ public class DroneDelMundo extends AgenteDrone{
 
     private ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
     
-    protected String coach = "Cerebro Computadora1";
+    protected String coach = "CerebroComputadora";
     protected String tipo;
     protected int angulo;
     protected HashMap<String,JsonArray> mapaSensores;

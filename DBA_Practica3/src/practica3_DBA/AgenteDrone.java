@@ -145,7 +145,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
         }
         else{
             estado = "SUBSCRIBE-WM";
-            Info("\tCheckin ok");
+            Info("\tCheckin ok: " + in.getContent());
         }
     }
     
