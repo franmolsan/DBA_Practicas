@@ -27,6 +27,7 @@ import java.util.Map;
 public abstract class AgenteDrone extends IntegratedAgent{
     
     // protected para que se puedan ver en la subclase
+    final static private int TOTAL_OBJETIVOS = 10;
     protected YellowPages yp;
     protected String estado, servicio, mundo;
     protected String worldManager, convID;
@@ -49,7 +50,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
         // Descripción del grupo
         servicio = "Analytics group ArcelorMittal";
         // Mundo a abrir
-        mundo = "World2";
+        mundo = "Playground1";
         // Estado inicial del agente
         estado = "CHECKIN-LARVA";
         // Por ahora no existen errores

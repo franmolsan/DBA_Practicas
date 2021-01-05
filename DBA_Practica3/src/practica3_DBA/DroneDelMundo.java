@@ -643,7 +643,7 @@ public class DroneDelMundo extends AgenteDrone{
     */
     protected void bajarAlSuelo(){
         if (zActual > mapa.getLevel(xActualDrone, yActualDrone) ){
-            Info ("zActual :" + zActual);
+            Info ("Estoy bajando de zActual :" + zActual + " hasta " + mapa.getLevel(xActualDrone, yActualDrone));
             int veces = zActual/5;
 
             for (int i=0; i<veces; i++){
@@ -651,7 +651,6 @@ public class DroneDelMundo extends AgenteDrone{
                 zActual-=5;
             }
 
-            //if ()
             arrayAcciones.add("touchD");
             zActual = zActual%5;
         }

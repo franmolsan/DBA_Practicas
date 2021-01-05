@@ -211,6 +211,7 @@ public class Seeker extends DroneDelMundo{
                 }
             }
             if(objetivosEncontrados.size()>0){
+                Info("Objetivo encontrado");
                 notificarCoachObjetivosEncontrados();
                 estado = "ESPERAR-ORDEN";
             }
@@ -287,6 +288,7 @@ public class Seeker extends DroneDelMundo{
                 
             }
             else{
+                Info("Objetivo enconntrado");
                 notificarCoachObjetivosEncontrados();
                 estado = "ESPERAR-ORDEN";
             }
@@ -302,7 +304,7 @@ public class Seeker extends DroneDelMundo{
             val.add(objetivosEncontrados.get(i).get(1));
             jarr.add(val);
         }
-        msg.add("objetivos", jarr);
+        msg.add("rescatarObjetivos", jarr);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);

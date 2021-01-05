@@ -108,6 +108,7 @@ public class Rescuer extends DroneDelMundo{
                 }
                 break;
             case "INICIAR-RESCATE":
+                obtenenrArrayObjetivos();
                 iniciarRescateObjetivos();
                 break;
             case "RESCATE-FINALIZADO":

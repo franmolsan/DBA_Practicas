@@ -43,6 +43,9 @@ public class Coach extends AgenteDrone {
     private ArrayList<ArrayList<Integer>> matrizPosiciones = new ArrayList<>();
     private ArrayList<String> coins = new ArrayList<>();
     private ArrayList<String> recargas = new ArrayList<>();
+    private ArrayList<ArrayList<Integer>> objetivosARescatar = new ArrayList<>();
+    private int recuentoEncontrados = 0;
+    private int dronesQueHanNotificado = 0;
     JsonObject jsonMapFile;
     
     @Override
@@ -110,7 +113,7 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                despertarAWACS();
+                //despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
@@ -124,6 +127,9 @@ public class Coach extends AgenteDrone {
                 }
                 else if (in.getContent().equals("recargar")){
                     gestionarRecarga();
+                    estado = "ESPERAR-TODOS-RESCATADOS";
+                }else if(in.getContent().contains("rescatarObjetivos")){
+                    procesarNuevosObjetivos();
                     estado = "ESPERAR-TODOS-RESCATADOS";
                 }
                 break;
@@ -721,5 +727,65 @@ public class Coach extends AgenteDrone {
         out.setContent(msg.toString());
         out.setPerformative(ACLMessage.INFORM);
         send(out);
+    }
+    
+    private void procesarNuevosObjetivos(){
+        JsonArray arrayJsonObjetivos = Json.parse(in.getContent()).asObject().get("rescatarObjetivos").asArray();
+        
+        for (int i=0; i<arrayJsonObjetivos.size(); i++){
+            ArrayList<Integer> vectorPosicion = new ArrayList<>();
+            vectorPosicion.add(arrayJsonObjetivos.get(i).asArray().get(0).asInt());
+            vectorPosicion.add(arrayJsonObjetivos.get(i).asArray().get(1).asInt());
+            if (objetivoNoEncontrado(vectorPosicion)){
+                objetivosARescatar.add(vectorPosicion);
+                recuentoEncontrados ++;
+            }
+            
+        }
+        dronesQueHanNotificado ++;
+        if (dronesQueHanNotificado == 3){
+            notificarObjetivosRescatador();
+        }
+    }
+    
+    private boolean objetivoNoEncontrado(ArrayList<Integer> vectorPosicion){
+        boolean encontrado = false;
+        
+        for (int i=0; i<objetivosARescatar.size(); i++){
+            for (int j=0 ; j<objetivosARescatar.size() && !encontrado; j++){
+                if (vectorPosicion.get(0) == objetivosARescatar.get(i).get(0) && vectorPosicion.get(1) == objetivosARescatar.get(i).get(1)){
+                    encontrado = true;
+                }
+            } 
+        }
+        return !encontrado;
+    }
+    
+    private void notificarObjetivosRescatador(){
+        
+        JsonArray objetivos = new JsonArray();
+        for (int i=0; i<objetivosARescatar.size(); i++){
+            JsonArray pos = new JsonArray();
+            for(int o:objetivosARescatar.get(i)){
+                pos.add(o);
+            }
+            objetivos.add(pos);
+            
+        }
+        
+        JsonObject msg = new JsonObject();
+        msg.add("action", "rescata");
+        msg.add("objetivos", objetivos);
+        msg.add("sender", in.getSender().getName());
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(msg.toString());
+        out.setPerformative(ACLMessage.INFORM);
+        out.setProtocol("REGULAR");
+        out.addReceiver(new AID(rescatador, AID.ISLOCALNAME));
+        send(out);
+        
+        estado = "ESPERAR-TODOS-RESCATADOS";
     }
 }
