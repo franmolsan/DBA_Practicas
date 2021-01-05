@@ -134,6 +134,7 @@ public class Seeker extends DroneDelMundo{
                 }
                 else{
                     buscarObjetivo();
+                    
                 }
                 break;
             case "INFORMAR-MUERTE":
@@ -268,6 +269,7 @@ public class Seeker extends DroneDelMundo{
                     anguloActualDrone = -90;
                 }
                 moverse();
+                
             }
             else{
                 notificarCoachObjetivosEncontrados();

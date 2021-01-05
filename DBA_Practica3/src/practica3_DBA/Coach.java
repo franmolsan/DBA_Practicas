@@ -48,11 +48,11 @@ public class Coach extends AgenteDrone {
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas");
-        buscadores.add("OvejaOscar");
-        buscadores.add("DoraLaExploradora");
-        rescatador = "EduardoManosTijeras";
-        listener = "Dumbo";
+        buscadores.add("NobitaSinGafas1");
+        buscadores.add("OvejaOscar1");
+        buscadores.add("DoraLaExploradora1");
+        rescatador = "EduardoManosTijeras1";
+        listener = "Dumbo1";
         
         sensoresBuscadores.add("alive");
         sensoresBuscadores.add("energy");

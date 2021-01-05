@@ -42,7 +42,7 @@ public class DroneDelMundo extends AgenteDrone{
 
     private ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
     
-    protected String coach = "Cerebro Computadora";
+    protected String coach = "Cerebro Computadora1";
     protected String tipo;
     protected int angulo;
     protected HashMap<String,JsonArray> mapaSensores;
@@ -885,8 +885,8 @@ public class DroneDelMundo extends AgenteDrone{
     */
     protected void ejecutarAcciones(){
         Info("Ejecutando acciones");
-        
-        while (arrayAcciones.size() > 0){
+        boolean estoyVivo = true;
+        while (arrayAcciones.size() > 0 && estoyVivo){
             // Crear objeto json
             JsonObject objeto = new JsonObject();
 
@@ -910,10 +910,13 @@ public class DroneDelMundo extends AgenteDrone{
             hayError = in.getPerformative() != ACLMessage.INFORM;
             if (hayError) {
                 Info(ACLMessage.getPerformative(in.getPerformative())
-                        + " Could not login" + " due to " + getDetailsLARVA(in));
-                estado = "CHECKOUT-LARVA";
+                        + " Can't move" + " due to " + getDetailsLARVA(in));
+                estoyVivo = false;
+                estado = "INFORMAR-MUERTE";
+                arrayAcciones.clear();
             }
             else{
+                
                 inReplyTo = in.getReplyWith();
             }
         }
