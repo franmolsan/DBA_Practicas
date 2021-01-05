@@ -261,7 +261,7 @@ public class Rescuer extends DroneDelMundo{
                 in = blockingReceive();
                 String accion = obtenerResultado();
                 if(accion.equals("recargar")){
-                    bajarAlSuelo(zActual);
+                    bajarAlSuelo();
                     if (!iniciarRecarga()){ //No hay error
                         Info("He recargado");
                         energia = 1000;

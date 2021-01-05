@@ -56,6 +56,7 @@ public class Coach extends AgenteDrone {
         
         sensoresBuscadores.add("alive");
         sensoresBuscadores.add("energy");
+        //sensoresBuscadores.add("compass");
         
         // luego añadiremos otros sensores en función del tamaño del mapa
         
@@ -109,7 +110,7 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                //despertarAWACS();
+                despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
@@ -496,7 +497,7 @@ public class Coach extends AgenteDrone {
         int worldSize = mapa.getWidth() * mapa.getHeight();
         
         if (worldSize < 15000){
-            sensoresBuscadores.add("thermal");
+            sensoresBuscadores.add("thermalHQ");
         }
         
         else {

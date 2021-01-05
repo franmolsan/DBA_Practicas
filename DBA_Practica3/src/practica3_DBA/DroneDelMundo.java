@@ -46,7 +46,7 @@ public class DroneDelMundo extends AgenteDrone{
     protected String tipo;
     protected int angulo;
     protected HashMap<String,JsonArray> mapaSensores;
-    protected int anguloActualDrone;
+    protected double anguloActualDrone;
     protected int xActualDrone;
     protected int yActualDrone;
     protected int zActual;
@@ -54,6 +54,7 @@ public class DroneDelMundo extends AgenteDrone{
     protected boolean alive = true;
     protected ArrayList<String> arrayAcciones = new ArrayList<>();
     protected int umbralEnergia = 200;
+    protected double nuevoAngulo = 0;
     
     ArrayList<String> misCoins = new ArrayList <> ();
     
@@ -244,7 +245,7 @@ public class DroneDelMundo extends AgenteDrone{
         }
         else {
             if (distancia == 0.0){
-                bajarAlSuelo(alturaDrone);
+                bajarAlSuelo();
                 estado = "EJECUTAR_ACCIONES";
                 objetivoAlcanzado = true;
             }
@@ -299,7 +300,7 @@ public class DroneDelMundo extends AgenteDrone{
     private boolean comprobarEnergia(int alturaDrone){
         boolean necesitaRecargar = false;  
         if (energia <= umbralEnergia){
-            bajarAlSuelo(alturaDrone);
+            bajarAlSuelo();
             arrayAcciones.add("recharge");
             necesitaRecargar = true;
         }
@@ -534,6 +535,7 @@ public class DroneDelMundo extends AgenteDrone{
             subirAAltura (alturaCasilla - zActual);
         }
         arrayAcciones.add("moveF");
+        estado = "LEER-SENSORES";
         ejecutarAcciones();
     }
     
@@ -542,14 +544,35 @@ public class DroneDelMundo extends AgenteDrone{
     * @description: Gira el dron un número determinado de grados
     */
     protected void girar(){
-        for (int i=0; i<Math.abs(anguloActualDrone); i+=45){
-            if (anguloActualDrone<0){
+        
+        double nuevoAnguloPositivo = (nuevoAngulo+360) % 360;
+        double anguloActualPositivo = (anguloActualDrone+360) % 360;
+        
+        double diferenciaAngulos = nuevoAnguloPositivo - anguloActualPositivo;
+        double veces = Math.round(Math.abs(diferenciaAngulos)/45);
+        
+        for (int i=0; i<veces; i++){
+            if (diferenciaAngulos < 0){
+                anguloActualDrone-=45;
                 arrayAcciones.add("rotateL");
             }
-            else{
+            else {
+                anguloActualDrone+=45;
                 arrayAcciones.add("rotateR");
             }
         }
+//        while(Math.round(Math.abs(anguloActualDrone)) != Math.round(Math.abs(nuevoAngulo))){ 
+//            Info ("AnguloActual Drone: " +anguloActualDrone);
+//            Info ("nuevoAngulo: " +nuevoAngulo);
+//            if (Math.abs(anguloActualDrone) - Math.abs(nuevoAngulo) < 0){
+//                anguloActualDrone-=45;
+//                arrayAcciones.add("rotateL");
+//            }
+//            else{
+//                anguloActualDrone+=45;
+//                arrayAcciones.add("rotateR");
+//            }
+//        }
     }
     
     /**
@@ -618,13 +641,21 @@ public class DroneDelMundo extends AgenteDrone{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Añade las acciones necesarias para que el dron se pose en la superficie
     */
-    protected void bajarAlSuelo(int alturaDrone){
-        int veces = alturaDrone/5;
-                
-        for (int i=0; i<veces; i++){
-            arrayAcciones.add("moveD");
+    protected void bajarAlSuelo(){
+        if (zActual > mapa.getLevel(xActualDrone, yActualDrone) ){
+            Info ("zActual :" + zActual);
+            int veces = zActual/5;
+
+            for (int i=0; i<veces; i++){
+                arrayAcciones.add("moveD");
+                zActual-=5;
+            }
+
+            //if ()
+            arrayAcciones.add("touchD");
+            zActual = zActual%5;
         }
-        arrayAcciones.add("touchD");
+        
     }
     
     /**
@@ -1287,6 +1318,8 @@ public class DroneDelMundo extends AgenteDrone{
     }
     
     protected void actualizarValorSensores (){
+//        anguloActualDrone = mapaSensores.get("compass").asArray().get(0).asInt();
+//        Info ("ANGULO ACTUAL DRONE: " + anguloActualDrone);
         energia = mapaSensores.get("energy").asArray().get(0).asInt();
         if(mapaSensores.get("alive").asArray().get(0).asInt() == 1){
             alive = true;

@@ -47,7 +47,7 @@ public class Seeker extends DroneDelMundo{
         tipo = "SEEKER"; 
         primeraLecturaThermal = true;
         objetivosEncontrados = new ArrayList();
-        angulo = -1;
+        anguloActualDrone = 90;
         siguienteCasilla = -1;
         zActual = 0; //mapa.getLevel(xActualDrone, yActualDrone);
     }
@@ -90,7 +90,7 @@ public class Seeker extends DroneDelMundo{
                     break;
                 }
                 else if(accion.equals("recargar")){
-                    bajarAlSuelo(zActual);
+                    bajarAlSuelo();
                     if (!iniciarRecarga()){ //No hay error
                         Info("He recargado");
                         energia = 1000;
@@ -170,6 +170,15 @@ public class Seeker extends DroneDelMundo{
         
     private void buscarObjetivo(){
         
+        for (int x=0; x < thermal.size(); x++) {
+        System.out.print("|");
+            for (int y=0; y < thermal.get(x).size(); y++) {
+                System.out.print (thermal.get(x).get(y));
+                if (y!=thermal.get(x).size()-1) System.out.print("\t");
+            }
+        System.out.println("|");
+      }
+        
         double minThermal = Double.MAX_VALUE;
         int siguientePosX = 0;
         int siguientePosY = 0;
@@ -187,6 +196,9 @@ public class Seeker extends DroneDelMundo{
                             minThermal = thermal.get(i).get(j);
                             siguientePosX = i;
                             siguientePosY = j;
+                            Info ("Minimo thermal: " + minThermal);
+                            Info ("siguiente x: " + i);
+                            Info ("siguiente y: " + j);
                         }         
                     }
                     
@@ -204,7 +216,7 @@ public class Seeker extends DroneDelMundo{
             }
             primeraLecturaThermal = false;
         }
-        else{
+        else {
             for (int i = 0; i < thermal.size(); i++) {
                 for (int j = 0; j < thermal.size(); j++) {
                     
@@ -218,6 +230,9 @@ public class Seeker extends DroneDelMundo{
                                 minThermal = thermal.get(i).get(j);
                                 siguientePosX = i;
                                 siguientePosY = j;
+                                Info ("Minimo thermal: " + minThermal);
+                                Info ("siguiente x: " + i);
+                                Info ("siguiente y: " + j);
                             }         
                         }
 
@@ -235,38 +250,38 @@ public class Seeker extends DroneDelMundo{
                 if (siguientePosX == 0 && siguientePosY == 0){
                     xActualDrone --;
                     yActualDrone --;
-                    anguloActualDrone = -45;
+                    nuevoAngulo = -45;
                 }
                 else if (siguientePosX == 0 && siguientePosY == (thermal.size()-1)/2){
                     yActualDrone --;
-                    anguloActualDrone = 0;
+                    nuevoAngulo = 0;
                 }
                 else if (siguientePosX == 0 && siguientePosY == thermal.size()-1){
                     xActualDrone ++;
                     yActualDrone --;
-                    anguloActualDrone = 45;
+                    nuevoAngulo = 45;
                 }
                 else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == thermal.size()-1){
                     xActualDrone ++;
-                    anguloActualDrone = 90;
+                    nuevoAngulo = 90;
                 }
                 else if (siguientePosX == thermal.size()-1 && siguientePosY == thermal.size()-1){
                     xActualDrone ++;
                     yActualDrone ++;
-                    anguloActualDrone = 135;
+                    nuevoAngulo = 135;
                 }
                 else if (siguientePosX == thermal.size()-1 && siguientePosY == (thermal.size()-1)/2){
                     yActualDrone ++;
-                    anguloActualDrone = 180;
+                    nuevoAngulo = 180;
                 }
                 else if (siguientePosX == thermal.size()-1 && siguientePosY == 0){
                     xActualDrone --;
                     yActualDrone ++;
-                    anguloActualDrone = -135;
+                    nuevoAngulo = -135;
                 }
                 else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == 0){
                     xActualDrone --;
-                    anguloActualDrone = -90;
+                    nuevoAngulo = -90;
                 }
                 moverse();
                 
