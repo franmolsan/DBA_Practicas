@@ -49,6 +49,7 @@ public class Seeker extends DroneDelMundo{
         objetivosEncontrados = new ArrayList();
         angulo = -1;
         siguienteCasilla = -1;
+        zActual = 0; //mapa.getLevel(xActualDrone, yActualDrone);
     }
     
     @Override
@@ -89,7 +90,7 @@ public class Seeker extends DroneDelMundo{
                     break;
                 }
                 else if(accion.equals("recargar")){
-                    bajarAlSuelo(getAlturaActual());
+                    bajarAlSuelo(zActual);
                     if (!iniciarRecarga()){ //No hay error
                         Info("He recargado");
                         energia = 1000;
@@ -112,6 +113,7 @@ public class Seeker extends DroneDelMundo{
                 estado = "ESPERAR-ORDEN";
                 break;
             case "REALIZAR-LOGIN":
+                cargarMapa();
                 boolean error = realizarLoginWM();
                 informarCoachLoginRealizado();
                 if (!error){
@@ -166,9 +168,27 @@ public class Seeker extends DroneDelMundo{
     }
         
     private void buscarObjetivo(){
+        
+        double minThermal = Double.MAX_VALUE;
+        int siguientePosX = 0;
+        int siguientePosY = 0;
+        
         if(primeraLecturaThermal){
             for (int i = 0; i < thermal.size(); i++) {
                 for (int j = 0; j < thermal.size(); j++) {
+                    
+                    if (i == 0 && j == 0 || i == 0 && j == (thermal.size()-1)/2 || i == 0 && j == thermal.size()-1
+                        || i == (thermal.size()-1)/2 && j == 0 || i == (thermal.size()-1)/2 && j == thermal.size()-1
+                        || i == thermal.size()-1 && j == 0 || i == thermal.size()-1 && j == (thermal.size()-1)/2 
+                        || i == thermal.size()-1 && j == thermal.size()-1 ){
+                        
+                        if (thermal.get(i).get(j) < minThermal){
+                            minThermal = thermal.get(i).get(j);
+                            siguientePosX = i;
+                            siguientePosY = j;
+                        }         
+                    }
+                    
                     if(thermal.get(i).get(j) == 0){
                         ArrayList<Integer> arr = new ArrayList();
                         arr.add(xActualDrone + j - 3);
@@ -182,194 +202,74 @@ public class Seeker extends DroneDelMundo{
                 estado = "ESPERAR-ORDEN";
             }
             primeraLecturaThermal = false;
-        }else{
-            switch(angulo){
-                case 45:
-                    //Comprueba la fila superior
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(0).get(i) == 0){
+        }
+        else{
+            for (int i = 0; i < thermal.size(); i++) {
+                for (int j = 0; j < thermal.size(); j++) {
+                    
+                    if (!(i > 0 && j > 0 && i<thermal.size()-1 && j<thermal.size()-1)){
+                        if (i == 0 && j == 0 || i == 0 && j == (thermal.size()-1)/2 || i == 0 && j == thermal.size()-1
+                        || i == (thermal.size()-1)/2 && j == 0 || i == (thermal.size()-1)/2 && j == thermal.size()-1
+                        || i == thermal.size()-1 && j == 0 || i == thermal.size()-1 && j == (thermal.size()-1)/2 
+                        || i == thermal.size()-1 && j == thermal.size()-1 ){
+                        
+                            if (thermal.get(i).get(j) < minThermal){
+                                minThermal = thermal.get(i).get(j);
+                                siguientePosX = i;
+                                siguientePosY = j;
+                            }         
+                        }
+
+                        if(thermal.get(i).get(j) == 0){
                             ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
+                            arr.add(xActualDrone + j - 3);
                             arr.add(yActualDrone + i - 3);
                             objetivosEncontrados.add(arr);
-                        }
-                    }
-                    //Comprueba la columna de la derecha
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(i).get(thermal.size()-1) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + i - 3);
-                            arr.add(yActualDrone + thermal.size()-1 - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                case 0:
-                    //Comprueba la fila superior
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(0).get(i) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                case 90:
-                    //Comprueba la columna de la derecha
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(i).get(thermal.size()-1) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + i - 3);
-                            arr.add(yActualDrone + thermal.size()-1 - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                case 135:
-                    //Comprueba la columna de la derecha
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(i).get(thermal.size()-1) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + i - 3);
-                            arr.add(yActualDrone + thermal.size()-1 - 3);
-                            objetivosEncontrados.add(arr);
-                        }
+                        } 
                     }
                     
-                    //Comprueba la fila inferior
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(thermal.size()-1).get(i) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + thermal.size()-1 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                case 180:
-                    //Comprueba la fila inferior
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(thermal.size()-1).get(i) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                case -135:
-                    //Comprueba la fila inferior
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(thermal.size()-1).get(i) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    
-                    //Comprueba la columna de la izquierda
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(i).get(0) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                case -90:
-                    //Comprueba la columna de la izquierda
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(i).get(0) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                case -45:
-                    //Comprueba la columna de la izquierda
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(i).get(0) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    
-                    //Comprueba la fila superior
-                    for (int i = 0; i < thermal.size(); i++) {
-                        if(thermal.get(0).get(i) == 0){
-                            ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + 0 - 3);
-                            arr.add(yActualDrone + i - 3);
-                            objetivosEncontrados.add(arr);
-                        }
-                    }
-                    break;
-                
+                }
             }
             if(objetivosEncontrados.isEmpty()){
-                double mejorResultado = 10000;
-                ArrayList<Double> res = new ArrayList();
-                //Añadimos la esquina superior izquierda
-                res.add(thermal.get(0).get(0));
-                //Añadimos la parte superior 
-                res.add(thermal.get(0).get((thermal.size()-1)/2));
-                //Añadimos la esquina superior dcha
-                res.add(thermal.get(0).get(thermal.size()-1));
-                //Añadimos la parte derecha
-                res.add(thermal.get((thermal.size()-1)/2).get(thermal.size()-1));
-                //Añadimos la esquina inferior derecha
-                res.add(thermal.get(thermal.size()-1).get(thermal.size()-1));
-                //Añadimos la parte de abajo
-                res.add(thermal.get(thermal.size()-1).get((thermal.size()-1)/2));
-                //Añadimos la esquina inferior izquierda
-                res.add(thermal.get(thermal.size()-1).get(0));
-                //Añadimos la parte izquierda
-                res.add(thermal.get((thermal.size()-1)/2).get(0));
-                
-                for (int i = 0; i < res.size(); i++) {
-                    if(res.get(i)<=mejorResultado){
-                        mejorResultado = res.get(i);
-                        switch(i){
-                            case 0:
-                                siguienteCasilla = 7;
-                            break;
-                            case 1:
-                                siguienteCasilla = 0;
-                            break;
-                            case 2:
-                                siguienteCasilla = 1;
-                            break;
-                            case 3:
-                                siguienteCasilla = 2;
-                            break;
-                            case 4:
-                                siguienteCasilla = 3;
-                            break;
-                            case 5:
-                                siguienteCasilla = 4;
-                            break;
-                            case 6:
-                                siguienteCasilla = 5;
-                            break;
-                            case 7:
-                                siguienteCasilla = 6;
-                            break;
-                        }
-                    }
+                if (siguientePosX == 0 && siguientePosY == 0){
+                    xActualDrone --;
+                    yActualDrone --;
+                    anguloActualDrone = -45;
                 }
-                
-                if(thermal.get(0).get(0)<=mejorResultado){
-                    mejorResultado = thermal.get(0).get(0);
-                    res.add(thermal.get(0).get(0));
+                else if (siguientePosX == 0 && siguientePosY == (thermal.size()-1)/2){
+                    yActualDrone --;
+                    anguloActualDrone = 0;
                 }
-            }else{
+                else if (siguientePosX == 0 && siguientePosY == thermal.size()-1){
+                    xActualDrone ++;
+                    yActualDrone --;
+                    anguloActualDrone = 45;
+                }
+                else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == thermal.size()-1){
+                    xActualDrone ++;
+                    anguloActualDrone = 90;
+                }
+                else if (siguientePosX == thermal.size()-1 && siguientePosY == thermal.size()-1){
+                    xActualDrone ++;
+                    yActualDrone ++;
+                    anguloActualDrone = 135;
+                }
+                else if (siguientePosX == thermal.size()-1 && siguientePosY == (thermal.size()-1)/2){
+                    yActualDrone ++;
+                    anguloActualDrone = 180;
+                }
+                else if (siguientePosX == thermal.size()-1 && siguientePosY == 0){
+                    xActualDrone --;
+                    yActualDrone ++;
+                    anguloActualDrone = -135;
+                }
+                else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == 0){
+                    xActualDrone --;
+                    anguloActualDrone = -90;
+                }
+                moverse();
+            }
+            else{
                 notificarCoachObjetivosEncontrados();
                 estado = "ESPERAR-ORDEN";
             }
@@ -395,4 +295,6 @@ public class Seeker extends DroneDelMundo{
         out.setPerformative(ACLMessage.INFORM);
         send(out);
     }
+    
+
 }

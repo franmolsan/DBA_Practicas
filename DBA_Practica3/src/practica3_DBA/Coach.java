@@ -43,15 +43,16 @@ public class Coach extends AgenteDrone {
     private ArrayList<ArrayList<Integer>> matrizPosiciones = new ArrayList<>();
     private ArrayList<String> coins = new ArrayList<>();
     private ArrayList<String> recargas = new ArrayList<>();
+    JsonObject jsonMapFile;
     
     @Override
     public void setup() {
         super.setup();
-        buscadores.add("NobitaSinGafas1");
-        buscadores.add("OvejaOscar1");
-        buscadores.add("DoraLaExploradora1");
-        rescatador = "EduardoManosTijeras1";
-        listener = "Dumbo1";
+        buscadores.add("NobitaSinGafas");
+        buscadores.add("OvejaOscar");
+        buscadores.add("DoraLaExploradora");
+        rescatador = "EduardoManosTijeras";
+        listener = "Dumbo";
         
         sensoresBuscadores.add("alive");
         sensoresBuscadores.add("energy");
@@ -108,7 +109,7 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                //despertarAWACS();
+                despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
@@ -231,7 +232,7 @@ public class Coach extends AgenteDrone {
         // Examines the content of the message from server
         JsonObject jscontent = getJsonContentACLM(in);
         if (jscontent.names().contains("map")) {
-            JsonObject jsonMapFile = jscontent.get("map").asObject();
+            jsonMapFile = jscontent.get("map").asObject();
             String mapfilename = jsonMapFile.getString("filename", "nonamefound");
             Info("Found map " + mapfilename);
             mapa = new Map2DGrayscale();
@@ -545,6 +546,7 @@ public class Coach extends AgenteDrone {
         msg.add("action", "login");
         msg.add("posx", posx);
         msg.add("posy", posy);
+        msg.add("jsonMapa", jsonMapFile);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);

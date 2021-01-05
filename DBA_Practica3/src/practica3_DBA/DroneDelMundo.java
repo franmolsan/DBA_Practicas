@@ -10,6 +10,7 @@ package practica3_DBA;
 import static ACLMessageTools.ACLMessageTools.getDetailsLARVA;
 import ControlPanel.TTYControlPanel;
 import IntegratedAgent.IntegratedAgent;
+import Map2D.Map2DGrayscale;
 import YellowPages.YellowPages;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
@@ -19,32 +20,31 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class DroneDelMundo extends AgenteDrone{
-    protected String coach = "Cerebro Computadora1";
+
+    protected ArrayList<String> sensoresDrone = new ArrayList<String>();
+    private TTYControlPanel myControlPanel;
+    private int numVecesThermalPuedeEmpeorarSeguidas = 14;
+    private String receiver;
+    private String key = "";
+    private int width;
+    private int height;
+    private int alturaMax;
+    private JsonArray capabilities;
+    private JsonArray perceptions;
+    private ACLMessage ultimoMensaje;
+    private boolean objetivoAlcanzado = false;
+    private boolean rodeoIniciado = false;
+    private double thermalInicioRodeo = Double.MAX_VALUE;
+    private double distanceAnteriorRodeo = Double.MAX_VALUE;
+    private boolean rodeoDecidido = false;
+    private boolean rodeoDcha = true;
+    private int incrementosThermalSeguidos = 0;
+
+    private ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
+    
+    protected String coach = "Cerebro Computadora";
     protected String tipo;
     protected int angulo;
-    protected ArrayList<String> sensoresDrone = new ArrayList<String>();
-    TTYControlPanel myControlPanel;
-    int numVecesThermalPuedeEmpeorarSeguidas = 14;
-    int umbralEnergia = 200;
-    String receiver;
-    String key = "";
-    int width;
-    int height;
-    int alturaMax;
-    JsonArray capabilities;
-    JsonArray perceptions;
-    ArrayList<String> arrayAcciones = new ArrayList<>();
-    ACLMessage ultimoMensaje;
-    boolean objetivoAlcanzado = false;
-    boolean rodeoIniciado = false;
-    double thermalInicioRodeo = Double.MAX_VALUE;
-    double distanceAnteriorRodeo = Double.MAX_VALUE;
-    boolean rodeoDecidido = false;
-    boolean rodeoDcha = true;
-    int incrementosThermalSeguidos = 0;
-
-    ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
-    
     protected HashMap<String,JsonArray> mapaSensores;
     protected int anguloActualDrone;
     protected int xActualDrone;
@@ -52,6 +52,8 @@ public class DroneDelMundo extends AgenteDrone{
     protected int zActual;
     protected int energia = 10;
     protected boolean alive = true;
+    protected ArrayList<String> arrayAcciones = new ArrayList<>();
+    protected int umbralEnergia = 200;
     
     ArrayList<String> misCoins = new ArrayList <> ();
     
@@ -259,7 +261,7 @@ public class DroneDelMundo extends AgenteDrone{
                         rodeoIniciado = false;
                         thermalInicioRodeo = Double.MAX_VALUE;
                         distanceAnteriorRodeo = Double.MAX_VALUE;
-                        calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
+                        //calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                     else{ //Rodea el obstáculo por la derecha o por la izquierda
                         Info("GUIADO RODEO");
@@ -267,7 +269,7 @@ public class DroneDelMundo extends AgenteDrone{
                             siguientePosicion = obstaculo;
                         }
                         siguientePosicion = decidirDireccionRodeo(visual, thermal, zActual, distancia, siguientePosicion);
-                        calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
+                        //calcularAcciones(visual, zActual, siguientePosicion, anguloDrone);
                     }
                 }
                 estado = "EJECUTAR_ACCIONES";
@@ -308,33 +310,33 @@ public class DroneDelMundo extends AgenteDrone{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
     * @description: Calcula las acciones que debe realizar el drone en funcion de la decisión tomada, la casilla a la que se desplazará el drone, y la altura y ángulo de este
     */
-    private void calcularAcciones(ArrayList <ArrayList<Integer>> visual, int zActual, int decision, int anguloDrone){
-        if (decision == 0){
-            moverse(visual.get(2).get(3), zActual, -anguloDrone);
-        }
-        else if (decision == 1){
-            moverse(visual.get(2).get(4), zActual, -anguloDrone + 45);
-        }
-        else if (decision == 2){
-            moverse(visual.get(3).get(4), zActual, -anguloDrone + 90);
-        }
-        else if (decision == 3){
-            moverse(visual.get(4).get(4), zActual, -anguloDrone + 135);
-        }
-        else if (decision == 4){
-            moverse(visual.get(4).get(3), zActual, (-anguloDrone - 180)%360);
-        }
-        else if (decision == 5){
-            moverse(visual.get(4).get(2), zActual, -anguloDrone - 135);
-        }
-        else if (decision == 6){
-            moverse(visual.get(3).get(2), zActual, -anguloDrone - 90);
-        }
-        else if (decision == 7){
-            moverse(visual.get(2).get(2), zActual, -anguloDrone - 45);
-        }
-
-    }
+//    private void calcularAcciones(ArrayList <ArrayList<Integer>> visual, int zActual, int decision, int anguloDrone){
+//        if (decision == 0){
+//            moverse(visual.get(2).get(3), zActual, -anguloDrone);
+//        }
+//        else if (decision == 1){
+//            moverse(visual.get(2).get(4), zActual, -anguloDrone + 45);
+//        }
+//        else if (decision == 2){
+//            moverse(visual.get(3).get(4), zActual, -anguloDrone + 90);
+//        }
+//        else if (decision == 3){
+//            moverse(visual.get(4).get(4), zActual, -anguloDrone + 135);
+//        }
+//        else if (decision == 4){
+//            moverse(visual.get(4).get(3), zActual, (-anguloDrone - 180)%360);
+//        }
+//        else if (decision == 5){
+//            moverse(visual.get(4).get(2), zActual, -anguloDrone - 135);
+//        }
+//        else if (decision == 6){
+//            moverse(visual.get(3).get(2), zActual, -anguloDrone - 90);
+//        }
+//        else if (decision == 7){
+//            moverse(visual.get(2).get(2), zActual, -anguloDrone - 45);
+//        }
+//
+//    }
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
@@ -525,22 +527,23 @@ public class DroneDelMundo extends AgenteDrone{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
     * @description: Una vez decidida la casilla, mueve el drone hasta dicha casilla
     */
-    private void moverse(int casilla, int zActual,int giro){
-        girar(giro);
-        if (casilla - zActual > 0){
-            subirAAltura (casilla - zActual);
+    protected void moverse(){
+        girar();
+        int alturaCasilla = mapa.getLevel(xActualDrone, yActualDrone);
+        if (alturaCasilla - zActual > 0){
+            subirAAltura (alturaCasilla - zActual);
         }
-        
         arrayAcciones.add("moveF");
+        ejecutarAcciones();
     }
     
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
     * @description: Gira el dron un número determinado de grados
     */
-    private void girar(int grados){
-        for (int i=0; i<Math.abs(grados); i+=45){
-            if (grados<0){
+    protected void girar(){
+        for (int i=0; i<Math.abs(anguloActualDrone); i+=45){
+            if (anguloActualDrone<0){
                 arrayAcciones.add("rotateL");
             }
             else{
@@ -615,7 +618,7 @@ public class DroneDelMundo extends AgenteDrone{
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Añade las acciones necesarias para que el dron se pose en la superficie
     */
-    private void bajarAlSuelo(int alturaDrone){
+    protected void bajarAlSuelo(int alturaDrone){
         int veces = alturaDrone/5;
                 
         for (int i=0; i<veces; i++){
@@ -630,13 +633,15 @@ public class DroneDelMundo extends AgenteDrone{
     */
     private void subirAAltura(int alturaObjetivo){
         int veces = alturaObjetivo/5;
-                
+
         for (int i=0; i<veces; i++){
             arrayAcciones.add("moveUP");
+            zActual = zActual + 5;
         }
-        
+
         if (alturaObjetivo%5 != 0){
-            arrayAcciones.add("moveUP");
+            arrayAcciones.add("moveUP");  
+            zActual = zActual + 5;
         }
     }
     
@@ -977,6 +982,16 @@ public class DroneDelMundo extends AgenteDrone{
         send(out);
     }
     
+    protected void cargarMapa(){
+        Info ("Cargando mapa");
+        JsonObject jsonMapa = resultadoComunicacion.get("jsonMapa").asObject();
+        
+        mapa = new Map2DGrayscale();
+        if (mapa.fromJson(jsonMapa)) {
+            Info ("Mapa cargado correctamente");
+        }
+    }
+    
     protected boolean realizarLoginWM(){
         Info("Realizando Login " + in.getContent());
         
@@ -1016,6 +1031,7 @@ public class DroneDelMundo extends AgenteDrone{
         }
         else{
             inReplyTo = in.getReplyWith();
+            zActual = mapa.getLevel(xActualDrone, yActualDrone);
         }
 
         return hayError;
@@ -1360,4 +1376,9 @@ public class DroneDelMundo extends AgenteDrone{
         out.setPerformative(ACLMessage.INFORM);
         send(out);
     }
+    
+//    // actualiza la z actual y la devuleve
+//    protected int getZActual(){
+//        zActual = obtener de la radio
+//    }
 }

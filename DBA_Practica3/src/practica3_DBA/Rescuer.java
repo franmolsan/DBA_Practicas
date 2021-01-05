@@ -90,11 +90,12 @@ public class Rescuer extends DroneDelMundo{
                     break;
                 }
             case "FINALIZAR-COMPRA":
-                Info("eNVIA");
+                Info("Envía");
                 enviarCoins();
                 estado = "ESPERAR-ORDEN";
                 break;
             case "REALIZAR-LOGIN":
+                cargarMapa();
                 actualizarPosicionActual(resultadoComunicacion.get("posx").asInt(), resultadoComunicacion.get("posy").asInt());
                 setInicio(resultadoComunicacion.get("posx").asInt(), resultadoComunicacion.get("posy").asInt());
                 boolean error = realizarLoginWM();
@@ -183,14 +184,14 @@ public class Rescuer extends DroneDelMundo{
         realizarRuta(calcularRutaGreedy(vectorObjetivos));
         ejecutarAcciones();
         //comprobar objetivos restantes
-        if (numObjetivosRestantes == 0){
+        //if (numObjetivosRestantes == 0){
             estado = "TODOS-RESCATADOS";
-        }
-        else{
-            estado = "ESPERAR-ORDEN";
-        }
+        //}
+//        else{
+//            estado = "ESPERAR-ORDEN";
+//        }
     }
-    }
+    
     
     //Distancia entre dos puntos
     private double distanciaEntreDosPuntos (int p1X, int p1Y, int p2X, int p2Y){
@@ -260,7 +261,7 @@ public class Rescuer extends DroneDelMundo{
                 in = blockingReceive();
                 String accion = obtenerResultado();
                 if(accion.equals("recargar")){
-                    bajarAlSuelo(getAlturaActual());
+                    bajarAlSuelo(zActual);
                     if (!iniciarRecarga()){ //No hay error
                         Info("He recargado");
                         energia = 1000;
@@ -310,7 +311,7 @@ public class Rescuer extends DroneDelMundo{
             }
         }
 
-        bajarAlSuelo(getAlturaActual());
+        //bajarAlSuelo(getAlturaActual());
 
         if(rescatar){
             arrayAcciones.add("rescue");
@@ -319,7 +320,7 @@ public class Rescuer extends DroneDelMundo{
         }
     }
     
-    private int girar(){
+    protected int girarControlandoEnergia(){
         for (int i=0; i<Math.abs(angulo); i+=45){
             if (angulo<0){
                 arrayAcciones.add("rotateL");
@@ -349,8 +350,8 @@ public class Rescuer extends DroneDelMundo{
     }
 
     private void moverse(int p1X, int p1Y){
-        girar();
-        int alturaCasilla = getAlturaCasilla (p1X, p1Y);// ver cómo se obtiene el mapa
+        girarControlandoEnergia();
+        int alturaCasilla = mapa.getLevel(p1X, p1Y);
         if (alturaCasilla - zActual > 0){
             subirAAltura (alturaCasilla - zActual);
         }
@@ -370,7 +371,7 @@ public class Rescuer extends DroneDelMundo{
         inicio.add(posY);
         
         angulo = 0;
-        zActual = getzActual(); //ver info del mapa
+        zActual = mapa.getLevel(xActualDrone, yActualDrone);
         energia = 10;
     }
 }
