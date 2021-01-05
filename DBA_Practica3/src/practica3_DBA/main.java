@@ -20,17 +20,16 @@ public class main {
         _app.selectConnection();
         
         // primero lanzamos AWACS para visualizar todo
-        _app.launchAgent("AWACS", Awacs.class);
+        //_app.launchAgent("AWACS", Awacs.class);
         
         // luego lanzamos el resto de agentes
         _app.launchAgent("NobitaSinGafas", Seeker.class);
-        _app.launchAgent("OvejaOscar", Seeker.class);
+        _app.launchAgent("HansTopo", Seeker.class);
         _app.launchAgent("DoraLaExploradora", Seeker.class);
-        _app.launchAgent("EduardoManosTijeras", Rescuer.class);
+        _app.launchAgent("OvejaOscar", Rescuer.class);
         _app.launchAgent("Dumbo", Comunicador.class);
          
-        _app.launchAgent("Cerebro Computadora", Coach.class);
-        
+        _app.launchAgent("CerebroComputadora", Coach.class);
         
         _app.shutDown();
     }

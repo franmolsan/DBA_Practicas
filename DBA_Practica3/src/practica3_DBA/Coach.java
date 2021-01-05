@@ -49,9 +49,9 @@ public class Coach extends AgenteDrone {
     public void setup() {
         super.setup();
         buscadores.add("NobitaSinGafas");
-        buscadores.add("OvejaOscar");
+        buscadores.add("HansTopo");
         buscadores.add("DoraLaExploradora");
-        rescatador = "EduardoManosTijeras";
+        rescatador = "OvejaOscar";
         listener = "Dumbo";
         
         sensoresBuscadores.add("alive");
@@ -109,7 +109,7 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                despertarAWACS();
+                //despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
@@ -179,6 +179,7 @@ public class Coach extends AgenteDrone {
                 estado = "CHECKOUT-LARVA";
             }
         }
+        Info("msg " + in);
         // Keep the Conversation ID and spread it amongs the team members
         convID = in.getConversationId();
         Info(convID);
