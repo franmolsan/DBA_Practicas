@@ -104,7 +104,13 @@ public class Seeker extends DroneDelMundo{
                 else if(accion.equals("noRecargar")){
                     estado = "INFORMAR-MUERTE";
                     break;
-                }else{
+                
+                }
+                else if (accion.equals("continuarBuscando")){
+                    estado = "LEER-SENSORES";
+                    break;
+                }
+                else{
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
@@ -133,8 +139,7 @@ public class Seeker extends DroneDelMundo{
                     estado = "ESPERAR-ORDEN";
                 }
                 else{
-                    buscarObjetivo();
-                    
+                    buscarObjetivo(); 
                 }
                 break;
             case "INFORMAR-MUERTE":

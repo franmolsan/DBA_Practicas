@@ -132,6 +132,15 @@ public class Coach extends AgenteDrone {
                     procesarNuevosObjetivos();
                     estado = "ESPERAR-TODOS-RESCATADOS";
                 }
+                else if (in.getContent().contains("variosRescatados")){
+                    objetivosARescatar.clear();
+                    recuentoEncontrados = 0;
+                    dronesQueHanNotificado = 0;
+                    notificarSeekersContinuarBusqueda();       
+                }
+                else if (in.getContent().contains("todosRescatados")){
+                    Info ("Todos han sido rescatados, espero ");
+                }
                 break;
             case "CANCEL-BUSCADORES":
                 cancelarBuscadores();
@@ -787,5 +796,24 @@ public class Coach extends AgenteDrone {
         send(out);
         
         estado = "ESPERAR-TODOS-RESCATADOS";
+    }
+    
+    private void notificarSeekersContinuarBusqueda (){
+
+        JsonObject msg = new JsonObject();
+        msg.add("action", "continuarBuscando");
+
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent(msg.toString());
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        
+        for (int i=0; i<buscadores.size(); i++){
+            out.addReceiver(new AID(buscadores.get(i), AID.ISLOCALNAME));
+        }
+        
+        send(out);
     }
 }

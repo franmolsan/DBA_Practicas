@@ -33,7 +33,8 @@ public class Rescuer extends DroneDelMundo{
     // protected ACLMessage in, out;
     private ArrayList<Integer> posActual;
     private ArrayList<Integer> inicio;
-    private static final int costeAccion = 4;
+    private static final int costeAccion = 1;
+    private int numObjetivosRestantes = 10;
 
     
     @Override
@@ -109,6 +110,9 @@ public class Rescuer extends DroneDelMundo{
             case "INICIAR-RESCATE":
                 iniciarRescateObjetivos();
                 break;
+            case "VARIOS-RESCATADOS":
+                informarCoachVariosRescatados();
+                break;
             case "RESCATE-FINALIZADO":
                 Info("Rescate Finalizado");
                 estado = "CHECKOUT-LARVA";
@@ -153,7 +157,7 @@ public class Rescuer extends DroneDelMundo{
         ejecutarAcciones();
         //comprobar objetivos restantes
         //if (numObjetivosRestantes == 0){
-            estado = "TODOS-RESCATADOS";
+            estado = "VARIOS-RESCATADOS";
         //}
 //        else{
 //            estado = "ESPERAR-ORDEN";
@@ -283,6 +287,7 @@ public class Rescuer extends DroneDelMundo{
 
         if(rescatar){
             arrayAcciones.add("rescue");
+            numObjetivosRestantes--;
             //energia = energia - costeAcción; ?????
             //comunicar Rescate Objetivo posxposy
         }
@@ -353,5 +358,27 @@ public class Rescuer extends DroneDelMundo{
         anguloActualDrone = 90;
         zActual = mapa.getLevel(xActualDrone, yActualDrone);
         energia = 10;
+    }
+    
+    private void informarCoachVariosRescatados () {
+        
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
+        // comprobar objetivos restantes
+        if (numObjetivosRestantes == 0){
+            estado = "RESCATE-FINALIZADO";
+            out.setContent("todosRescatados");
+        }
+        else{
+            estado = "ESPERAR-ORDEN";
+            out.setContent("variosRescatados");
+        }
+        out.setProtocol("REGULAR");
+        out.setPerformative(ACLMessage.INFORM);
+        send(out);
+        
+
     }
 }
