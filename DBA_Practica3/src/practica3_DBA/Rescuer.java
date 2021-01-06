@@ -103,12 +103,10 @@ public class Rescuer extends DroneDelMundo{
                 if (!error){
                     obtenerDatosSensores();
                     Info("Datos sensores: " + in.getContent());
-                    moverse_pocho();
                     estado = "ESPERAR-ORDEN";
                 }
                 break;
             case "INICIAR-RESCATE":
-                obtenenrArrayObjetivos();
                 iniciarRescateObjetivos();
                 break;
             case "RESCATE-FINALIZADO":
@@ -126,37 +124,6 @@ public class Rescuer extends DroneDelMundo{
                 exit();
                 break;
         }
-    }
-    
-    private void moverse_pocho(){
-        // Crear objeto json
-        JsonObject objeto = new JsonObject();
-
-        String accion = "moveF";
-        // añadir al objeto
-        objeto.add("operation", accion);
-        
-        out = new ACLMessage();
-        out.setSender(getAID());
-        out.setConversationId(convID);
-        out.setContent(objeto.toString());
-        out.setProtocol("REGULAR");
-        out.setPerformative(ACLMessage.REQUEST);
-        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
-        Info ("Reply: " + inReplyTo);
-        out.setInReplyTo(inReplyTo);
-        send(out);
-
-        ACLMessage msgRespuesta = blockingReceive();
-        String respuesta = msgRespuesta.getContent();
-        Info("Respuesta a accion " + accion + ": " + respuesta);
-        
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Rescuer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
     }
     
     private ArrayList<ArrayList<Integer>> getVectorObjetivos(JsonArray array){
@@ -279,32 +246,32 @@ public class Rescuer extends DroneDelMundo{
             }
             else{
                 if (p1X < p2X && p1Y < p2Y){
-                    angulo = 135;
+                    nuevoAngulo = 135;
                     p1X ++;
                     p1Y ++;
                 } else if (p1X > p2X && p1Y < p2Y){
-                    angulo = -135;
+                    nuevoAngulo = -135;
                     p1X --;
                     p1Y ++;
                 } else if (p1X < p2X && p1Y > p2Y){
-                    angulo = 45;
+                    nuevoAngulo = 45;
                     p1X ++;
                     p1Y --;
                 } else if (p1X > p2X && p1Y > p2Y){
-                    angulo = -45;
+                    nuevoAngulo = -45;
                     p1X --;
                     p1Y --;
                 } else if (p1X < p2X && p1Y == p2Y){
-                    angulo = 90;
+                    nuevoAngulo = 90;
                     p1X ++;
                 } else if (p1X > p2X && p1Y == p2Y){
-                    angulo = -90;
+                    nuevoAngulo = -90;
                     p1X --;
                 } else if (p1X == p2X && p1Y < p2Y){
-                    angulo = 180;
+                    nuevoAngulo = 180;
                     p1Y ++;
                 } else if (p1X == p2X && p1Y > p2Y){
-                    angulo = 0;
+                    nuevoAngulo = 0;
                     p1Y --;
                 }
 
@@ -321,17 +288,29 @@ public class Rescuer extends DroneDelMundo{
         }
     }
     
-    protected int girarControlandoEnergia(){
-        for (int i=0; i<Math.abs(angulo); i+=45){
-            if (angulo<0){
+    /**
+    * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez
+    * @description: Gira el dron un número determinado de grados
+    */
+    protected void girarControlandoEnergia(){
+        
+        double nuevoAnguloPositivo = (nuevoAngulo+360) % 360;
+        double anguloActualPositivo = (anguloActualDrone+360) % 360;
+        
+        double diferenciaAngulos = nuevoAnguloPositivo - anguloActualPositivo;
+        double veces = Math.round(Math.abs(diferenciaAngulos)/45);
+        
+        for (int i=0; i<veces; i++){
+            if (diferenciaAngulos < 0){
+                anguloActualDrone-=45;
                 arrayAcciones.add("rotateL");
             }
-            else{
+            else {
+                anguloActualDrone+=45;
                 arrayAcciones.add("rotateR");
             }
-            energia = energia - costeAccion;
+            energia = energia - 5;
         }
-        return energia;
     }
 
     private void subirAAltura(int alturaObjetivo){
@@ -371,7 +350,7 @@ public class Rescuer extends DroneDelMundo{
         inicio.add(posX);
         inicio.add(posY);
         
-        angulo = 0;
+        anguloActualDrone = 90;
         zActual = mapa.getLevel(xActualDrone, yActualDrone);
         energia = 10;
     }
