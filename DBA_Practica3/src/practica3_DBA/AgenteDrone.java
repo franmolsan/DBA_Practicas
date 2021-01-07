@@ -50,7 +50,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
         // Descripción del grupo
         servicio = "Analytics group ArcelorMittal";
         // Mundo a abrir
-        mundo = "Playground1";
+        mundo = "Playground2";
         // Estado inicial del agente
         estado = "CHECKIN-LARVA";
         // Por ahora no existen errores
@@ -191,7 +191,6 @@ public abstract class AgenteDrone extends IntegratedAgent{
             JsonArray products = respuesta.get("products").asArray();
             for (JsonValue p : products){
                 if(p.asObject().get("reference").toString().contains(sensor.toUpperCase())){
-                    Info(T[i] + " contiene " + sensor + " a un precio de " + p.asObject().get("price").toString()+ " referencia:"+p.asObject().get("reference").toString());
                     int precio = Integer.parseInt(p.asObject().get("price").toString());
                     if(precio<=mejorPrecio){
                         mejorPrecio = precio;

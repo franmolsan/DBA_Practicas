@@ -1033,7 +1033,7 @@ public class DroneDelMundo extends AgenteDrone{
         Info("Realizando Login " + in.getContent());
         
         xActualDrone = resultadoComunicacion.get("posx").asInt();
-        yActualDrone =resultadoComunicacion.get("posy").asInt();
+        yActualDrone = resultadoComunicacion.get("posy").asInt();
                 
         JsonObject msg = new JsonObject();
         msg.add("operation", "login");
@@ -1384,7 +1384,6 @@ public class DroneDelMundo extends AgenteDrone{
         out.setConversationId(convID);
         out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
         out.setContent(msg.toString());
-        Info ("contenido login: " + out.getContent());
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.REQUEST);
         out.setInReplyTo(inReplyTo);

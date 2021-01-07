@@ -91,10 +91,14 @@ public class Seeker extends DroneDelMundo{
                 }
                 else if(accion.equals("recargar")){
                     bajarAlSuelo();
+                    ejecutarAcciones();
                     if (!iniciarRecarga()){ //No hay error
                         Info("He recargado");
                         energia = 1000;
                         estado = "TRAZAR-RECORRIDO";
+                        
+                        subir();
+                        ejecutarAcciones();
                     }
                     else{
                         Info("No he recargado");
@@ -175,19 +179,12 @@ public class Seeker extends DroneDelMundo{
         
     private void buscarObjetivo(){
         
-        for (int x=0; x < thermal.size(); x++) {
-        System.out.print("|");
-            for (int y=0; y < thermal.get(x).size(); y++) {
-                System.out.print (thermal.get(x).get(y));
-                if (y!=thermal.get(x).size()-1) System.out.print("\t");
-            }
-        System.out.println("|");
-      }
-        
         double minThermal = Double.MAX_VALUE;
         int siguientePosX = 0;
         int siguientePosY = 0;
         
+        // si es la primera lectura, es necesario escanear toda la matriz en busca de objetivos
+        // también se busca el siguiente valor al que moverse, si no hay objetivos.
         if(primeraLecturaThermal){
             for (int i = 0; i < thermal.size(); i++) {
                 for (int j = 0; j < thermal.size(); j++) {
@@ -199,29 +196,33 @@ public class Seeker extends DroneDelMundo{
                         
                         if (thermal.get(i).get(j) < minThermal){
                             minThermal = thermal.get(i).get(j);
-                            siguientePosX = i;
-                            siguientePosY = j;
+                            siguientePosX = j;
+                            siguientePosY = i;
                             Info ("Minimo thermal: " + minThermal);
-                            Info ("siguiente x: " + i);
-                            Info ("siguiente y: " + j);
+                            Info ("siguiente x: " + j);
+                            Info ("siguiente y: " + i);
                         }         
                     }
                     
                     if(thermal.get(i).get(j) == 0){
                         ArrayList<Integer> arr = new ArrayList();
-                        arr.add(xActualDrone + j - 3);
-                        arr.add(yActualDrone + i - 3);
+                        arr.add(xActualDrone + j - (thermal.size()-1)/2);
+                        arr.add(yActualDrone + i - (thermal.size()-1)/2);
                         objetivosEncontrados.add(arr);
+                        
+                        imprimirThermal();
+                        System.out.println("");
+                        Info ("X objetivo: " + j);
+                        Info ("Y objetivo: " + i);
+                        Info ("X actual drone: " + xActualDrone);
+                        Info ("Y actual drone: " + yActualDrone);
                     }
                 }
             }
-            if(objetivosEncontrados.size()>0){
-                Info("Objetivo encontrado");
-                notificarCoachObjetivosEncontrados();
-                estado = "ESPERAR-ORDEN";
-            }
             primeraLecturaThermal = false;
         }
+        
+        // si no es la primera lectura
         else {
             for (int i = 0; i < thermal.size(); i++) {
                 for (int j = 0; j < thermal.size(); j++) {
@@ -234,40 +235,49 @@ public class Seeker extends DroneDelMundo{
                         
                             if (thermal.get(i).get(j) < minThermal){
                                 minThermal = thermal.get(i).get(j);
-                                siguientePosX = i;
-                                siguientePosY = j;
+                                siguientePosX = j;
+                                siguientePosY = i;
                                 Info ("Minimo thermal: " + minThermal);
-                                Info ("siguiente x: " + i);
-                                Info ("siguiente y: " + j);
+                                Info ("siguiente x: " + j);
+                                Info ("siguiente y: " + i);
                             }         
                         }
 
                         if(thermal.get(i).get(j) == 0){
                             ArrayList<Integer> arr = new ArrayList();
-                            arr.add(xActualDrone + j - 3);
-                            arr.add(yActualDrone + i - 3);
+                            arr.add(xActualDrone + j - (thermal.size()-1)/2);
+                            arr.add(yActualDrone + i - (thermal.size()-1)/2);
                             objetivosEncontrados.add(arr);
+                            
+                            imprimirThermal();
+                            System.out.println("");
+                            Info ("X objetivo: " + j);
+                            Info ("Y objetivo: " + i);
+                            Info ("X actual drone: " + xActualDrone);
+                            Info ("Y actual drone: " + yActualDrone);
                         } 
                     }
                     
                 }
             }
+            
+            // si no se ha encontrado nada, calcular movimientos para ir a la siguiente casilla
             if(objetivosEncontrados.isEmpty()){
                 if (siguientePosX == 0 && siguientePosY == 0){
                     xActualDrone --;
                     yActualDrone --;
                     nuevoAngulo = -45;
                 }
-                else if (siguientePosX == 0 && siguientePosY == (thermal.size()-1)/2){
+                else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == 0){
                     yActualDrone --;
                     nuevoAngulo = 0;
                 }
-                else if (siguientePosX == 0 && siguientePosY == thermal.size()-1){
+                else if (siguientePosX == thermal.size()-1 && siguientePosY == 0){
                     xActualDrone ++;
                     yActualDrone --;
                     nuevoAngulo = 45;
                 }
-                else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == thermal.size()-1){
+                else if (siguientePosX == thermal.size()-1 && siguientePosY == (thermal.size()-1)/2){
                     xActualDrone ++;
                     nuevoAngulo = 90;
                 }
@@ -276,31 +286,33 @@ public class Seeker extends DroneDelMundo{
                     yActualDrone ++;
                     nuevoAngulo = 135;
                 }
-                else if (siguientePosX == thermal.size()-1 && siguientePosY == (thermal.size()-1)/2){
+                else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == thermal.size()-1){
                     yActualDrone ++;
                     nuevoAngulo = 180;
                 }
-                else if (siguientePosX == thermal.size()-1 && siguientePosY == 0){
+                else if (siguientePosX == 0 && siguientePosY == thermal.size()-1){
                     xActualDrone --;
                     yActualDrone ++;
                     nuevoAngulo = -135;
                 }
-                else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == 0){
+                else if (siguientePosX == 0 && siguientePosY == (thermal.size()-1)/2){
                     xActualDrone --;
                     nuevoAngulo = -90;
                 }
                 moverse();
-                
             }
-            else{
-                Info("Objetivo enconntrado");
-                notificarCoachObjetivosEncontrados();
-                estado = "ESPERAR-ORDEN";
-            }
+        }
+        
+        // si se ha encontrado algún objetivo
+        if (! objetivosEncontrados.isEmpty()){
+            notificarCoachObjetivosEncontrados();
+            estado = "ESPERAR-ORDEN";
         }
     }
     
     private void notificarCoachObjetivosEncontrados(){
+        
+        Info ("****** Notifico objetivo y estoy en " + xActualDrone + ", " + yActualDrone);
         JsonObject msg = new JsonObject();
         JsonArray jarr = new JsonArray();
         for (int i = 0; i <objetivosEncontrados.size() ; i++) {
@@ -309,6 +321,7 @@ public class Seeker extends DroneDelMundo{
             val.add(objetivosEncontrados.get(i).get(1));
             jarr.add(val);
         }
+        objetivosEncontrados.clear();
         msg.add("rescatarObjetivos", jarr);
         out = new ACLMessage();
         out.setSender(getAID());
@@ -320,5 +333,21 @@ public class Seeker extends DroneDelMundo{
         send(out);
     }
     
+    private void imprimirThermal(){
+        for (int x=0; x < thermal.size(); x++) {
+            System.out.print("|");
+                for (int y=0; y < thermal.get(x).size(); y++) {
+                    System.out.print (thermal.get(x).get(y));
+                    if (y!=thermal.get(x).size()-1) System.out.print("\t");
+                }
+            System.out.println("|");
+        }
+        
+    }
+    
+    
+    private void subir(){
+        arrayAcciones.add("moveUP");
+    }
 
 }

@@ -322,7 +322,6 @@ public class Coach extends AgenteDrone {
             resultado = obtenerMejorPrecioParaSensor(tiendas, sensoresRescatador.get(i));
             enviarCompraDrone(resultado, rescatador);
             in = blockingReceive();
-            Info("Compra realizada: " + in.getContent());
         }
         
         finalizarCompra(rescatador);
@@ -340,14 +339,11 @@ public class Coach extends AgenteDrone {
                 resultado = obtenerMejorPrecioParaSensor(tiendas, sensoresBuscadores.get(j));
                 enviarCompraDrone(resultado, buscadores.get(i));
                 in = blockingReceive();
-                Info(in.getContent());
             }
             finalizarCompra(buscadores.get(i));
             in = blockingReceive();
             resultadoComunicacion = Json.parse(in.getContent()).asObject();
         }
-
-      Info("Todas las coins: " + coins.toString());
     }
     
     private void esperarCancelRescatador(){
@@ -375,8 +371,8 @@ public class Coach extends AgenteDrone {
     
     private void cancelarAWACS(){
         informaCancelacionAWACS();
-        in = blockingReceive();
-        Info (in.getContent());
+//        in = blockingReceive();
+//        Info (in.getContent());
         Info("AWACS cancelado");
     }
     
@@ -666,7 +662,6 @@ public class Coach extends AgenteDrone {
             JsonArray products = respuesta.get("products").asArray();
             for (JsonValue p : products){
                 if(p.asObject().get("reference").toString().contains(sensor.toUpperCase())){
-                    Info(T[i] + " contiene " + sensor + " a un precio de " + p.asObject().get("price").toString()+ " referencia:"+p.asObject().get("reference").toString());
                     int precio = Integer.parseInt(p.asObject().get("price").toString());
                     if(precio<=mejorPrecio){
                         mejorPrecio = precio;
@@ -683,7 +678,6 @@ public class Coach extends AgenteDrone {
         ArrayList<String> pago = new ArrayList<>();
         if(precio<=coins.size()){
             for(int i=0;i<precio;i++){
-                Info("Moneda " + i + ": " + coins.get(0));
                 pago.add(coins.get(0));
                 coins.remove(0);
             }
@@ -707,16 +701,13 @@ public class Coach extends AgenteDrone {
 
             in = blockingReceive();
 
-            Info ("Info de la compra: " + in.getContent());
+            
             hayError = in.getPerformative() != ACLMessage.INFORM;
             if (hayError) {
                 Info(ACLMessage.getPerformative(in.getPerformative())
                         + " Could not buy from " + tienda +
                          " due to " + in.getContent());
                 estado = "CANCEL-WM";
-            }
-            else{
-                Info("Recarga comprada correctamente");
             }
         }
     }
@@ -729,10 +720,7 @@ public class Coach extends AgenteDrone {
         while(comprar){
             resultado = obtenerMejorPrecioParaRecarga(tiendas, "CHARGE");
             if (coins.size() >= resultado.asObject().get("price").asInt()){
-                Info("EKJD: " + resultado.asObject().get("tienda").asString());
                 solicitarRecarga(resultado.asObject().get("reference").asString(), resultado.asObject().get("price").asInt(), resultado.asObject().get("tienda").asString());
-
-                Info("Compra realizada: " + in.getContent());
                 JsonValue jsonRespuesta = Json.parse(in.getContent());
                 recargas.add(jsonRespuesta.asObject().get("reference").asString());
             }
@@ -740,7 +728,6 @@ public class Coach extends AgenteDrone {
                 comprar = false;
             }
         }
-        Info ("Recargas: " + recargas.toString());
     }
     
     private void gestionarRecarga(){

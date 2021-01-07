@@ -33,7 +33,7 @@ public class Rescuer extends DroneDelMundo{
     // protected ACLMessage in, out;
     private ArrayList<Integer> posActual;
     private ArrayList<Integer> inicio;
-    private static final int costeAccion = 1;
+    private static final int costeAccion = 4;
     private int numObjetivosRestantes = 10;
 
     
@@ -107,6 +107,8 @@ public class Rescuer extends DroneDelMundo{
                 iniciarRescateObjetivos();
                 break;
             case "VARIOS-RESCATADOS":
+                bajarAlSuelo();
+                ejecutarAcciones();
                 informarCoachVariosRescatados();
                 break;
             case "RESCATE-FINALIZADO":
@@ -151,20 +153,7 @@ public class Rescuer extends DroneDelMundo{
         }
         
         ArrayList<ArrayList<Integer>> ruta= calcularRutaGreedy(vectorObjetivos);
-        
-        Info ("RUTA");
-        for (int x=0; x < ruta.size(); x++) {
-        System.out.print("|");
-            for (int y=0; y < ruta.get(x).size(); y++) {
-                System.out.print (ruta.get(x).get(y));
-                if (y!=ruta.get(x).size()-1) System.out.print("\t");
-            }
-        System.out.println("|");
-        }
-        
         realizarRuta(ruta);
-        
-        
         ejecutarAcciones();
         //comprobar objetivos restantes
         //if (numObjetivosRestantes == 0){
@@ -242,7 +231,6 @@ public class Rescuer extends DroneDelMundo{
     private void moverseDePuntoAPunto (int p1X, int p1Y, int p2X, int p2Y, boolean rescatar){
         
         while (p1X != p2X || p1Y != p2Y){
-            Info (" " + p1X + " , " + p1Y +" ---> " + " " + p2X + ", " + p2Y );
             if (energia < 250){
                 solicitarRecargaACoach();
                 in = blockingReceive();
@@ -301,6 +289,8 @@ public class Rescuer extends DroneDelMundo{
         //bajarAlSuelo(getAlturaActual());
 
         if(rescatar){
+            Info ("Procedo a rescatar objetivos");
+            Info("objetivos restantes: " + numObjetivosRestantes);
             arrayAcciones.add("rescue");
             numObjetivosRestantes--;
             //energia = energia - costeAcción; ?????
@@ -350,6 +340,7 @@ public class Rescuer extends DroneDelMundo{
     }
 
     private void moverse(int p1X, int p1Y){
+        Info ("Me muevo a " + p1X + ", " + p1Y);
         girarControlandoEnergia();
         int alturaCasilla = mapa.getLevel(p1X, p1Y);
         if (alturaCasilla - zActual > 0){
@@ -376,7 +367,7 @@ public class Rescuer extends DroneDelMundo{
     }
     
     private void informarCoachVariosRescatados () {
-        
+        Info ("Estoy en la casilla " + xActualDrone + ", " + yActualDrone);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -393,7 +384,6 @@ public class Rescuer extends DroneDelMundo{
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.INFORM);
         send(out);
-        
-
     }
+    
 }
