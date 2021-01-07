@@ -148,6 +148,7 @@ public class Coach extends AgenteDrone {
                 break;
             case "CANCEL-COMUNICADOR":
                 cancelarComunicador();
+                cancelarAWACS();
                 estado = "CANCEL-WM";
                 break;
             case "CANCEL-WM":
@@ -372,6 +373,13 @@ public class Coach extends AgenteDrone {
         Info("Comunicador cancelados");
     }
     
+    private void cancelarAWACS(){
+        informaCancelacionAWACS();
+        in = blockingReceive();
+        Info (in.getContent());
+        Info("AWACS cancelado");
+    }
+    
     private void cancelarWM(){
         Info("Closing the game");
         in = enviarCancelA(worldManager);
@@ -405,6 +413,19 @@ public class Coach extends AgenteDrone {
         out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.INFORM);
         out.addReceiver(new AID(listener, AID.ISLOCALNAME));
+        
+        send(out);
+    }
+    
+    private void informaCancelacionAWACS(){
+        out = new ACLMessage();
+        out.setSender(getAID());
+        out.setConversationId(convID);
+        out.setContent("CANCEL");
+        out.setProtocol("REGULAR");
+        out.setEncoding(_myCardID.getCardID());
+        out.setPerformative(ACLMessage.CANCEL);
+        out.addReceiver(new AID("AWACS", AID.ISLOCALNAME));
         
         send(out);
     }

@@ -642,6 +642,7 @@ public class DroneDelMundo extends AgenteDrone{
     * @description: Añade las acciones necesarias para que el dron se pose en la superficie
     */
     protected void bajarAlSuelo(){
+        
         if (zActual > mapa.getLevel(xActualDrone, yActualDrone) ){
             Info ("Estoy bajando de zActual :" + zActual + " hasta " + mapa.getLevel(xActualDrone, yActualDrone));
             int veces = zActual/5;
@@ -917,6 +918,8 @@ public class DroneDelMundo extends AgenteDrone{
         Info("Ejecutando acciones");
         boolean estoyVivo = true;
         while (arrayAcciones.size() > 0 && estoyVivo){
+            Info ("ejecutao una acción ");
+            Info ("me quedan " + arrayAcciones.size() + "acciones");
             // Crear objeto json
             JsonObject objeto = new JsonObject();
 
@@ -935,8 +938,10 @@ public class DroneDelMundo extends AgenteDrone{
             out.setInReplyTo(inReplyTo);
             send(out);
             arrayAcciones.remove(0);
+            Info ("envio :" + out.getContent());
             
             in = blockingReceive();
+            Info("recibo: " + in.getContent());
             hayError = in.getPerformative() != ACLMessage.INFORM;
             if (hayError) {
                 Info(ACLMessage.getPerformative(in.getPerformative())
@@ -946,7 +951,6 @@ public class DroneDelMundo extends AgenteDrone{
                 arrayAcciones.clear();
             }
             else{
-                
                 inReplyTo = in.getReplyWith();
             }
         }

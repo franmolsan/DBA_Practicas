@@ -70,26 +70,22 @@ public class Rescuer extends DroneDelMundo{
                     Info(ACLMessage.getPerformative(in.getPerformative())
                             + " Error en mensaje");
                     estado = "CANCEL-WM";
-                    break;
                 }
                 if (accion.equals("turnOff")){
                     estado = "CHECKOUT-LARVA";
-                    break;
                 }
                 else if(accion.equals("")){
-                    break;
                 }
                 else if(accion.equals("login")){
                     estado = "REALIZAR-LOGIN";
-                    break;
                 }
                 else if (accion.equals("rescata")){
                     estado = "INICIAR-RESCATE";
                 }
                 else{
                     estado = "CHECKOUT-LARVA";
-                    break;
                 }
+                break;
             case "FINALIZAR-COMPRA":
                 Info("Envía");
                 enviarCoins();
@@ -153,7 +149,22 @@ public class Rescuer extends DroneDelMundo{
             }
             vectorObjetivos.add(vectorPosicion);
         }
-        realizarRuta(calcularRutaGreedy(vectorObjetivos));
+        
+        ArrayList<ArrayList<Integer>> ruta= calcularRutaGreedy(vectorObjetivos);
+        
+        Info ("RUTA");
+        for (int x=0; x < ruta.size(); x++) {
+        System.out.print("|");
+            for (int y=0; y < ruta.get(x).size(); y++) {
+                System.out.print (ruta.get(x).get(y));
+                if (y!=ruta.get(x).size()-1) System.out.print("\t");
+            }
+        System.out.println("|");
+        }
+        
+        realizarRuta(ruta);
+        
+        
         ejecutarAcciones();
         //comprobar objetivos restantes
         //if (numObjetivosRestantes == 0){
@@ -201,8 +212,9 @@ public class Rescuer extends DroneDelMundo{
             }
             int objetivoMasCercano = calcularMinimo(vectorDistancia);
             ruta.add(vectorObjetivos.get(objetivoMasCercano));
-            actual.set(0, vectorObjetivos.get(objetivoMasCercano).get(0));
-            actual.set(1,vectorObjetivos.get(objetivoMasCercano).get(1));
+            actual.clear();
+            actual.add(vectorObjetivos.get(objetivoMasCercano).get(0));
+            actual.add(vectorObjetivos.get(objetivoMasCercano).get(1));
             vectorObjetivos.remove(objetivoMasCercano);
         }
         ruta.add(inicio);
@@ -220,14 +232,17 @@ public class Rescuer extends DroneDelMundo{
                 rescatar = false;
             }
             moverseDePuntoAPunto(actual.get(0), actual.get(1), ruta.get(i).get(0), ruta.get(i).get(1), rescatar);
-            actual.set(0,ruta.get(i).get(0));
-            actual.set(1,ruta.get(i).get(1));
+            actual.clear();
+            actual.add(ruta.get(i).get(0));
+            actual.add(ruta.get(i).get(1));
         }
     }
 
     //Calcular movimientos entre dos puntos
     private void moverseDePuntoAPunto (int p1X, int p1Y, int p2X, int p2Y, boolean rescatar){
-        while (p1X != p2X && p1Y != p2Y){
+        
+        while (p1X != p2X || p1Y != p2Y){
+            Info (" " + p1X + " , " + p1Y +" ---> " + " " + p2X + ", " + p2Y );
             if (energia < 250){
                 solicitarRecargaACoach();
                 in = blockingReceive();
@@ -240,8 +255,8 @@ public class Rescuer extends DroneDelMundo{
                     }
                     else{
                         estado = "CHECKOUT-LARVA";
+                        break;
                     }
-                    break;
                 }
                 else if(accion.equals("noRecargar")){
                     estado = "INFORMAR-MUERTE";
