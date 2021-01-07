@@ -97,8 +97,8 @@ public class Seeker extends DroneDelMundo{
                         energia = 1000;
                         estado = "TRAZAR-RECORRIDO";
                         
-                        subir();
-                        ejecutarAcciones();
+//                        subir();
+//                        ejecutarAcciones();
                     }
                     else{
                         Info("No he recargado");
@@ -107,6 +107,7 @@ public class Seeker extends DroneDelMundo{
                 }
                 else if(accion.equals("noRecargar")){
                     estado = "INFORMAR-MUERTE";
+                    recargar = false;
                     break;
                 
                 }
@@ -115,6 +116,7 @@ public class Seeker extends DroneDelMundo{
                     break;
                 }
                 else{
+                    alive = false;
                     estado = "CHECKOUT-LARVA";
                     break;
                 }
@@ -234,12 +236,14 @@ public class Seeker extends DroneDelMundo{
                         || i == thermal.size()-1 && j == thermal.size()-1 ){
                         
                             if (thermal.get(i).get(j) < minThermal){
-                                minThermal = thermal.get(i).get(j);
-                                siguientePosX = j;
-                                siguientePosY = i;
-                                Info ("Minimo thermal: " + minThermal);
-                                Info ("siguiente x: " + j);
-                                Info ("siguiente y: " + i);
+                                if (puedoIrACasilla(xActualDrone, yActualDrone, j, i)){
+                                    minThermal = thermal.get(i).get(j);
+                                    siguientePosX = j;
+                                    siguientePosY = i;
+                                    Info ("Minimo thermal: " + minThermal);
+                                    Info ("siguiente x: " + j);
+                                    Info ("siguiente y: " + i); 
+                                }
                             }         
                         }
 
@@ -299,6 +303,7 @@ public class Seeker extends DroneDelMundo{
                     xActualDrone --;
                     nuevoAngulo = -90;
                 }
+ 
                 moverse();
             }
         }
@@ -323,6 +328,9 @@ public class Seeker extends DroneDelMundo{
         }
         objetivosEncontrados.clear();
         msg.add("rescatarObjetivos", jarr);
+        msg.add("px", xActualDrone);
+        msg.add("py", yActualDrone);
+        msg.add("altura", zActual);
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -345,9 +353,43 @@ public class Seeker extends DroneDelMundo{
         
     }
     
-    
     private void subir(){
         arrayAcciones.add("moveUP");
+    }
+    
+ private boolean puedoIrACasilla(int xActualDrone, int yActualDrone, int siguientePosX, int siguientePosY){
+        boolean puedo = true;
+        if (siguientePosX == 0 && siguientePosY == 0){
+            xActualDrone --;
+            yActualDrone --;
+        }
+        else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == 0){
+            yActualDrone --;
+        }
+        else if (siguientePosX == thermal.size()-1 && siguientePosY == 0){
+            xActualDrone ++;
+            yActualDrone --;
+        }
+        else if (siguientePosX == thermal.size()-1 && siguientePosY == (thermal.size()-1)/2){
+            xActualDrone ++;
+        }
+        else if (siguientePosX == thermal.size()-1 && siguientePosY == thermal.size()-1){
+            xActualDrone ++;
+            yActualDrone ++;
+        }
+        else if (siguientePosX == (thermal.size()-1)/2 && siguientePosY == thermal.size()-1){
+            yActualDrone ++;
+        }
+        else if (siguientePosX == 0 && siguientePosY == thermal.size()-1){
+            xActualDrone --;
+            yActualDrone ++;
+        }
+        else if (siguientePosX == 0 && siguientePosY == (thermal.size()-1)/2){
+            xActualDrone --;
+        }
+        puedo = !((xActualDrone == mapa.getWidth()/2) && (yActualDrone == mapa.getHeight()/2));
+                
+        return puedo;
     }
 
 }

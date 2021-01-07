@@ -44,6 +44,7 @@ public class Coach extends AgenteDrone {
     private ArrayList<String> coins = new ArrayList<>();
     private ArrayList<String> recargas = new ArrayList<>();
     private ArrayList<ArrayList<Integer>> objetivosARescatar = new ArrayList<>();
+    private ArrayList<ArrayList<Integer>> posicionSeekers = new ArrayList<>();
     private int recuentoEncontrados = 0;
     private int dronesQueHanNotificado = 0;
     JsonObject jsonMapFile;
@@ -113,10 +114,11 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                //despertarAWACS();
+                despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
+                Info ("*********** COACH *********** ESPERANDO ***********");
                 in = blockingReceive();
                 if (in.getContent().equals("dead")){
                     gestionarMuerte();
@@ -134,6 +136,7 @@ public class Coach extends AgenteDrone {
                 }
                 else if (in.getContent().contains("variosRescatados")){
                     objetivosARescatar.clear();
+                    posicionSeekers.clear();
                     recuentoEncontrados = 0;
                     dronesQueHanNotificado = 0;
                     notificarSeekersContinuarBusqueda();       
@@ -528,7 +531,7 @@ public class Coach extends AgenteDrone {
     private void calcularSensoresSegunWorldSize(){
         int worldSize = mapa.getWidth() * mapa.getHeight();
         
-        if (worldSize < 15000){
+        if (worldSize < 20000){
             sensoresBuscadores.add("thermalHQ");
         }
         
@@ -542,7 +545,7 @@ public class Coach extends AgenteDrone {
         int visionThermal = 0;
         
         if (worldSize < 15000){
-            visionThermal = 3; // hemos comprado el thermal estandar   
+            visionThermal = 10; // hemos comprado el thermal estandar   
         }
         
         else {
@@ -550,18 +553,18 @@ public class Coach extends AgenteDrone {
         }
         
         ArrayList <Integer> posicion = new ArrayList<> ();
-        posicion.add(visionThermal);
-        posicion.add(visionThermal);
+        posicion.add(visionThermal+1);
+        posicion.add(visionThermal+1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(mapa.getWidth()-visionThermal);
-        posicion.add(visionThermal);
+        posicion.add(mapa.getWidth()-visionThermal-1);
+        posicion.add(mapa.getHeight()/2 +1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(mapa.getWidth()/2 );
-        posicion.add(mapa.getHeight() - visionThermal);
+        posicion.add(visionThermal +1);
+        posicion.add(mapa.getHeight() - visionThermal -1);
         matrizPosiciones.add(posicion);
     }
     
@@ -621,12 +624,15 @@ public class Coach extends AgenteDrone {
         String muerto = in.getSender().getName();
         boolean encontrado = false;
         
+        Info ("Gestionando la muerte de " + muerto);
         for (int i=0; i<buscadores.size() && !encontrado; i++){
             if (muerto.contains(buscadores.get(i))){
                 encontrado = true;
                 buscadores.remove(i);
             }
         }
+        
+        Info ("Ahora me quedan " + buscadores.size() + " buscadores");
         
         if (buscadores.size() == 0){
             cancelarRescatador();
@@ -760,9 +766,19 @@ public class Coach extends AgenteDrone {
             
         }
         dronesQueHanNotificado ++;
-        if (dronesQueHanNotificado == 3){
+        if (dronesQueHanNotificado == buscadores.size()){
             notificarObjetivosRescatador();
         }
+        
+        int posXSeeker = Json.parse(in.getContent()).asObject().get("px").asInt();
+        int posYSeeker = Json.parse(in.getContent()).asObject().get("py").asInt();
+        int alturaSeeker = Json.parse(in.getContent()).asObject().get("altura").asInt();
+        ArrayList<Integer> vectorPosicion = new ArrayList<>();
+        vectorPosicion.add(posXSeeker);
+        vectorPosicion.add(posYSeeker);
+        vectorPosicion.add(alturaSeeker);
+        posicionSeekers.add(vectorPosicion);
+        
     }
     
     private boolean objetivoNoEncontrado(ArrayList<Integer> vectorPosicion){
@@ -787,12 +803,21 @@ public class Coach extends AgenteDrone {
                 pos.add(o);
             }
             objetivos.add(pos);
-            
+        }
+        
+        JsonArray posiciones = new JsonArray();
+        for (int i=0; i<posicionSeekers.size(); i++){
+            JsonArray pos = new JsonArray();
+            for(int o:posicionSeekers.get(i)){
+                pos.add(o);
+            }
+            posiciones.add(pos);
         }
         
         JsonObject msg = new JsonObject();
         msg.add("action", "rescata");
         msg.add("objetivos", objetivos);
+        msg.add("posicionesSeekers", posiciones);
         msg.add("sender", in.getSender().getName());
         out = new ACLMessage();
         out.setSender(getAID());

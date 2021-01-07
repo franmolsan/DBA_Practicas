@@ -34,6 +34,7 @@ public class Rescuer extends DroneDelMundo{
     private ArrayList<Integer> posActual;
     private ArrayList<Integer> inicio;
     private int numObjetivosRestantes = 10;
+    private ArrayList<ArrayList<Integer>> posicionesSeekers = new ArrayList <> ();
 
     
     @Override
@@ -83,6 +84,7 @@ public class Rescuer extends DroneDelMundo{
                     estado = "INICIAR-RESCATE";
                 }
                 else{
+                    alive = false;
                     estado = "CHECKOUT-LARVA";
                 }
                 break;
@@ -98,13 +100,18 @@ public class Rescuer extends DroneDelMundo{
                 boolean error = realizarLoginWM();
                 informarCoachLoginRealizado();
                 if (!error){
-                    obtenerDatosSensores();
+                    actualizarMapaSensores();
+                    actualizarValorSensores();
                     Info("Datos sensores: " + in.getContent());
                     estado = "ESPERAR-ORDEN";
                 }
                 break;
             case "INICIAR-RESCATE":
-                iniciarRescateObjetivos();
+                actualizarMapaSensores();
+                actualizarValorSensores();
+                if (comprobarAlive()){
+                    iniciarRescateObjetivos();
+                }
                 break;
             case "VARIOS-RESCATADOS":
                 bajarAlSuelo();
@@ -150,6 +157,15 @@ public class Rescuer extends DroneDelMundo{
                 vectorPosicion.add(resultadoComunicacion.get("objetivos").asArray().get(i).asArray().get(j).asInt());
             }
             vectorObjetivos.add(vectorPosicion);
+        }
+        
+        posicionesSeekers.clear();
+        for (int i=0; i<resultadoComunicacion.get("posicionesSeekers").asArray().size(); i++){
+            ArrayList<Integer> vectorPosicion = new ArrayList<>();
+            for (int j=0; j<resultadoComunicacion.get("posicionesSeekers").asArray().get(i).asArray().size(); j++){
+                vectorPosicion.add(resultadoComunicacion.get("posicionesSeekers").asArray().get(i).asArray().get(j).asInt());
+            }
+            posicionesSeekers.add(vectorPosicion);
         }
         
         ArrayList<ArrayList<Integer>> ruta= calcularRutaGreedy(vectorObjetivos);
@@ -360,12 +376,15 @@ public class Rescuer extends DroneDelMundo{
     private void moverse(int p1X, int p1Y){
         Info ("Me muevo a " + p1X + ", " + p1Y);
         girarControlandoEnergia();
+         
         int alturaCasilla = mapa.getLevel(p1X, p1Y);
             Info ("voy a " + " x: " + p1X + " y* " + p1Y);
            Info("subo de: " + zActual + " a " + mapa.getLevel(p1X, p1Y));
         if (alturaCasilla - zActual > 0){
             subirAAltura (alturaCasilla - zActual);
         }
+        
+        comprobarCasillaOcupada(p1X, p1Y, zActual);
         arrayAcciones.add("moveF");
         energia = energia - costeAccion;
     }
@@ -406,4 +425,19 @@ public class Rescuer extends DroneDelMundo{
         send(out);
     }
     
+    private void comprobarCasillaOcupada(int x, int y, int altura){
+        
+        
+        for (int i=0; i<posicionesSeekers.size(); i++){
+            Info ("Compruebo casilla " + posicionesSeekers.get(i).get(0) + ", " + posicionesSeekers.get(i).get(1) + ", " + posicionesSeekers.get(i).get(2));
+            if (x == posicionesSeekers.get(i).get(0) && 
+                y == posicionesSeekers.get(i).get(1) &&
+                altura == posicionesSeekers.get(i).get(2)){
+                
+                arrayAcciones.add("moveUP");
+                zActual += 5;
+                energia -= costeAccion*5;
+            }
+        }
+    }
 }

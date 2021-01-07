@@ -57,6 +57,7 @@ public class DroneDelMundo extends AgenteDrone{
     protected ArrayList<String> arrayAcciones = new ArrayList<>();
     protected int umbralEnergia = 200;
     protected double nuevoAngulo = 0;
+    protected boolean recargar = true;
     
     ArrayList<String> misCoins = new ArrayList <> ();
     
@@ -954,6 +955,7 @@ public class DroneDelMundo extends AgenteDrone{
                 Info(ACLMessage.getPerformative(in.getPerformative())
                         + " Can't move" + " due to " + getDetailsLARVA(in));
                 estoyVivo = false;
+                alive = false;
                 estado = "INFORMAR-MUERTE";
                 arrayAcciones.clear();
             }
@@ -1159,7 +1161,8 @@ public class DroneDelMundo extends AgenteDrone{
     protected void checkOutLarva(){
         super.checkOutLarva();
         
-        if (!alive){
+        Info ("Hago este checkout en larva, y estoy " + alive);
+        if ((!alive || !recargar) && tipo=="SEEKER"){
             informarMuerteACoach();
         }
         else {
@@ -1354,7 +1357,7 @@ public class DroneDelMundo extends AgenteDrone{
         out.setContent("dead");
         out.setProtocol("REGULAR");
         out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID(worldManager, AID.ISLOCALNAME));
+        out.addReceiver(new AID(coach, AID.ISLOCALNAME));
         out.setInReplyTo(inReplyTo);
         send(out);
     }
