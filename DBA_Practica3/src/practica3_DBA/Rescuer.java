@@ -33,7 +33,6 @@ public class Rescuer extends DroneDelMundo{
     // protected ACLMessage in, out;
     private ArrayList<Integer> posActual;
     private ArrayList<Integer> inicio;
-    private static final int costeAccion = 4;
     private int numObjetivosRestantes = 10;
 
     
@@ -41,6 +40,7 @@ public class Rescuer extends DroneDelMundo{
     public void setup() {
         super.setup();
         tipo = "RESCUER"; 
+        costeAccion = 4;
     }
     
     @Override
@@ -153,6 +153,7 @@ public class Rescuer extends DroneDelMundo{
         }
         
         ArrayList<ArrayList<Integer>> ruta= calcularRutaGreedy(vectorObjetivos);
+        Info ("altura max: " + mapa.getLevel(49, 99));
         realizarRuta(ruta);
         ejecutarAcciones();
         //comprobar objetivos restantes
@@ -231,12 +232,16 @@ public class Rescuer extends DroneDelMundo{
     private void moverseDePuntoAPunto (int p1X, int p1Y, int p2X, int p2Y, boolean rescatar){
         
         while (p1X != p2X || p1Y != p2Y){
-            if (energia < 250){
+            
+            if (energia < 500){
+                Info("Tengo que recargar");
+                ejecutarAcciones();
                 solicitarRecargaACoach();
                 in = blockingReceive();
                 String accion = obtenerResultado();
                 if(accion.equals("recargar")){
                     bajarAlSuelo();
+                    ejecutarAcciones();
                     if (!iniciarRecarga()){ //No hay error
                         Info("He recargado");
                         energia = 1000;
@@ -254,31 +259,43 @@ public class Rescuer extends DroneDelMundo{
             else{
                 if (p1X < p2X && p1Y < p2Y){
                     nuevoAngulo = 135;
+                    xActualDrone ++;
+                    yActualDrone ++;
                     p1X ++;
                     p1Y ++;
                 } else if (p1X > p2X && p1Y < p2Y){
                     nuevoAngulo = -135;
+                    xActualDrone --;
+                    yActualDrone ++;
                     p1X --;
                     p1Y ++;
                 } else if (p1X < p2X && p1Y > p2Y){
                     nuevoAngulo = 45;
+                    xActualDrone ++;
+                    yActualDrone --;
                     p1X ++;
                     p1Y --;
                 } else if (p1X > p2X && p1Y > p2Y){
                     nuevoAngulo = -45;
+                    xActualDrone --;
+                    yActualDrone --;
                     p1X --;
                     p1Y --;
                 } else if (p1X < p2X && p1Y == p2Y){
                     nuevoAngulo = 90;
+                    xActualDrone ++;
                     p1X ++;
                 } else if (p1X > p2X && p1Y == p2Y){
                     nuevoAngulo = -90;
+                    xActualDrone --;
                     p1X --;
                 } else if (p1X == p2X && p1Y < p2Y){
                     nuevoAngulo = 180;
+                    yActualDrone ++;
                     p1Y ++;
                 } else if (p1X == p2X && p1Y > p2Y){
                     nuevoAngulo = 0;
+                    yActualDrone --;
                     p1Y --;
                 }
 
@@ -286,15 +303,14 @@ public class Rescuer extends DroneDelMundo{
             }
         }
 
-        //bajarAlSuelo(getAlturaActual());
-
+        bajarAlSuelo();
+        
         if(rescatar){
-            Info ("Procedo a rescatar objetivos");
-            Info("objetivos restantes: " + numObjetivosRestantes);
+            Info ("Procedo a rescatar objetivo");
+            
             arrayAcciones.add("rescue");
             numObjetivosRestantes--;
-            //energia = energia - costeAcción; ?????
-            //comunicar Rescate Objetivo posxposy
+            Info("objetivos restantes tras rescatar: " + numObjetivosRestantes);
         }
     }
     
@@ -319,11 +335,13 @@ public class Rescuer extends DroneDelMundo{
                 anguloActualDrone+=45;
                 arrayAcciones.add("rotateR");
             }
-            energia = energia - 5;
+            energia = energia - costeAccion;
         }
     }
 
     private void subirAAltura(int alturaObjetivo){
+     
+        
         int veces = alturaObjetivo/5;
 
         for (int i=0; i<veces; i++){
@@ -343,6 +361,8 @@ public class Rescuer extends DroneDelMundo{
         Info ("Me muevo a " + p1X + ", " + p1Y);
         girarControlandoEnergia();
         int alturaCasilla = mapa.getLevel(p1X, p1Y);
+            Info ("voy a " + " x: " + p1X + " y* " + p1Y);
+           Info("subo de: " + zActual + " a " + mapa.getLevel(p1X, p1Y));
         if (alturaCasilla - zActual > 0){
             subirAAltura (alturaCasilla - zActual);
         }

@@ -40,6 +40,8 @@ public class DroneDelMundo extends AgenteDrone{
     private boolean rodeoDcha = true;
     private int incrementosThermalSeguidos = 0;
 
+    protected int costeAccion = 1;
+    
     private ArrayList <ArrayList<Integer>> posicionesPasadas = new ArrayList<>(); // matriz que almacena si has pasado o no por las posiciones
     
     protected String coach = "CerebroComputadora";
@@ -642,19 +644,24 @@ public class DroneDelMundo extends AgenteDrone{
     * @description: Añade las acciones necesarias para que el dron se pose en la superficie
     */
     protected void bajarAlSuelo(){
-        
+        Info("Estoy en X: " + xActualDrone + " Y: " + yActualDrone);
+        Info("Voy a Bajar: ");
+        Info ("De " + zActual);
+        Info ("A: " + mapa.getLevel(xActualDrone, yActualDrone));
         if (zActual > mapa.getLevel(xActualDrone, yActualDrone) ){
             Info ("Estoy bajando de zActual :" + zActual + " hasta " + mapa.getLevel(xActualDrone, yActualDrone));
-            int veces = zActual/5;
+            int veces = (zActual-mapa.getLevel(xActualDrone, yActualDrone))/5;
 
             for (int i=0; i<veces; i++){
                 arrayAcciones.add("moveD");
-                zActual-=5;
+                
             }
-
-            arrayAcciones.add("touchD");
-            zActual = zActual%5;
+            energia = energia - costeAccion*zActual-mapa.getLevel(xActualDrone, yActualDrone);
+            
         }
+        arrayAcciones.add("touchD");
+        energia = energia - ((zActual-mapa.getLevel(xActualDrone, yActualDrone)))*costeAccion/5;
+        zActual = mapa.getLevel(xActualDrone, yActualDrone);
         
     }
     
