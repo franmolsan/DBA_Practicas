@@ -947,20 +947,28 @@ public class DroneDelMundo extends AgenteDrone{
             send(out);
             arrayAcciones.remove(0);
             Info ("envio :" + out.getContent());
-            
-            in = blockingReceive();
-            Info("recibo: " + in.getContent());
-            hayError = in.getPerformative() != ACLMessage.INFORM;
-            if (hayError) {
-                Info(ACLMessage.getPerformative(in.getPerformative())
-                        + " Can't move" + " due to " + getDetailsLARVA(in));
+
+            in = this.blockingReceive(10000);
+            if (in == null){
                 estoyVivo = false;
                 alive = false;
                 estado = "INFORMAR-MUERTE";
                 arrayAcciones.clear();
             }
-            else{
-                inReplyTo = in.getReplyWith();
+            else {
+                Info("recibo: " + in.getContent());
+                hayError = in.getPerformative() != ACLMessage.INFORM;
+                if (hayError) {
+                    Info(ACLMessage.getPerformative(in.getPerformative())
+                            + " Can't move" + " due to " + getDetailsLARVA(in));
+                    estoyVivo = false;
+                    alive = false;
+                    estado = "INFORMAR-MUERTE";
+                    arrayAcciones.clear();
+                }
+                else{
+                    inReplyTo = in.getReplyWith();
+                }
             }
         }
     }

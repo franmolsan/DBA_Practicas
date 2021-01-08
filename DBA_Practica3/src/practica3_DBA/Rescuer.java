@@ -35,6 +35,7 @@ public class Rescuer extends DroneDelMundo{
     private ArrayList<Integer> inicio;
     private int numObjetivosRestantes = 10;
     private ArrayList<ArrayList<Integer>> posicionesSeekers = new ArrayList <> ();
+    private int UMBRAL_ENERGIA = 500;
 
     
     @Override
@@ -249,7 +250,7 @@ public class Rescuer extends DroneDelMundo{
         
         while (p1X != p2X || p1Y != p2Y){
             
-            if (energia < 500){
+            if (energia < UMBRAL_ENERGIA){
                 Info("Tengo que recargar");
                 ejecutarAcciones();
                 solicitarRecargaACoach();

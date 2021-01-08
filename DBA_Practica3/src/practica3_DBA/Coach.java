@@ -299,6 +299,12 @@ public class Coach extends AgenteDrone {
     }
     
     private void despertarAWACS(){
+        try {
+            Thread.sleep(5000);
+        }
+        catch (Exception ex){
+            Info("Error en AWACS: " + ex);
+        };
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -306,7 +312,7 @@ public class Coach extends AgenteDrone {
         out.setProtocol("REGULAR");
         out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID("AWACS", AID.ISLOCALNAME));
+        out.addReceiver(new AID("AWACS_ArcerlorMittal", AID.ISLOCALNAME));
         send(out);
         
         try {
@@ -637,6 +643,12 @@ public class Coach extends AgenteDrone {
         if (buscadores.size() == 0){
             cancelarRescatador();
         }
+        else {
+            if (posicionSeekers.size() == buscadores.size()){
+                notificarObjetivosRescatador();
+            }
+            
+        }
        
     }
     
@@ -765,10 +777,8 @@ public class Coach extends AgenteDrone {
             }
             
         }
+        
         dronesQueHanNotificado ++;
-        if (dronesQueHanNotificado == buscadores.size()){
-            notificarObjetivosRescatador();
-        }
         
         int posXSeeker = Json.parse(in.getContent()).asObject().get("px").asInt();
         int posYSeeker = Json.parse(in.getContent()).asObject().get("py").asInt();
@@ -778,6 +788,12 @@ public class Coach extends AgenteDrone {
         vectorPosicion.add(posYSeeker);
         vectorPosicion.add(alturaSeeker);
         posicionSeekers.add(vectorPosicion);
+        
+        if (dronesQueHanNotificado == buscadores.size()){
+            notificarObjetivosRescatador();
+        }
+        
+        
         
     }
     
