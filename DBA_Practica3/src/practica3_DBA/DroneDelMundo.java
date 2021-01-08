@@ -649,6 +649,7 @@ public class DroneDelMundo extends AgenteDrone{
         Info("Voy a Bajar: ");
         Info ("De " + zActual);
         Info ("A: " + mapa.getLevel(xActualDrone, yActualDrone));
+        int level = mapa.getLevel(xActualDrone, yActualDrone);
         if (zActual > mapa.getLevel(xActualDrone, yActualDrone) ){
             Info ("Estoy bajando de zActual :" + zActual + " hasta " + mapa.getLevel(xActualDrone, yActualDrone));
             int veces = (zActual-mapa.getLevel(xActualDrone, yActualDrone))/5;
@@ -657,12 +658,13 @@ public class DroneDelMundo extends AgenteDrone{
                 arrayAcciones.add("moveD");
                 
             }
-            energia = energia - costeAccion*zActual-mapa.getLevel(xActualDrone, yActualDrone);
+            energia = energia - costeAccion*(zActual-mapa.getLevel(xActualDrone, yActualDrone));
             
         }
         arrayAcciones.add("touchD");
         energia = energia - ((zActual-mapa.getLevel(xActualDrone, yActualDrone)))*costeAccion/5;
         zActual = mapa.getLevel(xActualDrone, yActualDrone);
+        Info("Energía en touchD:"  + energia);
         
     }
     
@@ -948,7 +950,7 @@ public class DroneDelMundo extends AgenteDrone{
             arrayAcciones.remove(0);
             Info ("envio :" + out.getContent());
 
-            in = this.blockingReceive(10000);
+            in = this.blockingReceive();
             if (in == null){
                 estoyVivo = false;
                 alive = false;

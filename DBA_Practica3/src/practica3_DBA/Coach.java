@@ -114,7 +114,7 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                despertarAWACS();
+                //despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
@@ -151,7 +151,7 @@ public class Coach extends AgenteDrone {
                 break;
             case "CANCEL-COMUNICADOR":
                 cancelarComunicador();
-                cancelarAWACS();
+                //cancelarAWACS();
                 estado = "CANCEL-WM";
                 break;
             case "CANCEL-WM":
@@ -559,18 +559,18 @@ public class Coach extends AgenteDrone {
         }
         
         ArrayList <Integer> posicion = new ArrayList<> ();
-        posicion.add(25); //posicion.add(visionThermal+1);
-        posicion.add(25); //posicion.add(visionThermal+1);
+        posicion.add(mapa.getWidth()/4); //posicion.add(visionThermal+1);
+        posicion.add(mapa.getHeight()/4); //posicion.add(visionThermal+1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(0 - 25); //posicion.add(mapa.getWidth()-visionThermal-1);
-        posicion.add(mapa.getHeight()- 25); //posicion.add(mapa.getHeight()/2 +1);
+        posicion.add(mapa.getWidth()-mapa.getWidth()/4); //posicion.add(mapa.getWidth()-visionThermal-1);
+        posicion.add(mapa.getHeight()/4); //posicion.add(mapa.getHeight()/2 +1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(mapa.getWidth()-25);
-        posicion.add(mapa.getHeight()-25);
+        posicion.add(mapa.getWidth()/2);
+        posicion.add(mapa.getHeight()/2+mapa.getHeight()/4);
         matrizPosiciones.add(posicion);
     }
     

@@ -35,7 +35,7 @@ public class Rescuer extends DroneDelMundo{
     private ArrayList<Integer> inicio;
     private int numObjetivosRestantes = 10;
     private ArrayList<ArrayList<Integer>> posicionesSeekers = new ArrayList <> ();
-    private int UMBRAL_ENERGIA = 400;
+    private int UMBRAL_ENERGIA = 700;//400
 
     
     @Override
@@ -259,6 +259,11 @@ public class Rescuer extends DroneDelMundo{
                 if(accion.equals("recargar")){
                     bajarAlSuelo();
                     ejecutarAcciones();
+//                    if(in == null){
+//                        Info("He muerto");
+//                        estado = "CHECKOUT-LARVA";
+//                        break;
+//                    }
                     if (!iniciarRecarga()){ //No hay error
                         Info("He recargado");
                         energia = 1000;
