@@ -312,7 +312,7 @@ public class Coach extends AgenteDrone {
         out.setProtocol("REGULAR");
         out.setEncoding(_myCardID.getCardID());
         out.setPerformative(ACLMessage.INFORM);
-        out.addReceiver(new AID("AWACS_ArcerlorMittal", AID.ISLOCALNAME));
+        out.addReceiver(new AID("AWACS_ArcerlorMittal_1", AID.ISLOCALNAME));
         send(out);
         
         try {
@@ -559,18 +559,18 @@ public class Coach extends AgenteDrone {
         }
         
         ArrayList <Integer> posicion = new ArrayList<> ();
-        posicion.add(visionThermal+1);
-        posicion.add(visionThermal+1);
+        posicion.add(25); //posicion.add(visionThermal+1);
+        posicion.add(25); //posicion.add(visionThermal+1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(mapa.getWidth()-visionThermal-1);
-        posicion.add(mapa.getHeight()/2 +1);
+        posicion.add(0 - 25); //posicion.add(mapa.getWidth()-visionThermal-1);
+        posicion.add(mapa.getHeight()- 25); //posicion.add(mapa.getHeight()/2 +1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(visionThermal +1);
-        posicion.add(mapa.getHeight() - visionThermal -1);
+        posicion.add(mapa.getWidth()-25);
+        posicion.add(mapa.getHeight()-25);
         matrizPosiciones.add(posicion);
     }
     
