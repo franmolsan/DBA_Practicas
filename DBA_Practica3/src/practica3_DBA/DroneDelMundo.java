@@ -535,6 +535,7 @@ public class DroneDelMundo extends AgenteDrone{
         girar();
         int alturaCasilla = mapa.getLevel(xActualDrone, yActualDrone);
         if (alturaCasilla - zActual > 0){
+            Info ("estoy en altura " + zActual + " y quiero subir a " + mapa.getLevel(xActualDrone, yActualDrone) + " por lo que necesito subir " + (alturaCasilla - zActual));
             subirAAltura (alturaCasilla - zActual);
         }
         arrayAcciones.add("moveF");
@@ -951,27 +952,21 @@ public class DroneDelMundo extends AgenteDrone{
             Info ("envio :" + out.getContent());
 
             in = this.blockingReceive();
-            if (in == null){
+
+            Info("recibo: " + in.getContent());
+            hayError = in.getPerformative() != ACLMessage.INFORM;
+            if (hayError) {
+                Info(ACLMessage.getPerformative(in.getPerformative())
+                        + " Can't move" + " due to " + getDetailsLARVA(in));
                 estoyVivo = false;
                 alive = false;
                 estado = "INFORMAR-MUERTE";
                 arrayAcciones.clear();
             }
-            else {
-                Info("recibo: " + in.getContent());
-                hayError = in.getPerformative() != ACLMessage.INFORM;
-                if (hayError) {
-                    Info(ACLMessage.getPerformative(in.getPerformative())
-                            + " Can't move" + " due to " + getDetailsLARVA(in));
-                    estoyVivo = false;
-                    alive = false;
-                    estado = "INFORMAR-MUERTE";
-                    arrayAcciones.clear();
-                }
-                else{
-                    inReplyTo = in.getReplyWith();
-                }
+            else{
+                inReplyTo = in.getReplyWith();
             }
+            
         }
     }
     

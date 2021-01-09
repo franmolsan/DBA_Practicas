@@ -35,7 +35,8 @@ public class Rescuer extends DroneDelMundo{
     private ArrayList<Integer> inicio;
     private int numObjetivosRestantes = 10;
     private ArrayList<ArrayList<Integer>> posicionesSeekers = new ArrayList <> ();
-    private int UMBRAL_ENERGIA = 700;//400
+    private int UMBRAL_ENERGIA = 400;//400
+    private int numVecesSeguidasBajar = 0;
 
     
     @Override
@@ -248,9 +249,11 @@ public class Rescuer extends DroneDelMundo{
     //Calcular movimientos entre dos puntos
     private void moverseDePuntoAPunto (int p1X, int p1Y, int p2X, int p2Y, boolean rescatar){
         
-        while (p1X != p2X || p1Y != p2Y){
+        while ((p1X != p2X || p1Y != p2Y) && alive){
             
-            if (energia < UMBRAL_ENERGIA || (energia <= 800 && zActual > 200 && (zActual - mapa.getLevel(xActualDrone, yActualDrone)) < 20)){
+            int difAltura = Math.abs(mapa.getLevel(p2X, p2Y) - mapa.getLevel(p1X, p1Y));
+
+            if (energia < UMBRAL_ENERGIA && ((difAltura/5)*costeAccion)+20 >= energia){
                 Info("Tengo que recargar");
                 ejecutarAcciones();
                 solicitarRecargaACoach();
@@ -322,6 +325,7 @@ public class Rescuer extends DroneDelMundo{
                 }
 
                 moverse(p1X, p1Y);
+                bajarAlSuelo();
             }
         }
 
@@ -384,8 +388,8 @@ public class Rescuer extends DroneDelMundo{
         girarControlandoEnergia();
          
         int alturaCasilla = mapa.getLevel(p1X, p1Y);
-            Info ("voy a " + " x: " + p1X + " y* " + p1Y);
-           Info("subo de: " + zActual + " a " + mapa.getLevel(p1X, p1Y));
+        Info ("voy a " + " x: " + p1X + " y: " + p1Y);
+        Info("subo de: " + zActual + " a " + mapa.getLevel(p1X, p1Y));
         if (alturaCasilla - zActual > 0){
             subirAAltura (alturaCasilla - zActual);
         }
@@ -435,7 +439,7 @@ public class Rescuer extends DroneDelMundo{
         
         
         for (int i=0; i<posicionesSeekers.size(); i++){
-            Info ("Compruebo casilla " + posicionesSeekers.get(i).get(0) + ", " + posicionesSeekers.get(i).get(1) + ", " + posicionesSeekers.get(i).get(2));
+            
             if (x == posicionesSeekers.get(i).get(0) && 
                 y == posicionesSeekers.get(i).get(1) &&
                 altura == posicionesSeekers.get(i).get(2)){

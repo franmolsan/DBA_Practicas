@@ -20,6 +20,7 @@ import jade.lang.acl.ACLMessage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  *
@@ -114,7 +115,7 @@ public class Coach extends AgenteDrone {
                 estado = "DESPERTAR-AWACS";
                 break;
             case "DESPERTAR-AWACS":
-                //despertarAWACS();
+                despertarAWACS();
                 estado = "ESPERAR-TODOS-RESCATADOS";
                 break;
             case "ESPERAR-TODOS-RESCATADOS":
@@ -299,12 +300,6 @@ public class Coach extends AgenteDrone {
     }
     
     private void despertarAWACS(){
-        try {
-            Thread.sleep(5000);
-        }
-        catch (Exception ex){
-            Info("Error en AWACS: " + ex);
-        };
         out = new ACLMessage();
         out.setSender(getAID());
         out.setConversationId(convID);
@@ -559,23 +554,27 @@ public class Coach extends AgenteDrone {
         }
         
         ArrayList <Integer> posicion = new ArrayList<> ();
-        posicion.add(mapa.getWidth()/4); //posicion.add(visionThermal+1);
-        posicion.add(mapa.getHeight()/4); //posicion.add(visionThermal+1);
+        posicion.add(10);
+        posicion.add(10);
+//        posicion.add(mapa.getWidth()/4); //posicion.add(visionThermal+1);
+//        posicion.add(mapa.getHeight()/4); //posicion.add(visionThermal+1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(mapa.getWidth()-mapa.getWidth()/4); //posicion.add(mapa.getWidth()-visionThermal-1);
-        posicion.add(mapa.getHeight()/4); //posicion.add(mapa.getHeight()/2 +1);
+        posicion.add(190);
+        posicion.add(190);
+//        posicion.add(mapa.getWidth()-mapa.getWidth()/4); //posicion.add(mapa.getWidth()-visionThermal-1);
+//        posicion.add(mapa.getHeight()/4); //posicion.add(mapa.getHeight()/2 +1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(mapa.getWidth()/2);
-        posicion.add(mapa.getHeight()/2+mapa.getHeight()/4);
+        posicion.add(0);
+        posicion.add(190);
         matrizPosiciones.add(posicion);
     }
     
     private void realizarLoginDrones(){
-        realizarLoginDrone(rescatador, mapa.getWidth()/2 , mapa.getHeight()/2);
+        realizarLoginDrone(rescatador, mapa.getWidth() , 0);
         esperarLoginRescatador();
         
         for(int i = 0; i < buscadores.size(); i++){
@@ -800,12 +799,13 @@ public class Coach extends AgenteDrone {
     private boolean objetivoNoEncontrado(ArrayList<Integer> vectorPosicion){
         boolean encontrado = false;
         
-        for (int i=0; i<objetivosARescatar.size(); i++){
-            for (int j=0 ; j<objetivosARescatar.size() && !encontrado; j++){
-                if (vectorPosicion.get(0) == objetivosARescatar.get(i).get(0) && vectorPosicion.get(1) == objetivosARescatar.get(i).get(1)){
-                    encontrado = true;
-                }
-            } 
+        for (int i=0; i<objetivosARescatar.size() && !encontrado; i++){
+            Info ("objetivo a rescatar: " + objetivosARescatar.get(i)+ "");
+            Info ("pos comprobar: " + vectorPosicion );
+            if (Objects.equals(vectorPosicion.get(0), objetivosARescatar.get(i).get(0)) && Objects.equals(vectorPosicion.get(1), objetivosARescatar.get(i).get(1))){
+                encontrado = true;
+                Info ("Encuentro dos iguales");
+            }    
         }
         return !encontrado;
     }
