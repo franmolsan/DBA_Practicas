@@ -50,7 +50,7 @@ public abstract class AgenteDrone extends IntegratedAgent{
         // Descripción del grupo
         servicio = "Analytics group ArcelorMittal";
         // Mundo a abrir
-        mundo = "World4";
+        mundo = "World5";
         // Estado inicial del agente
         estado = "CHECKIN-LARVA";
         // Por ahora no existen errores

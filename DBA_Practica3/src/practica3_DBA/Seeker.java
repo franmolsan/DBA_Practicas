@@ -310,6 +310,9 @@ public class Seeker extends DroneDelMundo{
         
         // si se ha encontrado algún objetivo
         if (! objetivosEncontrados.isEmpty()){
+            arrayAcciones.add("moveUP");
+            arrayAcciones.add("moveUP");
+            ejecutarAcciones();
             notificarCoachObjetivosEncontrados();
             estado = "ESPERAR-ORDEN";
         }

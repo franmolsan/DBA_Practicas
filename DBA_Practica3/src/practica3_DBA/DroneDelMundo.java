@@ -669,6 +669,26 @@ public class DroneDelMundo extends AgenteDrone{
         
     }
     
+    protected void quedarsePegadoAlSuelo(){
+        Info("Estoy en X: " + xActualDrone + " Y: " + yActualDrone);
+        Info("Voy a Bajar: ");
+        Info ("De " + zActual);
+        Info ("A: " + mapa.getLevel(xActualDrone, yActualDrone));
+        int level = mapa.getLevel(xActualDrone, yActualDrone);
+        if (zActual > level+5 ){
+            Info ("Estoy bajando de zActual :" + zActual + " hasta " + level+5);
+            int veces = (zActual-level-5)/5;
+
+            for (int i=0; i<veces; i++){
+                arrayAcciones.add("moveD");
+                
+            }
+            energia = energia - costeAccion*(zActual-level-5);
+            
+        }
+        zActual = mapa.getLevel(xActualDrone, yActualDrone) + 5;   
+    }
+    
     /**
     * @author: Pedro Serrano Pérez, Francisco José Molina Sánchez, Jose Armando Albarado Mamani, Miguel Ángel Molina Sánchez
     * @description: Añade las acciones necesarias para para que el drone suba a una altura determinada
@@ -681,10 +701,10 @@ public class DroneDelMundo extends AgenteDrone{
             zActual = zActual + 5;
         }
 
-        if (alturaObjetivo%5 != 0){
+        //if (alturaObjetivo%5 != 0){
             arrayAcciones.add("moveUP");  
             zActual = zActual + 5;
-        }
+        //}
     }
     
     /**

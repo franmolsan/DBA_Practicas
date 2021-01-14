@@ -35,7 +35,7 @@ public class Rescuer extends DroneDelMundo{
     private ArrayList<Integer> inicio;
     private int numObjetivosRestantes = 10;
     private ArrayList<ArrayList<Integer>> posicionesSeekers = new ArrayList <> ();
-    private int UMBRAL_ENERGIA = 400;//400
+    private int UMBRAL_ENERGIA = 100;//400
     private int numVecesSeguidasBajar = 0;
 
     
@@ -226,6 +226,7 @@ public class Rescuer extends DroneDelMundo{
             vectorObjetivos.remove(objetivoMasCercano);
         }
         ruta.add(inicio);
+        Info ("RUTA: "  + ruta + "");
         return ruta;
     }
 
@@ -253,7 +254,7 @@ public class Rescuer extends DroneDelMundo{
             
             int difAltura = Math.abs(mapa.getLevel(p2X, p2Y) - mapa.getLevel(p1X, p1Y));
 
-            if (energia < UMBRAL_ENERGIA && ((difAltura/5)*costeAccion)+20 >= energia){
+            if (energia <= 2*UMBRAL_ENERGIA){ // && ((difAltura+5/5)*costeAccion)+20 >= energia || (energia < 2*UMBRAL_ENERGIA && zActual > 50) || (energia < 6*UMBRAL_ENERGIA && zActual > 75) || (energia < 10*UMBRAL_ENERGIA && zActual > 100
                 Info("Tengo que recargar");
                 ejecutarAcciones();
                 solicitarRecargaACoach();
@@ -325,7 +326,11 @@ public class Rescuer extends DroneDelMundo{
                 }
 
                 moverse(p1X, p1Y);
-                bajarAlSuelo();
+                if (zActual > mapa.getLevel(p2X, p2Y)){
+                    bajarAlSuelo();
+                }
+                
+                //quedarsePegadoAlSuelo();
             }
         }
 
@@ -390,7 +395,7 @@ public class Rescuer extends DroneDelMundo{
         int alturaCasilla = mapa.getLevel(p1X, p1Y);
         Info ("voy a " + " x: " + p1X + " y: " + p1Y);
         Info("subo de: " + zActual + " a " + mapa.getLevel(p1X, p1Y));
-        if (alturaCasilla - zActual > 0){
+        if (alturaCasilla - zActual >= 0){
             subirAAltura (alturaCasilla - zActual);
         }
         

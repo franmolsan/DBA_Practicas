@@ -340,7 +340,16 @@ public class Coach extends AgenteDrone {
         for(int i=0;i<buscadores.size();i++){
             tiendas = yp.queryProvidersofService(convID).toArray();
             for (int j=0; j<sensoresBuscadores.size(); j++){
-                resultado = obtenerMejorPrecioParaSensor(tiendas, sensoresBuscadores.get(j));
+                if (i==0 && sensoresBuscadores.get(j).equals("thermalHQ") ){
+                    resultado = obtenerMejorPrecioParaSensor(tiendas, "thermalDLX");
+                    if (resultado == null){
+                        resultado = obtenerMejorPrecioParaSensor(tiendas, sensoresBuscadores.get(j));
+                    }
+                }
+                else {
+                    resultado = obtenerMejorPrecioParaSensor(tiendas, sensoresBuscadores.get(j));
+                }
+
                 enviarCompraDrone(resultado, buscadores.get(i));
                 in = blockingReceive();
             }
@@ -554,27 +563,27 @@ public class Coach extends AgenteDrone {
         }
         
         ArrayList <Integer> posicion = new ArrayList<> ();
-        posicion.add(10);
-        posicion.add(10);
+        posicion.add(24);
+        posicion.add(24);
 //        posicion.add(mapa.getWidth()/4); //posicion.add(visionThermal+1);
 //        posicion.add(mapa.getHeight()/4); //posicion.add(visionThermal+1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(190);
-        posicion.add(190);
+        posicion.add(180);
+        posicion.add(9);
 //        posicion.add(mapa.getWidth()-mapa.getWidth()/4); //posicion.add(mapa.getWidth()-visionThermal-1);
 //        posicion.add(mapa.getHeight()/4); //posicion.add(mapa.getHeight()/2 +1);
         matrizPosiciones.add(posicion);
 
         posicion = new ArrayList<> ();
-        posicion.add(0);
-        posicion.add(190);
+        posicion.add(180);
+        posicion.add(180);
         matrizPosiciones.add(posicion);
     }
     
     private void realizarLoginDrones(){
-        realizarLoginDrone(rescatador, mapa.getWidth() , 0);
+        realizarLoginDrone(rescatador, 100 , 100);
         esperarLoginRescatador();
         
         for(int i = 0; i < buscadores.size(); i++){
